@@ -17,12 +17,14 @@ crate is the sender's.
 
 The encoder is the crate's own, in plain Rust with no `unsafe`, so the build
 compiles no C and nothing of FLAC is installed or loaded where the binary runs.
-It is tuned for sound heard as it is made: fixed prediction of the best order,
-the cheapest stereo pairing, Rice partitions that cost least and wasted bits
-shifted out, never an LPC fit. On 20 ms blocks of 16-bit stereo at 48 kHz a
-block of music takes about 24 µs of one core and is half its PCM, speech a
-third, silence sixteen bytes; libFLAC at its default level took twice as long
-for frames 7% smaller on music and the same on speech.
+It is tuned for sound heard as it is made: the fixed predictor of the best
+order on every channel, the cheapest stereo pairing chosen on that, and a
+linear predictor of up to order 8 fitted to the two channels written where the
+fit is estimated to win, Rice partitions that cost least and wasted bits
+shifted out. On 20 ms blocks of 16-bit stereo at 48 kHz a block of music takes
+about 31 µs of one core and is 48% of its PCM, speech 19 µs and 30%, silence
+6 µs and sixteen bytes: the bytes libFLAC's default level makes, in two thirds
+of its time on music and half on speech.
 
 Use it by release tag:
 

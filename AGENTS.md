@@ -9,8 +9,9 @@
   Nothing about a wire belongs here: how a frame is framed in a message, how a
   stream's shape is agreed and what a sample's bytes are belong to each user.
 - The encoder is the crate's own, plain Rust without `unsafe` or a dependency
-  beyond `thiserror`: `src/bits.rs` writes bits and the CRCs, `src/subframe.rs`
-  decides and writes one channel, `src/lib.rs` the frame and the stereo pair.
+  beyond `thiserror`: `src/bits.rs` writes bits and the CRCs, `src/lpc.rs`
+  fits a linear predictor to a channel, `src/subframe.rs` decides and writes
+  one channel, `src/lib.rs` the frame and the stereo pair.
   Its tuning is for sound heard as it is made with little of a core: a change
   to it is measured first, against what it replaces, on 20 ms blocks, in time a
   block and bytes a block, and the module docs carry the numbers.

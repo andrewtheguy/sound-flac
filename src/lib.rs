@@ -29,34 +29,41 @@
 //!
 //! ## Tuned for sound heard as it is made
 //!
-//! Each channel is predicted with FLAC's fixed polynomials, of the order up to
-//! four that leaves the smallest residual, and the residual is Rice-coded in
-//! the partitions that cost least. A stereo pair is weighed as left and right,
-//! left and side, right and side and mid and side, and the cheapest pair is
-//! written. Bits every sample of a channel has zero at the bottom, as 8-bit
-//! content in a 16-bit stream does, are shifted out as FLAC's wasted bits. A
-//! channel that is one value is a constant, and one nothing shortens goes as
-//! it is. No LPC coefficients are fitted to a block, which is where most of an
-//! encoder's time goes; the passes that remain are plain loops the compiler
-//! vectorises at every target's baseline, and the Rice codes go out two to a
-//! word.
+//! Each channel is first predicted with FLAC's fixed polynomials, of the order
+//! up to four that leaves the smallest residual. A stereo pair is weighed on
+//! that as left and right, left and side, right and side and mid and side,
+//! and the cheapest pair chosen. The two channels to be written then have a
+//! linear predictor of up to order 8 fitted, by autocorrelation through a
+//! Tukey window and Levinson-Durbin as libFLAC's default level does, and keep
+//! it where it writes fewer bits; the fit is not even tried where the
+//! autocorrelation estimates the fixed predictor to do as well, as it does on
+//! noise. A residual is Rice-coded in the partitions that cost least. Bits
+//! every sample of a channel has zero at the bottom, as 8-bit content in a
+//! 16-bit stream does, are shifted out as FLAC's wasted bits. A channel that
+//! is one value is a constant, and one nothing shortens goes as it is. Every
+//! pass over the samples is a plain loop the compiler vectorises at a
+//! target's baseline, the autocorrelation in single precision as libFLAC long
+//! took it, and the Rice codes go out two to a word.
 //!
 //! Measured on 20 ms blocks of 16-bit stereo at 48 kHz, one core of an
-//! i5-8500T: a block of music takes about 24 µs and is 51% of its PCM, speech
-//! 18 µs and 31%, silence 6 µs and sixteen bytes. libFLAC at its default
-//! level, which this replaced, took 48, 40 and 27 µs for 48%, 30% and the
-//! same sixteen bytes; flacenc with fixed prediction alone 76, 56 and 9 µs
-//! for the same bytes as here. The bytes LPC would save are the next step,
-//! if they are wanted.
+//! i5-8500T: a block of music takes about 31 µs and is 48% of its PCM, speech
+//! 19 µs and 30%, a pure tone 32 µs and 26%, noise 30 µs and 76%, silence
+//! 6 µs and sixteen bytes. libFLAC at its default level, which this replaced,
+//! took 46, 39, 48, 45 and 27 µs for the same bytes within a tenth of a per
+//! cent; without the fit the crate took 24, 18, 22 and 6 µs for 7% more bytes
+//! on music and 2% more on speech. Mono at 48 kHz is 11 µs against libFLAC's
+//! 25, and 44.1 kHz stereo 26 against 44.
 //!
 //! Nothing about a wire is here: how a frame is framed in a message, how the
 //! stream's shape is agreed and what a sample's bytes are on either side belong
 //! to the user.
 
 mod bits;
+mod lpc;
 mod subframe;
 
 use bits::{BitWriter, crc8, crc16};
+use lpc::Window;
 use subframe::Channel;
 use thiserror::Error;
 
@@ -189,6 +196,8 @@ pub struct Encoder {
     /// A channel of the block each, and for a stereo pair the mid and the
     /// side after the two.
     channels: Vec<Channel>,
+    /// The window a channel is seen through for its linear predictor's fit.
+    window: Window,
 }
 
 /// The frame header's channel assignments for a stereo pair, in the order
@@ -207,8 +216,10 @@ impl Encoder {
         head.extend(block_bytes);
         head.extend(rate_bytes);
         let candidates = if stream.channels == 2 { 4 } else { usize::from(stream.channels) };
-        let channels = (0..candidates).map(|_| Channel::new(usize::from(stream.block))).collect();
-        Ok(Self { stream, head, channels })
+        let block = usize::from(stream.block);
+        let precision = lpc::precision(u32::from(stream.bits), block);
+        let channels = (0..candidates).map(|_| Channel::new(block, precision)).collect();
+        Ok(Self { stream, head, channels, window: Window::new(block) })
     }
 
     /// The stream this encoder was made for.
@@ -244,13 +255,23 @@ impl Encoder {
             right.analyse(bps);
             mid.analyse(bps);
             side.analyse(bps + 1);
-            let costs = [left.bits + right.bits, left.bits + side.bits, right.bits + side.bits, mid.bits + side.bits];
+            // The pair is chosen on the fixed predictors' bits, and only the
+            // two chosen have a linear predictor fitted.
+            let costs = [left.bits() + right.bits(), left.bits() + side.bits(), right.bits() + side.bits(), mid.bits() + side.bits()];
             let mut best = 0;
             for (i, &cost) in costs.iter().enumerate() {
                 if cost < costs[best] {
                     best = i;
                 }
             }
+            let (first, second) = match best {
+                0 => (left, right),
+                1 => (left, side),
+                2 => (right, side),
+                _ => (mid, side),
+            };
+            first.refine(&self.window);
+            second.refine(&self.window);
             best
         } else {
             let channels = usize::from(stream.channels);
@@ -259,6 +280,7 @@ impl Encoder {
                     *s = sample;
                 }
                 channel.analyse(bps);
+                channel.refine(&self.window);
             }
             0
         };
@@ -519,7 +541,8 @@ mod tests {
         let widened: Vec<i32> = eight.iter().map(|&s| s << 8).collect();
         let wide_frame = round_trips(STEREO, &widened).remove(0);
         let narrow_frame = round_trips(narrow, &eight).remove(0);
-        assert!(wide_frame.len() <= narrow_frame.len() + 8, "{} against {}", wide_frame.len(), narrow_frame.len());
+        // The wide stream fits coefficients of more bits, a few bytes a frame.
+        assert!(wide_frame.len() <= narrow_frame.len() + 32, "{} against {}", wide_frame.len(), narrow_frame.len());
     }
 
     /// Silence, the state a desktop is in most of the time, is a few bytes a
