@@ -27,10 +27,11 @@ the block is whole and sent. That is the one use, and it sets what counts.
   whatever it does; what it must not do is take long on one block, since a
   late frame is late sound. A block is at most 2% of its 20 ms today
   ([benchmarks.md](benchmarks.md), the block times). The share of a core is
-  what the mean says, 0.05% to 0.41% on the recordings, and it is a
+  what the mean says, 0.05% to 0.42% on the recordings, and it is a
   desktop's share beside its video encoder.
 - **Bytes are the link's.** A frame's bytes are its bitrate, 30% to 50% of
-  the PCM on music and speech, 75% to 95% on noise and old transfers. Fewer
+  the PCM on acoustic music and speech, 69% on a loud modern master at
+  16 bits and 79% at 24, 75% to 95% on noise and old transfers. Fewer
   is better everywhere, and worth more than time: the time is already not
   felt.
 - **The shapes are the users'.** wlshare codes 8-bit and 16-bit at 8 to
@@ -75,8 +76,8 @@ plan are brought to the run.
 
 ## Where it stands
 
-From the tables of 2026-10-22: 0.37 to 0.93 of libFLAC's time a block on
-the recordings for its bytes within 1.1%, the late blocks 0.40 to 0.92 of
+From the tables of 2026-10-22: 0.40 to 0.94 of libFLAC's time a block on
+the recordings for its bytes within 1.1%, the late blocks 0.48 to 0.93 of
 its; the made sounds 0.40 to 0.84 for the same bytes within a byte, the tone
 at 96 kHz 1.07. What is over the line is the fit's single precision on a
 long block of a quiet, resonant signal, and the pairing chosen before the
@@ -119,8 +120,8 @@ bits the residual runs in 32-bit lanes, 3 µs a channel.
    makes noise the dearest made sound at 16 bits (30 µs against speech's
    19). Costs nothing in bytes where the margin holds, to be measured on
    the recordings, whose sound changes.
-4. **The late blocks.** A 99th-percentile block is 1.6 to 2.8 times the
-   mean, for both encoders, and this encoder's worst is 131 to 433 µs. To
+4. **The late blocks.** A 99th-percentile block is 1.8 to 3.0 times the
+   mean, for both encoders, and this encoder's worst is 140 to 399 µs. To
    find which blocks those are, by what in them, with the bench logging
    the worst blocks' positions: if they are the loud ones, writing more
    Rice bits, the bits writer is the item; if they are where a predictor
@@ -131,8 +132,11 @@ bits the residual runs in 32-bit lanes, 3 µs a channel.
    32-bit lanes at 3 µs a channel, where 16-bit lanes take 1.1; a 24-bit
    stream from a desktop is 16-bit samples shifted up as often as not, which
    wasted bits already finds. Where the samples after the shift fit 16
-   bits, the narrow path should take them: 0.84 on made music and 0.93 on
-   the 78 rpm transfer are this.
+   bits, the narrow path should take them: 0.84 on made music and 0.92 on
+   the 78 rpm transfer are this. The indie rock master, 0.86 at 24 bits,
+   is not: its low bits are the mix's noise floor, there is nothing to
+   shift, and its 3 µs a channel in 32-bit lanes is the middling path's
+   own cost, to be looked at on its own if that path is touched.
 6. **The pairing's cost.** Four channels get the fixed predictors' bits,
    about 18 µs of a 16-bit stereo block's 28. The bits of order 2 alone,
    or the sum of absolute residuals in place of the Rice bits, may choose

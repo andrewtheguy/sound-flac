@@ -26,6 +26,7 @@ RECORDINGS = [
     ("Aria", "Bach, Goldberg Aria, piano"),
     ("Fantasy", "Chopin, Fantasy Op. 49, piano"),
     ("dso2006", "Shostakovich 5, orchestra, live"),
+    ("Golf_Club", "Indie rock, 2022, mastered"),
     ("Limehouse", "Limehouse Blues, 1924 78 rpm"),
     ("JumpinJudy", "Prison work song, 1947 field recording"),
     ("Raven", "The Raven, read, produced"),
@@ -121,7 +122,7 @@ def recordings(files):
     if not with_all:
         return
     print("## The recordings\n")
-    print("Public domain recordings from archive.org, `tools/samples.txt`, each coded\nwhole in blocks of 20 ms, the time a block the least of three passes' mean.\n")
+    print("The recordings of `tools/samples.txt`, from archive.org, each coded\nwhole in blocks of 20 ms, the time a block the least of three passes' mean.\n")
     print("### Against libFLAC at levels 5, 0 and 8\n")
     print("This encoder over libFLAC: the time a block and the bytes a block, at each of\nthe three levels.\n")
     print("| Recording | Shape | Time, 5 | Bytes, 5 | Time, 0 | Bytes, 0 | Time, 8 | Bytes, 8 |")

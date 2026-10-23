@@ -1,6 +1,6 @@
 # The recordings docs/benchmarks.md is measured on, one a line: the
-# archive.org item, the file in it, and the licence the item states. All are
-# public domain as archive.org has them, lossless as uploaded; a FLAC is
+# archive.org item, the file in it, and the licence the item states: public
+# domain, or CC0 from the one who made it. All are lossless as uploaded; a FLAC is
 # decoded to WAV beside it on fetch, and the harness reads the WAVs.
 # tools/samples.sh fetches them into the artifact store and copies them to
 # tmp/samples for a run.
@@ -15,3 +15,4 @@ NasaAudioHighlightReels	JFK-Rice-Speech.wav	public domain mark 1.0
 TenMinutesOfWhiteNoisePinkNoiseAndBrownianNoise	WhiteNoise.flac	public domain, as stated
 TenMinutesOfWhiteNoisePinkNoiseAndBrownianNoise	PinkNoise.flac	public domain, as stated
 aporee_53029_60598	PotniskiVlak.wav	public domain mark 1.0
+1.-golf-club-stay-awhile	1. Golf Club - Stay Awhile.wav	CC0 1.0
