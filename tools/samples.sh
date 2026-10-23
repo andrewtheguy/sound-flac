@@ -2,8 +2,9 @@
 # The recordings of tools/samples.txt: `fetch` downloads them from archive.org
 # into the artifact store, one folder an item, and decodes each FLAC to a WAV
 # beside it with ffmpeg; `copy` brings the WAVs to tmp/samples, which is
-# gitignored and what tools/bench reads. The store is the one copy kept; tmp
-# is made again from it when needed.
+# gitignored and what tools/bench reads, and drops any WAV there the store no
+# longer has. The store is the one copy kept; tmp is made again from it when
+# needed.
 set -eu
 cd "$(dirname "$0")/.."
 store=${SOUND_FLAC_ARTIFACTS:-/mnt/dasdata/backup/sound-flac-artifacts/samples}
@@ -24,7 +25,7 @@ fetch)
     ;;
 copy)
     mkdir -p tmp/samples
-    rsync -a --include='*/' --include='*.wav' --exclude='*' "$store/" tmp/samples/
+    rsync -a --delete --include='*/' --include='*.wav' --exclude='*' "$store/" tmp/samples/
     ;;
 *)
     echo "usage: tools/samples.sh fetch|copy" >&2

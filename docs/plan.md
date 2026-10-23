@@ -83,11 +83,13 @@ plan are brought to the run.
 ## Where it stands
 
 From the tables of 2026-10-23, after the night the items below were measured
-and the day the level-0 column was taken up twice and the fourth block once:
-0.33 to 0.55 of libFLAC's time a block on the recordings for its bytes
-within 0.2%, the late blocks 0.37 to 0.53 of its; the made sounds 0.27 to
-0.53 for the same bytes within two bytes, the pure tone 1.02 at 44.1 kHz
-and 1.05 at 24 bits. A block of a recording is 0.04% to 0.23% of one core.
+and the day the level-0 column was taken up twice and the fourth block once,
+made again that night with the bench coding every block into an empty
+buffer, the encoder unchanged: 0.34 to 0.58 of libFLAC's time a block on
+the recordings for its bytes within 0.2%, the late blocks 0.32 to 0.56 of
+its; the made sounds 0.27 to 0.55 for the same bytes within two bytes, the
+pure tone 1.02 at 44.1 kHz and 1.05 at 24 bits. A block of a recording is
+0.04% to 0.24% of one core.
 Where the time goes at 16-bit stereo, on the orchestra, by the parts
 measured apart: a carried block, three in four, 17.6 µs, is two
 autocorrelations 2.8, their fits 0.6, the pair's residuals 2.2 and
@@ -98,9 +100,9 @@ coding made whatever the fit is estimated at, 1.9, to bring its correction
 up to date; the fourth block, 22.5 µs, has three autocorrelations, four
 fits and four one-partition counts in their place, and is the late block,
 by a quarter to a third of a carried one where it was by half before. On
-arm64, the same day, the recordings are 0.31 to 0.47 of libFLAC's time for
-the same bytes to a tenth of a byte, and against level 0 0.70 to 1.20 where
-x86 is 0.58 to 1.19.
+arm64, the same day, the recordings are 0.31 to 0.48 of libFLAC's time for
+the same bytes to a tenth of a byte, and against level 0 0.71 to 1.23 where
+x86 is 0.61 to 1.33.
 
 ## Against libFLAC's level 0
 
@@ -121,7 +123,14 @@ to 0.81 to 1.11. The end of the day took the fourth block down and with it
 the means by up to 8%, the 16-bit stereo recordings to 0.80 to 1.01, the
 orchestra now under at 0.99, the 1962 speech to 0.65 and the four at 24
 bits to 1.07 to 1.19, in a run where libFLAC's own times were within 3% of
-the run before's. What is left over 1.00 is the wide sample
+the run before's. The tables were made again that night, the encoder
+unchanged and the bench clearing its buffer before every block: libFLAC's
+level 0 came out 5% to 17% faster on x86 and its level 5 1% to 13%, this
+encoder 1% to 10%, so the column there reads 0.85 to 1.11 on the 16-bit
+stereo recordings, 0.70 on the 1962 speech, 0.61 on the mono reading and
+1.16 to 1.33 on the four at 24 bits, while on arm64, where no time moved
+past 3%, it reads as before, 0.71 to 1.23 on the recordings. What is left
+over 1.00 is the wide sample
 and the long block, where the fit's own passes are the most of the block,
 and the tone, whose fourth block fits two channels for nothing.
 

@@ -112,7 +112,8 @@ fn signal(shape: Shape, blocks: usize, kind: &str) -> Vec<i32> {
                 let v = 0.5 * (t * 1000.0 * TAU).sin();
                 (v, 0.7 * v)
             }
-            // Noise at -20 dBFS: the worst a desktop sends, nothing to predict.
+            // Uniform noise peaking at -26 dBFS, a twentieth of full scale:
+            // the worst a desktop sends, nothing to predict.
             "noise" => (0.1 * rng.next(), 0.1 * rng.next()),
             _ => unreachable!(),
         };
@@ -201,9 +202,11 @@ fn measure(shape: Shape, samples: &[i32], coder: &mut dyn Coder, passes: usize, 
     }
     let bytes = sizes.iter().sum::<usize>() as f64 / blocks as f64;
     let mut pass = |out: &mut Vec<u8>, times: &mut [f64]| {
-        out.clear();
         coder.restart();
         for (block, t) in samples.chunks_exact(shape.samples()).zip(times.iter_mut()) {
+            // Each block into an empty buffer, as the warm-up coded it: no
+            // frame's time holds the growth of a buffer of every frame before.
+            out.clear();
             let start = Instant::now();
             coder.encode(block, out);
             *t = start.elapsed().as_secs_f64() * 1e6;

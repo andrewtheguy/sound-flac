@@ -1,176 +1,176 @@
-shape=48k-stereo-16 block=960 pcm=3840 kind=music coder=libflac-5 us=47.17 p99=47.68 worst=47.68 worst_at=45 bytes=1837.9
-shape=48k-stereo-16 block=960 pcm=3840 kind=music coder=libflac-0 us=15.35 p99=15.64 worst=15.64 worst_at=45 bytes=2023.3
-shape=48k-stereo-16 block=960 pcm=3840 kind=music coder=libflac-8 us=180.11 p99=185.52 worst=185.52 worst_at=39 bytes=1824.3
-shape=48k-stereo-16 block=960 pcm=3840 kind=music coder=sound-flac us=16.78 p99=22.36 worst=22.36 worst_at=0 bytes=1837.9
-shape=48k-stereo-16 block=960 pcm=3840 kind=speech coder=libflac-5 us=39.18 p99=40.40 worst=40.40 worst_at=36 bytes=1150.6
-shape=48k-stereo-16 block=960 pcm=3840 kind=speech coder=libflac-0 us=15.92 p99=16.16 worst=16.16 worst_at=49 bytes=2334.7
-shape=48k-stereo-16 block=960 pcm=3840 kind=speech coder=libflac-8 us=121.39 p99=136.56 worst=136.56 worst_at=22 bytes=1149.1
-shape=48k-stereo-16 block=960 pcm=3840 kind=speech coder=sound-flac us=10.29 p99=21.96 worst=21.96 worst_at=4 bytes=1151.2
-shape=48k-stereo-16 block=960 pcm=3840 kind=tone coder=libflac-5 us=45.18 p99=45.08 worst=45.08 worst_at=39 bytes=1008.0
-shape=48k-stereo-16 block=960 pcm=3840 kind=tone coder=libflac-0 us=14.68 p99=14.64 worst=14.64 worst_at=0 bytes=1053.0
-shape=48k-stereo-16 block=960 pcm=3840 kind=tone coder=libflac-8 us=140.59 p99=150.04 worst=150.04 worst_at=32 bytes=992.0
-shape=48k-stereo-16 block=960 pcm=3840 kind=tone coder=sound-flac us=21.61 p99=31.24 worst=31.24 worst_at=0 bytes=1008.0
-shape=48k-stereo-16 block=960 pcm=3840 kind=noise coder=libflac-5 us=43.27 p99=43.16 worst=43.16 worst_at=43 bytes=2922.1
-shape=48k-stereo-16 block=960 pcm=3840 kind=noise coder=libflac-0 us=15.88 p99=15.92 worst=15.92 worst_at=42 bytes=2924.6
-shape=48k-stereo-16 block=960 pcm=3840 kind=noise coder=libflac-8 us=124.42 p99=132.64 worst=132.64 worst_at=19 bytes=2922.1
-shape=48k-stereo-16 block=960 pcm=3840 kind=noise coder=sound-flac us=11.72 p99=20.84 worst=20.84 worst_at=0 bytes=2922.2
-shape=48k-stereo-16 block=960 pcm=3840 kind=silence coder=libflac-5 us=23.51 p99=23.40 worst=23.40 worst_at=0 bytes=16.0
-shape=48k-stereo-16 block=960 pcm=3840 kind=silence coder=libflac-0 us=10.41 p99=10.36 worst=10.36 worst_at=47 bytes=16.0
-shape=48k-stereo-16 block=960 pcm=3840 kind=silence coder=libflac-8 us=19.24 p99=19.16 worst=19.16 worst_at=45 bytes=16.0
+shape=48k-stereo-16 block=960 pcm=3840 kind=music coder=libflac-5 us=46.98 p99=47.56 worst=47.56 worst_at=45 bytes=1837.9
+shape=48k-stereo-16 block=960 pcm=3840 kind=music coder=libflac-0 us=15.29 p99=15.60 worst=15.60 worst_at=45 bytes=2023.3
+shape=48k-stereo-16 block=960 pcm=3840 kind=music coder=libflac-8 us=179.82 p99=188.36 worst=188.36 worst_at=39 bytes=1824.3
+shape=48k-stereo-16 block=960 pcm=3840 kind=music coder=sound-flac us=16.82 p99=22.56 worst=22.56 worst_at=0 bytes=1837.9
+shape=48k-stereo-16 block=960 pcm=3840 kind=speech coder=libflac-5 us=39.81 p99=40.36 worst=40.36 worst_at=36 bytes=1150.6
+shape=48k-stereo-16 block=960 pcm=3840 kind=speech coder=libflac-0 us=16.12 p99=16.08 worst=16.08 worst_at=49 bytes=2334.7
+shape=48k-stereo-16 block=960 pcm=3840 kind=speech coder=libflac-8 us=123.30 p99=136.88 worst=136.88 worst_at=22 bytes=1149.1
+shape=48k-stereo-16 block=960 pcm=3840 kind=speech coder=sound-flac us=10.40 p99=22.24 worst=22.24 worst_at=4 bytes=1151.2
+shape=48k-stereo-16 block=960 pcm=3840 kind=tone coder=libflac-5 us=44.92 p99=44.72 worst=44.72 worst_at=0 bytes=1008.0
+shape=48k-stereo-16 block=960 pcm=3840 kind=tone coder=libflac-0 us=14.60 p99=14.52 worst=14.52 worst_at=14 bytes=1053.0
+shape=48k-stereo-16 block=960 pcm=3840 kind=tone coder=libflac-8 us=140.05 p99=151.20 worst=151.20 worst_at=0 bytes=992.0
+shape=48k-stereo-16 block=960 pcm=3840 kind=tone coder=sound-flac us=21.59 p99=31.52 worst=31.52 worst_at=0 bytes=1008.0
+shape=48k-stereo-16 block=960 pcm=3840 kind=noise coder=libflac-5 us=43.33 p99=43.28 worst=43.28 worst_at=18 bytes=2922.1
+shape=48k-stereo-16 block=960 pcm=3840 kind=noise coder=libflac-0 us=15.92 p99=16.00 worst=16.00 worst_at=42 bytes=2924.6
+shape=48k-stereo-16 block=960 pcm=3840 kind=noise coder=libflac-8 us=123.97 p99=127.60 worst=127.60 worst_at=19 bytes=2922.1
+shape=48k-stereo-16 block=960 pcm=3840 kind=noise coder=sound-flac us=11.72 p99=21.00 worst=21.00 worst_at=0 bytes=2922.2
+shape=48k-stereo-16 block=960 pcm=3840 kind=silence coder=libflac-5 us=23.77 p99=23.68 worst=23.68 worst_at=46 bytes=16.0
+shape=48k-stereo-16 block=960 pcm=3840 kind=silence coder=libflac-0 us=10.69 p99=10.68 worst=10.68 worst_at=0 bytes=16.0
+shape=48k-stereo-16 block=960 pcm=3840 kind=silence coder=libflac-8 us=19.43 p99=19.36 worst=19.36 worst_at=46 bytes=16.0
 shape=48k-stereo-16 block=960 pcm=3840 kind=silence coder=sound-flac us=1.98 p99=2.04 worst=2.04 worst_at=0 bytes=16.0
-shape=44.1k-stereo-16 block=882 pcm=3528 kind=music coder=libflac-5 us=41.78 p99=42.20 worst=42.20 worst_at=45 bytes=1701.8
-shape=44.1k-stereo-16 block=882 pcm=3528 kind=music coder=libflac-0 us=14.42 p99=14.60 worst=14.60 worst_at=35 bytes=1894.5
-shape=44.1k-stereo-16 block=882 pcm=3528 kind=music coder=libflac-8 us=140.39 p99=147.16 worst=147.16 worst_at=39 bytes=1691.7
-shape=44.1k-stereo-16 block=882 pcm=3528 kind=music coder=sound-flac us=14.53 p99=19.24 worst=19.24 worst_at=0 bytes=1701.9
-shape=44.1k-stereo-16 block=882 pcm=3528 kind=speech coder=libflac-5 us=34.47 p99=35.72 worst=35.72 worst_at=19 bytes=1062.8
-shape=44.1k-stereo-16 block=882 pcm=3528 kind=speech coder=libflac-0 us=14.61 p99=14.72 worst=14.72 worst_at=36 bytes=2155.2
-shape=44.1k-stereo-16 block=882 pcm=3528 kind=speech coder=libflac-8 us=92.83 p99=107.44 worst=107.44 worst_at=21 bytes=1061.3
-shape=44.1k-stereo-16 block=882 pcm=3528 kind=speech coder=sound-flac us=9.03 p99=19.80 worst=19.80 worst_at=0 bytes=1063.5
-shape=44.1k-stereo-16 block=882 pcm=3528 kind=tone coder=libflac-5 us=39.75 p99=39.60 worst=39.60 worst_at=37 bytes=920.0
-shape=44.1k-stereo-16 block=882 pcm=3528 kind=tone coder=libflac-0 us=13.73 p99=13.68 worst=13.68 worst_at=45 bytes=1015.0
-shape=44.1k-stereo-16 block=882 pcm=3528 kind=tone coder=libflac-8 us=105.20 p99=109.24 worst=109.24 worst_at=46 bytes=916.0
-shape=44.1k-stereo-16 block=882 pcm=3528 kind=tone coder=sound-flac us=17.76 p99=25.56 worst=25.56 worst_at=0 bytes=940.0
-shape=44.1k-stereo-16 block=882 pcm=3528 kind=noise coder=libflac-5 us=37.75 p99=37.76 worst=37.76 worst_at=14 bytes=2686.1
-shape=44.1k-stereo-16 block=882 pcm=3528 kind=noise coder=libflac-0 us=14.54 p99=14.60 worst=14.60 worst_at=48 bytes=2688.1
-shape=44.1k-stereo-16 block=882 pcm=3528 kind=noise coder=libflac-8 us=90.81 p99=94.76 worst=94.76 worst_at=21 bytes=2686.1
-shape=44.1k-stereo-16 block=882 pcm=3528 kind=noise coder=sound-flac us=9.81 p99=17.72 worst=17.72 worst_at=32 bytes=2686.1
-shape=44.1k-stereo-16 block=882 pcm=3528 kind=silence coder=libflac-5 us=21.84 p99=21.76 worst=21.76 worst_at=0 bytes=16.0
-shape=44.1k-stereo-16 block=882 pcm=3528 kind=silence coder=libflac-0 us=9.84 p99=9.80 worst=9.80 worst_at=0 bytes=16.0
-shape=44.1k-stereo-16 block=882 pcm=3528 kind=silence coder=libflac-8 us=17.93 p99=17.88 worst=17.88 worst_at=46 bytes=16.0
-shape=44.1k-stereo-16 block=882 pcm=3528 kind=silence coder=sound-flac us=1.84 p99=1.92 worst=1.92 worst_at=0 bytes=16.0
-shape=96k-stereo-16 block=1920 pcm=7680 kind=music coder=libflac-5 us=87.29 p99=93.48 worst=93.48 worst_at=40 bytes=3454.5
-shape=96k-stereo-16 block=1920 pcm=7680 kind=music coder=libflac-0 us=26.36 p99=26.36 worst=26.36 worst_at=0 bytes=3754.8
-shape=96k-stereo-16 block=1920 pcm=7680 kind=music coder=libflac-8 us=300.09 p99=313.04 worst=313.04 worst_at=49 bytes=3446.1
-shape=96k-stereo-16 block=1920 pcm=7680 kind=music coder=sound-flac us=32.32 p99=43.04 worst=43.04 worst_at=0 bytes=3454.4
-shape=96k-stereo-16 block=1920 pcm=7680 kind=speech coder=libflac-5 us=72.00 p99=76.80 worst=76.80 worst_at=22 bytes=2226.1
-shape=96k-stereo-16 block=1920 pcm=7680 kind=speech coder=libflac-0 us=27.99 p99=28.40 worst=28.40 worst_at=39 bytes=4564.2
-shape=96k-stereo-16 block=1920 pcm=7680 kind=speech coder=libflac-8 us=218.15 p99=248.00 worst=248.00 worst_at=37 bytes=2220.9
-shape=96k-stereo-16 block=1920 pcm=7680 kind=speech coder=sound-flac us=20.19 p99=46.20 worst=46.20 worst_at=0 bytes=2227.6
-shape=96k-stereo-16 block=1920 pcm=7680 kind=tone coder=libflac-5 us=79.59 p99=85.88 worst=85.88 worst_at=27 bytes=1651.0
-shape=96k-stereo-16 block=1920 pcm=7680 kind=tone coder=libflac-0 us=24.57 p99=24.52 worst=24.52 worst_at=0 bytes=1842.0
-shape=96k-stereo-16 block=1920 pcm=7680 kind=tone coder=libflac-8 us=219.62 p99=227.00 worst=227.00 worst_at=40 bytes=1478.0
-shape=96k-stereo-16 block=1920 pcm=7680 kind=tone coder=sound-flac us=35.56 p99=59.80 worst=59.80 worst_at=0 bytes=1576.0
-shape=96k-stereo-16 block=1920 pcm=7680 kind=noise coder=libflac-5 us=78.76 p99=87.92 worst=87.92 worst_at=6 bytes=5829.7
-shape=96k-stereo-16 block=1920 pcm=7680 kind=noise coder=libflac-0 us=28.24 p99=28.28 worst=28.28 worst_at=33 bytes=5833.3
-shape=96k-stereo-16 block=1920 pcm=7680 kind=noise coder=libflac-8 us=201.17 p99=208.88 worst=208.88 worst_at=44 bytes=5829.7
-shape=96k-stereo-16 block=1920 pcm=7680 kind=noise coder=sound-flac us=23.01 p99=40.08 worst=40.08 worst_at=0 bytes=5829.7
-shape=96k-stereo-16 block=1920 pcm=7680 kind=silence coder=libflac-5 us=43.82 p99=43.64 worst=43.64 worst_at=47 bytes=16.0
-shape=96k-stereo-16 block=1920 pcm=7680 kind=silence coder=libflac-0 us=17.93 p99=17.88 worst=17.88 worst_at=0 bytes=16.0
-shape=96k-stereo-16 block=1920 pcm=7680 kind=silence coder=libflac-8 us=35.17 p99=35.04 worst=35.04 worst_at=0 bytes=16.0
-shape=96k-stereo-16 block=1920 pcm=7680 kind=silence coder=sound-flac us=3.76 p99=3.80 worst=3.80 worst_at=0 bytes=16.0
-shape=48k-mono-16 block=960 pcm=1920 kind=music coder=libflac-5 us=20.80 p99=21.16 worst=21.16 worst_at=35 bytes=949.9
-shape=48k-mono-16 block=960 pcm=1920 kind=music coder=libflac-0 us=9.16 p99=9.32 worst=9.32 worst_at=45 bytes=1027.3
-shape=48k-mono-16 block=960 pcm=1920 kind=music coder=libflac-8 us=52.49 p99=52.88 worst=52.88 worst_at=24 bytes=941.9
-shape=48k-mono-16 block=960 pcm=1920 kind=music coder=sound-flac us=7.33 p99=9.16 worst=9.16 worst_at=0 bytes=950.0
-shape=48k-mono-16 block=960 pcm=1920 kind=speech coder=libflac-5 us=21.07 p99=21.56 worst=21.56 worst_at=36 bytes=1147.5
-shape=48k-mono-16 block=960 pcm=1920 kind=speech coder=libflac-0 us=9.36 p99=9.60 worst=9.60 worst_at=18 bytes=1172.6
-shape=48k-mono-16 block=960 pcm=1920 kind=speech coder=libflac-8 us=45.68 p99=50.80 worst=50.80 worst_at=22 bytes=1145.9
-shape=48k-mono-16 block=960 pcm=1920 kind=speech coder=sound-flac us=7.75 p99=9.48 worst=9.48 worst_at=31 bytes=1148.1
-shape=48k-mono-16 block=960 pcm=1920 kind=tone coder=libflac-5 us=20.22 p99=20.20 worst=20.20 worst_at=49 bytes=512.0
-shape=48k-mono-16 block=960 pcm=1920 kind=tone coder=libflac-0 us=8.60 p99=8.60 worst=8.60 worst_at=0 bytes=512.0
-shape=48k-mono-16 block=960 pcm=1920 kind=tone coder=libflac-8 us=40.66 p99=40.56 worst=40.56 worst_at=42 bytes=512.0
-shape=48k-mono-16 block=960 pcm=1920 kind=tone coder=sound-flac us=8.94 p99=8.92 worst=8.92 worst_at=0 bytes=512.0
-shape=48k-mono-16 block=960 pcm=1920 kind=noise coder=libflac-5 us=20.38 p99=20.40 worst=20.40 worst_at=42 bytes=1467.6
-shape=48k-mono-16 block=960 pcm=1920 kind=noise coder=libflac-0 us=9.39 p99=9.44 worst=9.44 worst_at=42 bytes=1467.6
-shape=48k-mono-16 block=960 pcm=1920 kind=noise coder=libflac-8 us=37.36 p99=37.56 worst=37.56 worst_at=19 bytes=1467.6
+shape=44.1k-stereo-16 block=882 pcm=3528 kind=music coder=libflac-5 us=41.85 p99=42.28 worst=42.28 worst_at=45 bytes=1701.8
+shape=44.1k-stereo-16 block=882 pcm=3528 kind=music coder=libflac-0 us=14.50 p99=14.68 worst=14.68 worst_at=45 bytes=1894.5
+shape=44.1k-stereo-16 block=882 pcm=3528 kind=music coder=libflac-8 us=140.32 p99=146.92 worst=146.92 worst_at=39 bytes=1691.7
+shape=44.1k-stereo-16 block=882 pcm=3528 kind=music coder=sound-flac us=14.49 p99=19.28 worst=19.28 worst_at=0 bytes=1701.9
+shape=44.1k-stereo-16 block=882 pcm=3528 kind=speech coder=libflac-5 us=34.53 p99=35.64 worst=35.64 worst_at=39 bytes=1062.8
+shape=44.1k-stereo-16 block=882 pcm=3528 kind=speech coder=libflac-0 us=14.71 p99=14.80 worst=14.80 worst_at=19 bytes=2155.2
+shape=44.1k-stereo-16 block=882 pcm=3528 kind=speech coder=libflac-8 us=92.68 p99=107.16 worst=107.16 worst_at=21 bytes=1061.3
+shape=44.1k-stereo-16 block=882 pcm=3528 kind=speech coder=sound-flac us=9.02 p99=19.80 worst=19.80 worst_at=0 bytes=1063.5
+shape=44.1k-stereo-16 block=882 pcm=3528 kind=tone coder=libflac-5 us=39.97 p99=39.80 worst=39.80 worst_at=0 bytes=920.0
+shape=44.1k-stereo-16 block=882 pcm=3528 kind=tone coder=libflac-0 us=13.74 p99=13.68 worst=13.68 worst_at=43 bytes=1015.0
+shape=44.1k-stereo-16 block=882 pcm=3528 kind=tone coder=libflac-8 us=105.06 p99=112.92 worst=112.92 worst_at=0 bytes=916.0
+shape=44.1k-stereo-16 block=882 pcm=3528 kind=tone coder=sound-flac us=17.70 p99=25.48 worst=25.48 worst_at=0 bytes=940.0
+shape=44.1k-stereo-16 block=882 pcm=3528 kind=noise coder=libflac-5 us=37.90 p99=37.84 worst=37.84 worst_at=46 bytes=2686.1
+shape=44.1k-stereo-16 block=882 pcm=3528 kind=noise coder=libflac-0 us=14.78 p99=14.84 worst=14.84 worst_at=48 bytes=2688.1
+shape=44.1k-stereo-16 block=882 pcm=3528 kind=noise coder=libflac-8 us=90.66 p99=98.48 worst=98.48 worst_at=41 bytes=2686.1
+shape=44.1k-stereo-16 block=882 pcm=3528 kind=noise coder=sound-flac us=9.81 p99=17.72 worst=17.72 worst_at=0 bytes=2686.1
+shape=44.1k-stereo-16 block=882 pcm=3528 kind=silence coder=libflac-5 us=22.16 p99=22.04 worst=22.04 worst_at=48 bytes=16.0
+shape=44.1k-stereo-16 block=882 pcm=3528 kind=silence coder=libflac-0 us=10.09 p99=10.08 worst=10.08 worst_at=49 bytes=16.0
+shape=44.1k-stereo-16 block=882 pcm=3528 kind=silence coder=libflac-8 us=18.14 p99=18.04 worst=18.04 worst_at=48 bytes=16.0
+shape=44.1k-stereo-16 block=882 pcm=3528 kind=silence coder=sound-flac us=1.85 p99=1.92 worst=1.92 worst_at=0 bytes=16.0
+shape=96k-stereo-16 block=1920 pcm=7680 kind=music coder=libflac-5 us=86.81 p99=97.16 worst=97.16 worst_at=40 bytes=3454.5
+shape=96k-stereo-16 block=1920 pcm=7680 kind=music coder=libflac-0 us=26.23 p99=26.20 worst=26.20 worst_at=38 bytes=3754.8
+shape=96k-stereo-16 block=1920 pcm=7680 kind=music coder=libflac-8 us=298.68 p99=314.68 worst=314.68 worst_at=48 bytes=3446.1
+shape=96k-stereo-16 block=1920 pcm=7680 kind=music coder=sound-flac us=32.41 p99=43.44 worst=43.44 worst_at=0 bytes=3454.4
+shape=96k-stereo-16 block=1920 pcm=7680 kind=speech coder=libflac-5 us=71.89 p99=74.84 worst=74.84 worst_at=22 bytes=2226.1
+shape=96k-stereo-16 block=1920 pcm=7680 kind=speech coder=libflac-0 us=27.81 p99=28.24 worst=28.24 worst_at=39 bytes=4564.2
+shape=96k-stereo-16 block=1920 pcm=7680 kind=speech coder=libflac-8 us=216.47 p99=246.52 worst=246.52 worst_at=37 bytes=2220.9
+shape=96k-stereo-16 block=1920 pcm=7680 kind=speech coder=sound-flac us=20.22 p99=46.40 worst=46.40 worst_at=0 bytes=2227.6
+shape=96k-stereo-16 block=1920 pcm=7680 kind=tone coder=libflac-5 us=79.34 p99=87.24 worst=87.24 worst_at=0 bytes=1651.0
+shape=96k-stereo-16 block=1920 pcm=7680 kind=tone coder=libflac-0 us=24.48 p99=24.40 worst=24.40 worst_at=33 bytes=1842.0
+shape=96k-stereo-16 block=1920 pcm=7680 kind=tone coder=libflac-8 us=217.77 p99=230.40 worst=230.40 worst_at=49 bytes=1478.0
+shape=96k-stereo-16 block=1920 pcm=7680 kind=tone coder=sound-flac us=35.69 p99=59.92 worst=59.92 worst_at=0 bytes=1576.0
+shape=96k-stereo-16 block=1920 pcm=7680 kind=noise coder=libflac-5 us=78.68 p99=90.44 worst=90.44 worst_at=6 bytes=5829.7
+shape=96k-stereo-16 block=1920 pcm=7680 kind=noise coder=libflac-0 us=28.09 p99=28.16 worst=28.16 worst_at=33 bytes=5833.3
+shape=96k-stereo-16 block=1920 pcm=7680 kind=noise coder=libflac-8 us=199.72 p99=212.44 worst=212.44 worst_at=6 bytes=5829.7
+shape=96k-stereo-16 block=1920 pcm=7680 kind=noise coder=sound-flac us=23.08 p99=40.36 worst=40.36 worst_at=0 bytes=5829.7
+shape=96k-stereo-16 block=1920 pcm=7680 kind=silence coder=libflac-5 us=44.29 p99=44.08 worst=44.08 worst_at=21 bytes=16.0
+shape=96k-stereo-16 block=1920 pcm=7680 kind=silence coder=libflac-0 us=18.01 p99=17.88 worst=17.88 worst_at=43 bytes=16.0
+shape=96k-stereo-16 block=1920 pcm=7680 kind=silence coder=libflac-8 us=35.60 p99=35.36 worst=35.36 worst_at=5 bytes=16.0
+shape=96k-stereo-16 block=1920 pcm=7680 kind=silence coder=sound-flac us=3.79 p99=3.80 worst=3.80 worst_at=0 bytes=16.0
+shape=48k-mono-16 block=960 pcm=1920 kind=music coder=libflac-5 us=20.89 p99=21.12 worst=21.12 worst_at=35 bytes=949.9
+shape=48k-mono-16 block=960 pcm=1920 kind=music coder=libflac-0 us=9.27 p99=9.40 worst=9.40 worst_at=45 bytes=1027.3
+shape=48k-mono-16 block=960 pcm=1920 kind=music coder=libflac-8 us=52.50 p99=53.76 worst=53.76 worst_at=24 bytes=941.9
+shape=48k-mono-16 block=960 pcm=1920 kind=music coder=sound-flac us=7.32 p99=9.16 worst=9.16 worst_at=0 bytes=950.0
+shape=48k-mono-16 block=960 pcm=1920 kind=speech coder=libflac-5 us=21.05 p99=21.44 worst=21.44 worst_at=36 bytes=1147.5
+shape=48k-mono-16 block=960 pcm=1920 kind=speech coder=libflac-0 us=9.41 p99=9.56 worst=9.56 worst_at=49 bytes=1172.6
+shape=48k-mono-16 block=960 pcm=1920 kind=speech coder=libflac-8 us=45.63 p99=50.68 worst=50.68 worst_at=22 bytes=1145.9
+shape=48k-mono-16 block=960 pcm=1920 kind=speech coder=sound-flac us=7.76 p99=9.52 worst=9.52 worst_at=31 bytes=1148.1
+shape=48k-mono-16 block=960 pcm=1920 kind=tone coder=libflac-5 us=20.26 p99=20.08 worst=20.08 worst_at=24 bytes=512.0
+shape=48k-mono-16 block=960 pcm=1920 kind=tone coder=libflac-0 us=8.55 p99=8.52 worst=8.52 worst_at=49 bytes=512.0
+shape=48k-mono-16 block=960 pcm=1920 kind=tone coder=libflac-8 us=40.45 p99=40.32 worst=40.32 worst_at=42 bytes=512.0
+shape=48k-mono-16 block=960 pcm=1920 kind=tone coder=sound-flac us=8.94 p99=8.88 worst=8.88 worst_at=0 bytes=512.0
+shape=48k-mono-16 block=960 pcm=1920 kind=noise coder=libflac-5 us=20.49 p99=20.36 worst=20.36 worst_at=42 bytes=1467.6
+shape=48k-mono-16 block=960 pcm=1920 kind=noise coder=libflac-0 us=9.42 p99=9.48 worst=9.48 worst_at=42 bytes=1467.6
+shape=48k-mono-16 block=960 pcm=1920 kind=noise coder=libflac-8 us=37.33 p99=37.52 worst=37.52 worst_at=19 bytes=1467.6
 shape=48k-mono-16 block=960 pcm=1920 kind=noise coder=sound-flac us=5.71 p99=8.96 worst=8.96 worst_at=0 bytes=1467.6
-shape=48k-mono-16 block=960 pcm=1920 kind=silence coder=libflac-5 us=13.57 p99=13.52 worst=13.52 worst_at=0 bytes=13.0
-shape=48k-mono-16 block=960 pcm=1920 kind=silence coder=libflac-0 us=6.73 p99=6.72 worst=6.72 worst_at=49 bytes=13.0
-shape=48k-mono-16 block=960 pcm=1920 kind=silence coder=libflac-8 us=9.27 p99=9.24 worst=9.24 worst_at=49 bytes=13.0
-shape=48k-mono-16 block=960 pcm=1920 kind=silence coder=sound-flac us=1.29 p99=1.28 worst=1.28 worst_at=9 bytes=13.0
-shape=48k-stereo-8 block=960 pcm=1920 kind=music coder=libflac-5 us=42.13 p99=42.00 worst=42.00 worst_at=46 bytes=455.8
-shape=48k-stereo-8 block=960 pcm=1920 kind=music coder=libflac-0 us=13.69 p99=13.68 worst=13.68 worst_at=0 bytes=455.8
-shape=48k-stereo-8 block=960 pcm=1920 kind=music coder=libflac-8 us=128.00 p99=132.04 worst=132.04 worst_at=29 bytes=455.8
-shape=48k-stereo-8 block=960 pcm=1920 kind=music coder=sound-flac us=18.79 p99=21.48 worst=21.48 worst_at=28 bytes=455.8
-shape=48k-stereo-8 block=960 pcm=1920 kind=speech coder=libflac-5 us=36.19 p99=37.04 worst=37.04 worst_at=24 bytes=250.5
-shape=48k-stereo-8 block=960 pcm=1920 kind=speech coder=libflac-0 us=13.74 p99=14.16 worst=14.16 worst_at=24 bytes=488.1
-shape=48k-stereo-8 block=960 pcm=1920 kind=speech coder=libflac-8 us=95.95 p99=100.96 worst=100.96 worst_at=22 bytes=250.1
-shape=48k-stereo-8 block=960 pcm=1920 kind=speech coder=sound-flac us=10.95 p99=23.40 worst=23.40 worst_at=4 bytes=250.4
-shape=48k-stereo-8 block=960 pcm=1920 kind=tone coder=libflac-5 us=42.04 p99=41.92 worst=41.92 worst_at=0 bytes=476.0
-shape=48k-stereo-8 block=960 pcm=1920 kind=tone coder=libflac-0 us=13.62 p99=13.56 worst=13.56 worst_at=0 bytes=476.0
-shape=48k-stereo-8 block=960 pcm=1920 kind=tone coder=libflac-8 us=125.89 p99=131.08 worst=131.08 worst_at=17 bytes=476.0
-shape=48k-stereo-8 block=960 pcm=1920 kind=tone coder=sound-flac us=19.24 p99=24.64 worst=24.64 worst_at=0 bytes=471.0
-shape=48k-stereo-8 block=960 pcm=1920 kind=noise coder=libflac-5 us=41.39 p99=41.48 worst=41.48 worst_at=38 bytes=1001.5
-shape=48k-stereo-8 block=960 pcm=1920 kind=noise coder=libflac-0 us=13.85 p99=13.92 worst=13.92 worst_at=48 bytes=1004.1
-shape=48k-stereo-8 block=960 pcm=1920 kind=noise coder=libflac-8 us=122.31 p99=126.88 worst=126.88 worst_at=24 bytes=1001.5
-shape=48k-stereo-8 block=960 pcm=1920 kind=noise coder=sound-flac us=10.56 p99=19.84 worst=19.84 worst_at=0 bytes=1006.1
-shape=48k-stereo-8 block=960 pcm=1920 kind=silence coder=libflac-5 us=23.49 p99=23.36 worst=23.36 worst_at=38 bytes=14.0
-shape=48k-stereo-8 block=960 pcm=1920 kind=silence coder=libflac-0 us=10.44 p99=10.40 worst=10.40 worst_at=49 bytes=14.0
-shape=48k-stereo-8 block=960 pcm=1920 kind=silence coder=libflac-8 us=19.29 p99=19.24 worst=19.24 worst_at=36 bytes=14.0
-shape=48k-stereo-8 block=960 pcm=1920 kind=silence coder=sound-flac us=1.95 p99=2.04 worst=2.04 worst_at=0 bytes=14.0
-shape=48k-stereo-24 block=960 pcm=5760 kind=music coder=libflac-5 us=51.21 p99=52.24 worst=52.24 worst_at=45 bytes=3763.4
-shape=48k-stereo-24 block=960 pcm=5760 kind=music coder=libflac-0 us=18.06 p99=18.36 worst=18.36 worst_at=45 bytes=3944.3
-shape=48k-stereo-24 block=960 pcm=5760 kind=music coder=libflac-8 us=184.36 p99=191.32 worst=191.32 worst_at=22 bytes=3748.8
-shape=48k-stereo-24 block=960 pcm=5760 kind=music coder=sound-flac us=20.44 p99=25.68 worst=25.68 worst_at=0 bytes=3762.1
-shape=48k-stereo-24 block=960 pcm=5760 kind=speech coder=libflac-5 us=42.97 p99=44.20 worst=44.20 worst_at=1 bytes=2114.3
-shape=48k-stereo-24 block=960 pcm=5760 kind=speech coder=libflac-0 us=18.96 p99=19.52 worst=19.52 worst_at=49 bytes=4255.6
-shape=48k-stereo-24 block=960 pcm=5760 kind=speech coder=libflac-8 us=123.51 p99=138.96 worst=138.96 worst_at=1 bytes=2113.6
-shape=48k-stereo-24 block=960 pcm=5760 kind=speech coder=sound-flac us=12.42 p99=25.44 worst=25.44 worst_at=4 bytes=2114.3
-shape=48k-stereo-24 block=960 pcm=5760 kind=tone coder=libflac-5 us=50.05 p99=49.84 worst=49.84 worst_at=0 bytes=2315.0
-shape=48k-stereo-24 block=960 pcm=5760 kind=tone coder=libflac-0 us=17.43 p99=17.36 worst=17.36 worst_at=0 bytes=2873.0
-shape=48k-stereo-24 block=960 pcm=5760 kind=tone coder=libflac-8 us=166.79 p99=174.80 worst=174.80 worst_at=35 bytes=2502.0
-shape=48k-stereo-24 block=960 pcm=5760 kind=tone coder=sound-flac us=20.63 p99=34.16 worst=34.16 worst_at=0 bytes=2440.0
-shape=48k-stereo-24 block=960 pcm=5760 kind=noise coder=libflac-5 us=48.18 p99=48.12 worst=48.12 worst_at=28 bytes=4842.4
-shape=48k-stereo-24 block=960 pcm=5760 kind=noise coder=libflac-0 us=18.82 p99=18.84 worst=18.84 worst_at=37 bytes=4844.9
-shape=48k-stereo-24 block=960 pcm=5760 kind=noise coder=libflac-8 us=132.01 p99=136.48 worst=136.48 worst_at=28 bytes=4842.4
-shape=48k-stereo-24 block=960 pcm=5760 kind=noise coder=sound-flac us=14.51 p99=24.16 worst=24.16 worst_at=0 bytes=4842.5
-shape=48k-stereo-24 block=960 pcm=5760 kind=silence coder=libflac-5 us=26.19 p99=26.08 worst=26.08 worst_at=49 bytes=18.0
-shape=48k-stereo-24 block=960 pcm=5760 kind=silence coder=libflac-0 us=11.81 p99=11.76 worst=11.76 worst_at=48 bytes=18.0
-shape=48k-stereo-24 block=960 pcm=5760 kind=silence coder=libflac-8 us=21.87 p99=21.80 worst=21.80 worst_at=44 bytes=18.0
-shape=48k-stereo-24 block=960 pcm=5760 kind=silence coder=sound-flac us=1.92 p99=2.00 worst=2.00 worst_at=0 bytes=18.0
-shape=48k-stereo-24 block=960 pcm=5760 file=1.-golf-club-stay-awhile/1._Golf_Club_-_Stay_Awhile.wav seconds=223 coder=libflac-5 us=53.41 p99=70.76 worst=95.92 worst_at=1871 bytes=4554.9
-shape=48k-stereo-24 block=960 pcm=5760 file=1.-golf-club-stay-awhile/1._Golf_Club_-_Stay_Awhile.wav seconds=223 coder=libflac-0 us=20.24 p99=29.40 worst=52.52 worst_at=1653 bytes=4730.3
-shape=48k-stereo-24 block=960 pcm=5760 file=1.-golf-club-stay-awhile/1._Golf_Club_-_Stay_Awhile.wav seconds=223 coder=libflac-8 us=168.20 p99=203.84 worst=283.48 worst_at=10350 bytes=4550.5
-shape=48k-stereo-24 block=960 pcm=5760 file=1.-golf-club-stay-awhile/1._Golf_Club_-_Stay_Awhile.wav seconds=223 coder=sound-flac us=22.60 p99=35.12 worst=74.08 worst_at=2622 bytes=4556.5
-shape=44.1k-mono-16 block=882 pcm=1764 file=LeviticusKJV/03013_Leviticus_13.wav seconds=725 coder=libflac-5 us=19.55 p99=27.92 worst=327.20 worst_at=18906 bytes=986.5
-shape=44.1k-mono-16 block=882 pcm=1764 file=LeviticusKJV/03013_Leviticus_13.wav seconds=725 coder=libflac-0 us=9.32 p99=10.60 worst=234.92 worst_at=27850 bytes=1018.4
-shape=44.1k-mono-16 block=882 pcm=1764 file=LeviticusKJV/03013_Leviticus_13.wav seconds=725 coder=libflac-8 us=35.36 p99=47.52 worst=182.24 worst_at=34775 bytes=984.6
-shape=44.1k-mono-16 block=882 pcm=1764 file=LeviticusKJV/03013_Leviticus_13.wav seconds=725 coder=sound-flac us=7.01 p99=8.36 worst=130.60 worst_at=100 bytes=986.6
-shape=48k-stereo-24 block=960 pcm=5760 file=NasaAudioHighlightReels/JFK-Rice-Speech.wav seconds=836 coder=libflac-5 us=43.27 p99=60.32 worst=175.36 worst_at=27957 bytes=1797.5
-shape=48k-stereo-24 block=960 pcm=5760 file=NasaAudioHighlightReels/JFK-Rice-Speech.wav seconds=836 coder=libflac-0 us=19.11 p99=28.48 worst=147.24 worst_at=10900 bytes=3655.8
-shape=48k-stereo-24 block=960 pcm=5760 file=NasaAudioHighlightReels/JFK-Rice-Speech.wav seconds=836 coder=libflac-8 us=119.44 p99=148.48 worst=503.88 worst_at=27995 bytes=1796.9
-shape=48k-stereo-24 block=960 pcm=5760 file=NasaAudioHighlightReels/JFK-Rice-Speech.wav seconds=836 coder=sound-flac us=13.45 p99=26.16 worst=319.36 worst_at=3208 bytes=1796.9
-shape=96k-stereo-24 block=1920 pcm=11520 file=OpenGoldbergVariations/Kimiko_Ishizaka_-_J.S._Bach-_-Open-_Goldberg_Variations,_BWV_988_(Piano)_-_01_Aria.wav seconds=299 coder=libflac-5 us=93.73 p99=114.76 worst=230.24 worst_at=8652 bytes=5312.2
-shape=96k-stereo-24 block=1920 pcm=11520 file=OpenGoldbergVariations/Kimiko_Ishizaka_-_J.S._Bach-_-Open-_Goldberg_Variations,_BWV_988_(Piano)_-_01_Aria.wav seconds=299 coder=libflac-0 us=32.77 p99=46.20 worst=127.00 worst_at=6555 bytes=5572.0
-shape=96k-stereo-24 block=1920 pcm=11520 file=OpenGoldbergVariations/Kimiko_Ishizaka_-_J.S._Bach-_-Open-_Goldberg_Variations,_BWV_988_(Piano)_-_01_Aria.wav seconds=299 coder=libflac-8 us=294.73 p99=344.20 worst=423.84 worst_at=760 bytes=5304.4
-shape=96k-stereo-24 block=1920 pcm=11520 file=OpenGoldbergVariations/Kimiko_Ishizaka_-_J.S._Bach-_-Open-_Goldberg_Variations,_BWV_988_(Piano)_-_01_Aria.wav seconds=299 coder=sound-flac us=37.64 p99=55.88 worst=140.12 worst_at=3664 bytes=5317.8
-shape=48k-stereo-24 block=960 pcm=5760 file=TenMinutesOfWhiteNoisePinkNoiseAndBrownianNoise/PinkNoise.wav seconds=600 coder=libflac-5 us=50.26 p99=67.48 worst=185.24 worst_at=381 bytes=4900.6
-shape=48k-stereo-24 block=960 pcm=5760 file=TenMinutesOfWhiteNoisePinkNoiseAndBrownianNoise/PinkNoise.wav seconds=600 coder=libflac-0 us=20.07 p99=30.52 worst=64.64 worst_at=9395 bytes=4938.5
-shape=48k-stereo-24 block=960 pcm=5760 file=TenMinutesOfWhiteNoisePinkNoiseAndBrownianNoise/PinkNoise.wav seconds=600 coder=libflac-8 us=144.17 p99=162.64 worst=216.28 worst_at=10380 bytes=4900.2
-shape=48k-stereo-24 block=960 pcm=5760 file=TenMinutesOfWhiteNoisePinkNoiseAndBrownianNoise/PinkNoise.wav seconds=600 coder=sound-flac us=23.51 p99=34.00 worst=63.72 worst_at=25748 bytes=4900.2
-shape=48k-stereo-24 block=960 pcm=5760 file=TenMinutesOfWhiteNoisePinkNoiseAndBrownianNoise/WhiteNoise.wav seconds=600 coder=libflac-5 us=49.59 p99=66.88 worst=209.64 worst_at=22980 bytes=5386.6
-shape=48k-stereo-24 block=960 pcm=5760 file=TenMinutesOfWhiteNoisePinkNoiseAndBrownianNoise/WhiteNoise.wav seconds=600 coder=libflac-0 us=20.13 p99=30.24 worst=72.36 worst_at=1977 bytes=5415.0
-shape=48k-stereo-24 block=960 pcm=5760 file=TenMinutesOfWhiteNoisePinkNoiseAndBrownianNoise/WhiteNoise.wav seconds=600 coder=libflac-8 us=133.30 p99=151.28 worst=198.04 worst_at=1868 bytes=5386.6
-shape=48k-stereo-24 block=960 pcm=5760 file=TenMinutesOfWhiteNoisePinkNoiseAndBrownianNoise/WhiteNoise.wav seconds=600 coder=sound-flac us=15.26 p99=25.40 worst=63.16 worst_at=0 bytes=5386.6
-shape=96k-stereo-24 block=1920 pcm=11520 file=TheColumbiansCollection1924-1929DirectedByBenSelvin/Limehouse_Blues_1924_The_Columbians_-_Dance_Orchestra_De_Luxe.wav seconds=197 coder=libflac-5 us=96.80 p99=113.76 worst=153.52 worst_at=5850 bytes=8660.5
-shape=96k-stereo-24 block=1920 pcm=11520 file=TheColumbiansCollection1924-1929DirectedByBenSelvin/Limehouse_Blues_1924_The_Columbians_-_Dance_Orchestra_De_Luxe.wav seconds=197 coder=libflac-0 us=36.46 p99=50.32 worst=73.08 worst_at=224 bytes=9051.1
-shape=96k-stereo-24 block=1920 pcm=11520 file=TheColumbiansCollection1924-1929DirectedByBenSelvin/Limehouse_Blues_1924_The_Columbians_-_Dance_Orchestra_De_Luxe.wav seconds=197 coder=libflac-8 us=273.91 p99=300.56 worst=348.24 worst_at=165 bytes=8654.2
-shape=96k-stereo-24 block=1920 pcm=11520 file=TheColumbiansCollection1924-1929DirectedByBenSelvin/Limehouse_Blues_1924_The_Columbians_-_Dance_Orchestra_De_Luxe.wav seconds=197 coder=sound-flac us=43.42 p99=61.44 worst=93.32 worst_at=4548 bytes=8656.9
-shape=44.1k-stereo-16 block=882 pcm=3528 file=TheRavenByEdgarAllanPoe/TheRavenByEdgarAllanPoe.wav seconds=559 coder=libflac-5 us=41.49 p99=56.40 worst=91.76 worst_at=21918 bytes=1362.3
-shape=44.1k-stereo-16 block=882 pcm=3528 file=TheRavenByEdgarAllanPoe/TheRavenByEdgarAllanPoe.wav seconds=559 coder=libflac-0 us=15.14 p99=17.72 worst=90.80 worst_at=17493 bytes=1742.9
-shape=44.1k-stereo-16 block=882 pcm=3528 file=TheRavenByEdgarAllanPoe/TheRavenByEdgarAllanPoe.wav seconds=559 coder=libflac-8 us=123.06 p99=148.20 worst=194.68 worst_at=9879 bytes=1356.8
-shape=44.1k-stereo-16 block=882 pcm=3528 file=TheRavenByEdgarAllanPoe/TheRavenByEdgarAllanPoe.wav seconds=559 coder=sound-flac us=15.67 p99=24.12 worst=65.52 worst_at=26264 bytes=1363.6
-shape=44.1k-stereo-16 block=882 pcm=3528 file=aporee_53029_60598/PotniskiVlak.wav seconds=141 coder=libflac-5 us=40.67 p99=55.08 worst=86.84 worst_at=6972 bytes=1272.3
-shape=44.1k-stereo-16 block=882 pcm=3528 file=aporee_53029_60598/PotniskiVlak.wav seconds=141 coder=libflac-0 us=14.54 p99=16.60 worst=52.92 worst_at=6278 bytes=1346.8
-shape=44.1k-stereo-16 block=882 pcm=3528 file=aporee_53029_60598/PotniskiVlak.wav seconds=141 coder=libflac-8 us=114.33 p99=138.24 worst=166.68 worst_at=6145 bytes=1271.4
-shape=44.1k-stereo-16 block=882 pcm=3528 file=aporee_53029_60598/PotniskiVlak.wav seconds=141 coder=sound-flac us=14.57 p99=20.44 worst=48.96 worst_at=7012 bytes=1272.8
-shape=48k-stereo-16 block=960 pcm=3840 file=dso20060204old/dso20060204.2.wav seconds=324 coder=libflac-5 us=46.49 p99=62.68 worst=96.36 worst_at=3675 bytes=1498.5
-shape=48k-stereo-16 block=960 pcm=3840 file=dso20060204old/dso20060204.2.wav seconds=324 coder=libflac-0 us=16.15 p99=18.96 worst=53.52 worst_at=14953 bytes=1921.4
-shape=48k-stereo-16 block=960 pcm=3840 file=dso20060204old/dso20060204.2.wav seconds=324 coder=libflac-8 us=146.44 p99=173.04 worst=202.04 worst_at=13584 bytes=1485.6
-shape=48k-stereo-16 block=960 pcm=3840 file=dso20060204old/dso20060204.2.wav seconds=324 coder=sound-flac us=19.31 p99=30.88 worst=60.08 worst_at=5475 bytes=1499.2
-shape=96k-stereo-16 block=1920 pcm=7680 file=musopen-chopin-complete-works-flac/Fantasy,_Op._49.wav seconds=738 coder=libflac-5 us=86.58 p99=103.20 worst=238.16 worst_at=25975 bytes=2476.0
-shape=96k-stereo-16 block=1920 pcm=7680 file=musopen-chopin-complete-works-flac/Fantasy,_Op._49.wav seconds=738 coder=libflac-0 us=27.06 p99=40.20 worst=148.88 worst_at=28577 bytes=2844.6
-shape=96k-stereo-16 block=1920 pcm=7680 file=musopen-chopin-complete-works-flac/Fantasy,_Op._49.wav seconds=738 coder=libflac-8 us=299.58 p99=335.24 worst=466.72 worst_at=34888 bytes=2462.0
-shape=96k-stereo-16 block=1920 pcm=7680 file=musopen-chopin-complete-works-flac/Fantasy,_Op._49.wav seconds=738 coder=sound-flac us=32.47 p99=49.96 worst=201.60 worst_at=28852 bytes=2481.6
-shape=44.1k-stereo-16 block=882 pcm=3528 file=negroprisonsongs/JumpinJudy.wav seconds=252 coder=libflac-5 us=41.24 p99=56.40 worst=169.80 worst_at=11340 bytes=1419.5
-shape=44.1k-stereo-16 block=882 pcm=3528 file=negroprisonsongs/JumpinJudy.wav seconds=252 coder=libflac-0 us=14.73 p99=16.76 worst=127.08 worst_at=7619 bytes=1614.6
-shape=44.1k-stereo-16 block=882 pcm=3528 file=negroprisonsongs/JumpinJudy.wav seconds=252 coder=libflac-8 us=119.32 p99=140.40 worst=246.76 worst_at=6433 bytes=1416.7
-shape=44.1k-stereo-16 block=882 pcm=3528 file=negroprisonsongs/JumpinJudy.wav seconds=252 coder=sound-flac us=15.27 p99=20.64 worst=73.84 worst_at=3754 bytes=1420.8
-shape=44.1k-stereo-16 block=882 pcm=3528 file=private/private_only_01_Track_1.wav seconds=225 coder=libflac-5 us=42.05 p99=57.04 worst=184.20 worst_at=4770 bytes=2543.4
-shape=44.1k-stereo-16 block=882 pcm=3528 file=private/private_only_01_Track_1.wav seconds=225 coder=libflac-0 us=15.87 p99=18.08 worst=85.60 worst_at=3959 bytes=2696.3
-shape=44.1k-stereo-16 block=882 pcm=3528 file=private/private_only_01_Track_1.wav seconds=225 coder=libflac-8 us=121.11 p99=146.36 worst=233.40 worst_at=1862 bytes=2541.9
-shape=44.1k-stereo-16 block=882 pcm=3528 file=private/private_only_01_Track_1.wav seconds=225 coder=sound-flac us=15.49 p99=22.44 worst=81.92 worst_at=10486 bytes=2546.8
-shape=44.1k-stereo-16 block=882 pcm=3528 file=private/private_only_10_Track10.wav seconds=250 coder=libflac-5 us=42.23 p99=56.28 worst=138.92 worst_at=2007 bytes=2325.2
-shape=44.1k-stereo-16 block=882 pcm=3528 file=private/private_only_10_Track10.wav seconds=250 coder=libflac-0 us=15.70 p99=18.12 worst=72.08 worst_at=7932 bytes=2475.0
-shape=44.1k-stereo-16 block=882 pcm=3528 file=private/private_only_10_Track10.wav seconds=250 coder=libflac-8 us=127.61 p99=151.76 worst=571.64 worst_at=6933 bytes=2321.5
-shape=44.1k-stereo-16 block=882 pcm=3528 file=private/private_only_10_Track10.wav seconds=250 coder=sound-flac us=15.64 p99=24.76 worst=48.32 worst_at=386 bytes=2327.0
+shape=48k-mono-16 block=960 pcm=1920 kind=silence coder=libflac-5 us=13.79 p99=13.64 worst=13.64 worst_at=49 bytes=13.0
+shape=48k-mono-16 block=960 pcm=1920 kind=silence coder=libflac-0 us=6.79 p99=6.80 worst=6.80 worst_at=0 bytes=13.0
+shape=48k-mono-16 block=960 pcm=1920 kind=silence coder=libflac-8 us=9.43 p99=9.36 worst=9.36 worst_at=49 bytes=13.0
+shape=48k-mono-16 block=960 pcm=1920 kind=silence coder=sound-flac us=1.29 p99=1.32 worst=1.32 worst_at=47 bytes=13.0
+shape=48k-stereo-8 block=960 pcm=1920 kind=music coder=libflac-5 us=41.99 p99=41.96 worst=41.96 worst_at=37 bytes=455.8
+shape=48k-stereo-8 block=960 pcm=1920 kind=music coder=libflac-0 us=13.69 p99=13.68 worst=13.68 worst_at=36 bytes=455.8
+shape=48k-stereo-8 block=960 pcm=1920 kind=music coder=libflac-8 us=127.91 p99=131.32 worst=131.32 worst_at=45 bytes=455.8
+shape=48k-stereo-8 block=960 pcm=1920 kind=music coder=sound-flac us=18.88 p99=21.72 worst=21.72 worst_at=44 bytes=455.8
+shape=48k-stereo-8 block=960 pcm=1920 kind=speech coder=libflac-5 us=36.18 p99=36.96 worst=36.96 worst_at=49 bytes=250.5
+shape=48k-stereo-8 block=960 pcm=1920 kind=speech coder=libflac-0 us=13.73 p99=14.20 worst=14.20 worst_at=24 bytes=488.1
+shape=48k-stereo-8 block=960 pcm=1920 kind=speech coder=libflac-8 us=96.33 p99=102.64 worst=102.64 worst_at=22 bytes=250.1
+shape=48k-stereo-8 block=960 pcm=1920 kind=speech coder=sound-flac us=11.03 p99=23.56 worst=23.56 worst_at=4 bytes=250.4
+shape=48k-stereo-8 block=960 pcm=1920 kind=tone coder=libflac-5 us=41.97 p99=41.76 worst=41.76 worst_at=4 bytes=476.0
+shape=48k-stereo-8 block=960 pcm=1920 kind=tone coder=libflac-0 us=13.59 p99=13.52 worst=13.52 worst_at=0 bytes=476.0
+shape=48k-stereo-8 block=960 pcm=1920 kind=tone coder=libflac-8 us=126.00 p99=134.32 worst=134.32 worst_at=0 bytes=476.0
+shape=48k-stereo-8 block=960 pcm=1920 kind=tone coder=sound-flac us=19.32 p99=24.72 worst=24.72 worst_at=0 bytes=471.0
+shape=48k-stereo-8 block=960 pcm=1920 kind=noise coder=libflac-5 us=41.36 p99=41.36 worst=41.36 worst_at=38 bytes=1001.5
+shape=48k-stereo-8 block=960 pcm=1920 kind=noise coder=libflac-0 us=13.90 p99=13.96 worst=13.96 worst_at=29 bytes=1004.1
+shape=48k-stereo-8 block=960 pcm=1920 kind=noise coder=libflac-8 us=121.98 p99=127.36 worst=127.36 worst_at=24 bytes=1001.5
+shape=48k-stereo-8 block=960 pcm=1920 kind=noise coder=sound-flac us=10.62 p99=19.96 worst=19.96 worst_at=0 bytes=1006.1
+shape=48k-stereo-8 block=960 pcm=1920 kind=silence coder=libflac-5 us=23.64 p99=23.56 worst=23.56 worst_at=0 bytes=14.0
+shape=48k-stereo-8 block=960 pcm=1920 kind=silence coder=libflac-0 us=10.58 p99=10.56 worst=10.56 worst_at=49 bytes=14.0
+shape=48k-stereo-8 block=960 pcm=1920 kind=silence coder=libflac-8 us=19.40 p99=19.36 worst=19.36 worst_at=45 bytes=14.0
+shape=48k-stereo-8 block=960 pcm=1920 kind=silence coder=sound-flac us=1.95 p99=2.00 worst=2.00 worst_at=0 bytes=14.0
+shape=48k-stereo-24 block=960 pcm=5760 kind=music coder=libflac-5 us=51.30 p99=52.32 worst=52.32 worst_at=45 bytes=3763.4
+shape=48k-stereo-24 block=960 pcm=5760 kind=music coder=libflac-0 us=18.27 p99=18.52 worst=18.52 worst_at=45 bytes=3944.3
+shape=48k-stereo-24 block=960 pcm=5760 kind=music coder=libflac-8 us=184.25 p99=190.04 worst=190.04 worst_at=22 bytes=3748.8
+shape=48k-stereo-24 block=960 pcm=5760 kind=music coder=sound-flac us=20.76 p99=26.08 worst=26.08 worst_at=0 bytes=3762.1
+shape=48k-stereo-24 block=960 pcm=5760 kind=speech coder=libflac-5 us=43.09 p99=44.36 worst=44.36 worst_at=2 bytes=2114.3
+shape=48k-stereo-24 block=960 pcm=5760 kind=speech coder=libflac-0 us=19.17 p99=19.84 worst=19.84 worst_at=49 bytes=4255.6
+shape=48k-stereo-24 block=960 pcm=5760 kind=speech coder=libflac-8 us=123.52 p99=138.84 worst=138.84 worst_at=1 bytes=2113.6
+shape=48k-stereo-24 block=960 pcm=5760 kind=speech coder=sound-flac us=12.60 p99=25.72 worst=25.72 worst_at=4 bytes=2114.3
+shape=48k-stereo-24 block=960 pcm=5760 kind=tone coder=libflac-5 us=49.96 p99=49.84 worst=49.84 worst_at=0 bytes=2315.0
+shape=48k-stereo-24 block=960 pcm=5760 kind=tone coder=libflac-0 us=17.77 p99=17.72 worst=17.72 worst_at=48 bytes=2873.0
+shape=48k-stereo-24 block=960 pcm=5760 kind=tone coder=libflac-8 us=165.92 p99=174.00 worst=174.00 worst_at=0 bytes=2502.0
+shape=48k-stereo-24 block=960 pcm=5760 kind=tone coder=sound-flac us=20.62 p99=34.24 worst=34.24 worst_at=0 bytes=2440.0
+shape=48k-stereo-24 block=960 pcm=5760 kind=noise coder=libflac-5 us=48.32 p99=48.40 worst=48.40 worst_at=43 bytes=4842.4
+shape=48k-stereo-24 block=960 pcm=5760 kind=noise coder=libflac-0 us=18.93 p99=18.92 worst=18.92 worst_at=41 bytes=4844.9
+shape=48k-stereo-24 block=960 pcm=5760 kind=noise coder=libflac-8 us=131.66 p99=138.68 worst=138.68 worst_at=28 bytes=4842.4
+shape=48k-stereo-24 block=960 pcm=5760 kind=noise coder=sound-flac us=14.86 p99=24.48 worst=24.48 worst_at=32 bytes=4842.5
+shape=48k-stereo-24 block=960 pcm=5760 kind=silence coder=libflac-5 us=26.33 p99=26.20 worst=26.20 worst_at=0 bytes=18.0
+shape=48k-stereo-24 block=960 pcm=5760 kind=silence coder=libflac-0 us=11.91 p99=11.84 worst=11.84 worst_at=0 bytes=18.0
+shape=48k-stereo-24 block=960 pcm=5760 kind=silence coder=libflac-8 us=22.06 p99=21.96 worst=21.96 worst_at=45 bytes=18.0
+shape=48k-stereo-24 block=960 pcm=5760 kind=silence coder=sound-flac us=1.93 p99=1.96 worst=1.96 worst_at=0 bytes=18.0
+shape=48k-stereo-24 block=960 pcm=5760 file=1.-golf-club-stay-awhile/1._Golf_Club_-_Stay_Awhile.wav seconds=223 coder=libflac-5 us=53.07 p99=69.60 worst=154.92 worst_at=2539 bytes=4554.9
+shape=48k-stereo-24 block=960 pcm=5760 file=1.-golf-club-stay-awhile/1._Golf_Club_-_Stay_Awhile.wav seconds=223 coder=libflac-0 us=20.04 p99=28.08 worst=78.80 worst_at=3022 bytes=4730.3
+shape=48k-stereo-24 block=960 pcm=5760 file=1.-golf-club-stay-awhile/1._Golf_Club_-_Stay_Awhile.wav seconds=223 coder=libflac-8 us=167.69 p99=208.80 worst=282.48 worst_at=10350 bytes=4550.5
+shape=48k-stereo-24 block=960 pcm=5760 file=1.-golf-club-stay-awhile/1._Golf_Club_-_Stay_Awhile.wav seconds=223 coder=sound-flac us=22.93 p99=35.28 worst=106.24 worst_at=2622 bytes=4556.5
+shape=44.1k-mono-16 block=882 pcm=1764 file=LeviticusKJV/03013_Leviticus_13.wav seconds=725 coder=libflac-5 us=19.43 p99=25.32 worst=163.64 worst_at=5362 bytes=986.5
+shape=44.1k-mono-16 block=882 pcm=1764 file=LeviticusKJV/03013_Leviticus_13.wav seconds=725 coder=libflac-0 us=9.25 p99=10.56 worst=86.08 worst_at=4035 bytes=1018.4
+shape=44.1k-mono-16 block=882 pcm=1764 file=LeviticusKJV/03013_Leviticus_13.wav seconds=725 coder=libflac-8 us=35.13 p99=46.56 worst=169.48 worst_at=14331 bytes=984.6
+shape=44.1k-mono-16 block=882 pcm=1764 file=LeviticusKJV/03013_Leviticus_13.wav seconds=725 coder=sound-flac us=6.98 p99=8.36 worst=75.40 worst_at=100 bytes=986.6
+shape=48k-stereo-24 block=960 pcm=5760 file=NasaAudioHighlightReels/JFK-Rice-Speech.wav seconds=836 coder=libflac-5 us=43.06 p99=59.92 worst=176.16 worst_at=39029 bytes=1797.5
+shape=48k-stereo-24 block=960 pcm=5760 file=NasaAudioHighlightReels/JFK-Rice-Speech.wav seconds=836 coder=libflac-0 us=19.06 p99=26.44 worst=141.72 worst_at=19124 bytes=3655.8
+shape=48k-stereo-24 block=960 pcm=5760 file=NasaAudioHighlightReels/JFK-Rice-Speech.wav seconds=836 coder=libflac-8 us=119.03 p99=146.68 worst=295.72 worst_at=27995 bytes=1796.9
+shape=48k-stereo-24 block=960 pcm=5760 file=NasaAudioHighlightReels/JFK-Rice-Speech.wav seconds=836 coder=sound-flac us=13.46 p99=26.16 worst=117.12 worst_at=21496 bytes=1796.9
+shape=96k-stereo-24 block=1920 pcm=11520 file=OpenGoldbergVariations/Kimiko_Ishizaka_-_J.S._Bach-_-Open-_Goldberg_Variations,_BWV_988_(Piano)_-_01_Aria.wav seconds=299 coder=libflac-5 us=93.44 p99=111.64 worst=540.80 worst_at=12244 bytes=5312.2
+shape=96k-stereo-24 block=1920 pcm=11520 file=OpenGoldbergVariations/Kimiko_Ishizaka_-_J.S._Bach-_-Open-_Goldberg_Variations,_BWV_988_(Piano)_-_01_Aria.wav seconds=299 coder=libflac-0 us=32.47 p99=45.52 worst=104.96 worst_at=2742 bytes=5572.0
+shape=96k-stereo-24 block=1920 pcm=11520 file=OpenGoldbergVariations/Kimiko_Ishizaka_-_J.S._Bach-_-Open-_Goldberg_Variations,_BWV_988_(Piano)_-_01_Aria.wav seconds=299 coder=libflac-8 us=293.72 p99=341.84 worst=432.68 worst_at=14053 bytes=5304.4
+shape=96k-stereo-24 block=1920 pcm=11520 file=OpenGoldbergVariations/Kimiko_Ishizaka_-_J.S._Bach-_-Open-_Goldberg_Variations,_BWV_988_(Piano)_-_01_Aria.wav seconds=299 coder=sound-flac us=37.66 p99=54.88 worst=121.36 worst_at=3664 bytes=5317.8
+shape=48k-stereo-24 block=960 pcm=5760 file=TenMinutesOfWhiteNoisePinkNoiseAndBrownianNoise/PinkNoise.wav seconds=600 coder=libflac-5 us=49.87 p99=64.48 worst=175.20 worst_at=23617 bytes=4900.6
+shape=48k-stereo-24 block=960 pcm=5760 file=TenMinutesOfWhiteNoisePinkNoiseAndBrownianNoise/PinkNoise.wav seconds=600 coder=libflac-0 us=19.89 p99=27.84 worst=90.16 worst_at=15986 bytes=4938.5
+shape=48k-stereo-24 block=960 pcm=5760 file=TenMinutesOfWhiteNoisePinkNoiseAndBrownianNoise/PinkNoise.wav seconds=600 coder=libflac-8 us=143.67 p99=164.28 worst=313.52 worst_at=10380 bytes=4900.2
+shape=48k-stereo-24 block=960 pcm=5760 file=TenMinutesOfWhiteNoisePinkNoiseAndBrownianNoise/PinkNoise.wav seconds=600 coder=sound-flac us=23.80 p99=32.28 worst=145.08 worst_at=25748 bytes=4900.2
+shape=48k-stereo-24 block=960 pcm=5760 file=TenMinutesOfWhiteNoisePinkNoiseAndBrownianNoise/WhiteNoise.wav seconds=600 coder=libflac-5 us=49.14 p99=63.08 worst=475.12 worst_at=26047 bytes=5386.6
+shape=48k-stereo-24 block=960 pcm=5760 file=TenMinutesOfWhiteNoisePinkNoiseAndBrownianNoise/WhiteNoise.wav seconds=600 coder=libflac-0 us=19.77 p99=27.84 worst=141.56 worst_at=15648 bytes=5415.0
+shape=48k-stereo-24 block=960 pcm=5760 file=TenMinutesOfWhiteNoisePinkNoiseAndBrownianNoise/WhiteNoise.wav seconds=600 coder=libflac-8 us=132.61 p99=149.44 worst=472.92 worst_at=22697 bytes=5386.6
+shape=48k-stereo-24 block=960 pcm=5760 file=TenMinutesOfWhiteNoisePinkNoiseAndBrownianNoise/WhiteNoise.wav seconds=600 coder=sound-flac us=15.62 p99=25.64 worst=82.52 worst_at=0 bytes=5386.6
+shape=96k-stereo-24 block=1920 pcm=11520 file=TheColumbiansCollection1924-1929DirectedByBenSelvin/Limehouse_Blues_1924_The_Columbians_-_Dance_Orchestra_De_Luxe.wav seconds=197 coder=libflac-5 us=96.47 p99=115.08 worst=185.16 worst_at=3066 bytes=8660.5
+shape=96k-stereo-24 block=1920 pcm=11520 file=TheColumbiansCollection1924-1929DirectedByBenSelvin/Limehouse_Blues_1924_The_Columbians_-_Dance_Orchestra_De_Luxe.wav seconds=197 coder=libflac-0 us=36.54 p99=49.96 worst=69.00 worst_at=3047 bytes=9051.1
+shape=96k-stereo-24 block=1920 pcm=11520 file=TheColumbiansCollection1924-1929DirectedByBenSelvin/Limehouse_Blues_1924_The_Columbians_-_Dance_Orchestra_De_Luxe.wav seconds=197 coder=libflac-8 us=273.22 p99=299.76 worst=346.40 worst_at=165 bytes=8654.2
+shape=96k-stereo-24 block=1920 pcm=11520 file=TheColumbiansCollection1924-1929DirectedByBenSelvin/Limehouse_Blues_1924_The_Columbians_-_Dance_Orchestra_De_Luxe.wav seconds=197 coder=sound-flac us=44.77 p99=61.20 worst=82.64 worst_at=9296 bytes=8656.9
+shape=44.1k-stereo-16 block=882 pcm=3528 file=TheRavenByEdgarAllanPoe/TheRavenByEdgarAllanPoe.wav seconds=559 coder=libflac-5 us=41.30 p99=54.72 worst=87.92 worst_at=24601 bytes=1362.3
+shape=44.1k-stereo-16 block=882 pcm=3528 file=TheRavenByEdgarAllanPoe/TheRavenByEdgarAllanPoe.wav seconds=559 coder=libflac-0 us=14.91 p99=17.04 worst=53.48 worst_at=10444 bytes=1742.9
+shape=44.1k-stereo-16 block=882 pcm=3528 file=TheRavenByEdgarAllanPoe/TheRavenByEdgarAllanPoe.wav seconds=559 coder=libflac-8 us=122.62 p99=147.44 worst=190.80 worst_at=9880 bytes=1356.8
+shape=44.1k-stereo-16 block=882 pcm=3528 file=TheRavenByEdgarAllanPoe/TheRavenByEdgarAllanPoe.wav seconds=559 coder=sound-flac us=15.61 p99=23.84 worst=71.76 worst_at=26264 bytes=1363.6
+shape=44.1k-stereo-16 block=882 pcm=3528 file=aporee_53029_60598/PotniskiVlak.wav seconds=141 coder=libflac-5 us=40.57 p99=53.36 worst=85.68 worst_at=1488 bytes=1272.3
+shape=44.1k-stereo-16 block=882 pcm=3528 file=aporee_53029_60598/PotniskiVlak.wav seconds=141 coder=libflac-0 us=14.45 p99=16.24 worst=44.60 worst_at=5893 bytes=1346.8
+shape=44.1k-stereo-16 block=882 pcm=3528 file=aporee_53029_60598/PotniskiVlak.wav seconds=141 coder=libflac-8 us=113.63 p99=136.68 worst=184.32 worst_at=6145 bytes=1271.4
+shape=44.1k-stereo-16 block=882 pcm=3528 file=aporee_53029_60598/PotniskiVlak.wav seconds=141 coder=sound-flac us=14.51 p99=20.28 worst=47.44 worst_at=7016 bytes=1272.8
+shape=48k-stereo-16 block=960 pcm=3840 file=dso20060204old/dso20060204.2.wav seconds=324 coder=libflac-5 us=46.07 p99=60.16 worst=92.08 worst_at=5253 bytes=1498.5
+shape=48k-stereo-16 block=960 pcm=3840 file=dso20060204old/dso20060204.2.wav seconds=324 coder=libflac-0 us=15.99 p99=18.56 worst=54.40 worst_at=5270 bytes=1921.4
+shape=48k-stereo-16 block=960 pcm=3840 file=dso20060204old/dso20060204.2.wav seconds=324 coder=libflac-8 us=145.65 p99=171.00 worst=210.56 worst_at=13584 bytes=1485.6
+shape=48k-stereo-16 block=960 pcm=3840 file=dso20060204old/dso20060204.2.wav seconds=324 coder=sound-flac us=19.37 p99=30.92 worst=63.40 worst_at=5475 bytes=1499.2
+shape=96k-stereo-16 block=1920 pcm=7680 file=musopen-chopin-complete-works-flac/Fantasy,_Op._49.wav seconds=738 coder=libflac-5 us=85.90 p99=104.96 worst=385.28 worst_at=9909 bytes=2476.0
+shape=96k-stereo-16 block=1920 pcm=7680 file=musopen-chopin-complete-works-flac/Fantasy,_Op._49.wav seconds=738 coder=libflac-0 us=26.74 p99=38.96 worst=152.84 worst_at=33049 bytes=2844.6
+shape=96k-stereo-16 block=1920 pcm=7680 file=musopen-chopin-complete-works-flac/Fantasy,_Op._49.wav seconds=738 coder=libflac-8 us=297.22 p99=330.64 worst=415.48 worst_at=20585 bytes=2462.0
+shape=96k-stereo-16 block=1920 pcm=7680 file=musopen-chopin-complete-works-flac/Fantasy,_Op._49.wav seconds=738 coder=sound-flac us=32.43 p99=49.36 worst=82.64 worst_at=28852 bytes=2481.6
+shape=44.1k-stereo-16 block=882 pcm=3528 file=negroprisonsongs/JumpinJudy.wav seconds=252 coder=libflac-5 us=40.95 p99=55.76 worst=102.00 worst_at=0 bytes=1419.5
+shape=44.1k-stereo-16 block=882 pcm=3528 file=negroprisonsongs/JumpinJudy.wav seconds=252 coder=libflac-0 us=14.54 p99=16.64 worst=71.20 worst_at=5867 bytes=1614.6
+shape=44.1k-stereo-16 block=882 pcm=3528 file=negroprisonsongs/JumpinJudy.wav seconds=252 coder=libflac-8 us=118.76 p99=140.32 worst=236.80 worst_at=6433 bytes=1416.7
+shape=44.1k-stereo-16 block=882 pcm=3528 file=negroprisonsongs/JumpinJudy.wav seconds=252 coder=sound-flac us=15.27 p99=20.56 worst=69.88 worst_at=3754 bytes=1420.8
+shape=44.1k-stereo-16 block=882 pcm=3528 file=private/private_only_01_Track_1.wav seconds=225 coder=libflac-5 us=41.83 p99=55.40 worst=100.60 worst_at=3542 bytes=2543.4
+shape=44.1k-stereo-16 block=882 pcm=3528 file=private/private_only_01_Track_1.wav seconds=225 coder=libflac-0 us=15.79 p99=18.20 worst=74.44 worst_at=10907 bytes=2696.3
+shape=44.1k-stereo-16 block=882 pcm=3528 file=private/private_only_01_Track_1.wav seconds=225 coder=libflac-8 us=120.69 p99=146.40 worst=222.36 worst_at=1862 bytes=2541.9
+shape=44.1k-stereo-16 block=882 pcm=3528 file=private/private_only_01_Track_1.wav seconds=225 coder=sound-flac us=15.42 p99=22.20 worst=69.96 worst_at=10486 bytes=2546.8
+shape=44.1k-stereo-16 block=882 pcm=3528 file=private/private_only_10_Track10.wav seconds=250 coder=libflac-5 us=41.99 p99=55.96 worst=114.16 worst_at=1219 bytes=2325.2
+shape=44.1k-stereo-16 block=882 pcm=3528 file=private/private_only_10_Track10.wav seconds=250 coder=libflac-0 us=15.48 p99=17.76 worst=72.92 worst_at=5018 bytes=2475.0
+shape=44.1k-stereo-16 block=882 pcm=3528 file=private/private_only_10_Track10.wav seconds=250 coder=libflac-8 us=127.17 p99=152.52 worst=234.40 worst_at=6933 bytes=2321.5
+shape=44.1k-stereo-16 block=882 pcm=3528 file=private/private_only_10_Track10.wav seconds=250 coder=sound-flac us=15.58 p99=24.56 worst=81.44 worst_at=386 bytes=2327.0

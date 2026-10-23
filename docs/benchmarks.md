@@ -31,13 +31,15 @@ git show HEAD:docs/bench/x86.log > before.log           # the run before, from t
 python3 -I tools/tables.py docs/bench/x86.log docs/bench/arm64.log --before before.log
 ```
 
-In the recordings tables below, *the run before* is the afternoon's run of
-the same day, the tables the commit before this one carried, before the
-fourth block was weighed; it is the first run whose logs were kept.
+In the recordings tables below, *the run before* is the evening's run of
+the same day, the tables the commit before this one carried, of the same
+encoder: this run differs from it only in the bench, which now codes every
+block into an empty buffer in a timed pass, as its warm-up pass always did,
+where before a pass's frames piled up in one buffer.
 
 They were run on 2026-10-23 on a six-core Intel i5-8500T under WSL2, one
-thread, the machine idle, from the command line after a restart of WSL
-with nothing else open, with rustc 1.98.1 at the x86-64 baseline (SSE2, no
+thread, the machine idle but for the terminal session the run was started
+from, with rustc 1.98.1 at the x86-64 baseline (SSE2, no
 `target-cpu`), on branch `own-encoder` at the commit that carries them: the
 encoder with its stereo pair chosen on the fit as well as the fixed
 predictors every fourth block and carried between, the fit skipped on noise,
@@ -51,12 +53,15 @@ the pair having both codings made once a cycle on the blocks after it. A
 time on this
 machine moves by up to a tenth from one run to the next, so a time ratio
 within a tenth of 1.00 is on the line; a bytes ratio is exact. libFLAC's
-own times are the control: in this run they are within 3% of the run
-before's on every sound but the 44.1 kHz made sounds, pink noise and the
-wide mix, which were disturbed for both coders alike and were measured again
-right after, their lines put in place of the first; the evening's first run,
-with an editor open on the machine, had libFLAC 1% to 8% slower than the run
-before and was not kept. A worst block
+own times are the control: in this run they are 1% over to 13% under the
+run before's at level 5 and up to 17% under at level 0, and this encoder's
+moved with them, 1% to 10% under on all but a few sounds within 3% over,
+so its ratio to level 5 stands within a few hundredths while its ratio to
+level 0 rose by up to a tenth on x86 with no change to the encoder, which
+is the commit before's. What differs is the bench, every block now coded
+into an empty buffer, and the machine; on arm64, where a time repeats to
+1%, both coders came to the run before's times within 3%, so the bench's
+change is not what moved x86. A worst block
 is one block of thousands and the machine's as much as the encoder's, even
 as the least over passes, so it is read as an order of magnitude. The bench
 also logs `worst_at`, the block that was slowest at its least over the
@@ -105,7 +110,8 @@ are each one thing: fifty blocks, a second of each, at 48 kHz, 44.1 kHz and
 - `tone`: a pure 1 kHz sine at −6 dBFS, a notification's beep, at 0.7 of it
   on the right. A resonance is the ill-conditioned fit, where a predictor's
   coefficients are large and its rounding tells.
-- `noise`: white noise at −20 dBFS on each channel, nothing to predict.
+- `noise`: uniform white noise peaking at −26 dBFS on each channel, nothing
+  to predict.
 - `silence`: zeros.
 
 ## The recordings
@@ -145,13 +151,14 @@ for what they sound like, and the repository nothing else of them.
 
 - **Every recording and every made sound takes about half of what libFLAC
   at its default level takes of a core or less, most of them a little
-  over a third.** The recordings are 0.33 to 0.55 of its time a block:
-  16-bit stereo 0.39 to 0.45, mono 0.33, 24-bit 0.34 to 0.55, the two at
-  96 kHz and 24 bits 0.51 and 0.54. A block of a recording is 0.04% to
-  0.23% of one core. The made sounds are 0.27 to 0.53: music 0.32 to 0.48,
-  speech 0.29 to 0.34, the tone 0.41 to 0.53, noise 0.27 to 0.35, silence
-  0.07 to 0.10. The afternoon's run before this one had them at 0.31 to
-  0.59 and 0.25 to 0.49, the morning's 0.44 to 0.77 and 0.40 to 0.74, the
+  over a third.** The recordings are 0.34 to 0.58 of its time a block:
+  16-bit stereo 0.41 to 0.46, mono 0.34, 24-bit 0.36 to 0.58, the two at
+  96 kHz and 24 bits 0.51 and 0.58. A block of a recording is 0.04% to
+  0.24% of one core. The made sounds are 0.27 to 0.55: music 0.33 to 0.47,
+  speech 0.30 to 0.36, the tone 0.42 to 0.55, noise 0.27 to 0.36, silence
+  0.07 to 0.10. The evening's run before this one, the same encoder, had
+  them at 0.33 to 0.55 and 0.27 to 0.53, the afternoon's 0.31 to 0.59 and
+  0.25 to 0.49, the morning's 0.44 to 0.77 and 0.40 to 0.74, the
   night before 0.43 to 0.87 and 0.41 to 0.91, for the same bytes within
   half a per cent.
 - **The bytes are libFLAC's at its default level, within 0.2%.** Every
@@ -160,14 +167,15 @@ for what they sound like, and the repository nothing else of them.
   is what fitting only the carried pair between full choices and coding it
   the fit first cost them (the measurements are in [plan.md](plan.md));
   before the pair was chosen on the fit the train station was 1.006 and the
-  Fantasy 1.004. Against the run before, every recording is within 0.01%,
-  the Fantasy under. Every made sound comes to the same bytes within two
+  Fantasy 1.004. Against the run before, the same encoder, every
+  recording and every made sound comes to the same bytes to a tenth of a
+  byte. Every made sound comes to the same bytes within two
   bytes a block but the pure tone, 1.02 at 44.1 kHz, 0.95 at 96 kHz and
   1.05 at 24 bits: a tone is predicted away by order 2 and what its frame
   then costs is the rounding of the coefficients, which goes with every
   change to the fit's arithmetic and which no estimate tried could foresee.
-  The made speech, whose two channels are one signal, is 0.05% over the run
-  before and 0.16% at 8 bits: its side channel is a constant, and a block
+  The made speech, whose two channels are one signal, is 0.05% over the
+  afternoon's run and 0.16% at 8 bits: its side channel is a constant, and a block
   with a constant channel is now coded the fit first like any other where
   it had every channel coded both ways. Against libFLAC's smallest level,
   8, which tries every order to 12 and every stereo pairing in four to
@@ -178,24 +186,24 @@ for what they sound like, and the repository nothing else of them.
   afresh, by a quarter to a third of a carried block rather than half as
   much again.** Each block's least time over the passes, each pass from an
   encoder that has seen no block, read by the block's place in the cycle of
-  four: the fourth block is 22.5 µs against 17.6 for a carried block on the
-  orchestra, where the run before had 27.1 against 18.1; 45.1 against 35.4
-  on the Aria, from 57.9 against 35.0; 18.3 against 14.0 on the Raven, from
-  22.2 against 14.5; 16.7 against 13.9 on the wide mix, from 21.2 against
-  14.2. The two blocks after the choice, where each channel of the pair has
+  four: the fourth block is 22.4 µs against 17.4 for a carried block on the
+  orchestra, where the afternoon's run had 27.1 against 18.1; 44.1 against
+  34.5 on the Aria, from 57.9 against 35.0; 18.2 against 13.9 on the Raven,
+  from 22.2 against 14.5; 16.7 against 13.8 on the wide mix, from 21.2
+  against 14.2, each within 1 µs of the evening's run before this one. The two blocks after the choice, where each channel of the pair has
   both codings made once to bring its correction up to date, are about 1
   µs over a plain carried block at 16 bits and 4 on the Aria. This
   encoder's own 99th-percentile block is now set by the loud blocks as
   much as by the fourth, 1.4 to 1.5 times its mean, and its worst about
   twice. A single pass's 99th percentile is higher still for both encoders,
   which is scheduling and cache, not the sound. On the recordings this
-  encoder's 99th-percentile block is 0.37 to 0.53 of libFLAC's, 16 to 76 µs
-  against 43 to 153, and its worst block 96 to 270 µs, at most 1.4% of the
-  20 ms the block is, where libFLAC's worst is 187 to 2870. Where two
+  encoder's 99th-percentile block is 0.32 to 0.56 of libFLAC's, 13 to 77 µs
+  against 40 to 142, and its worst block 78 to 224 µs, at most 1.1% of the
+  20 ms the block is, where libFLAC's worst is 166 to 3550. Where two
   channels are one signal, the 1962 speech and the made speech, the fourth
   block codes the three equivalent channels in turn, each coming out over
   its estimate: 19 µs against 12 on that recording, whose mean fell to 0.86
-  of the run before all the same, the blocks between coding one channel
+  of the afternoon's run all the same, the blocks between coding one channel
   and a constant.
 - **The pair is chosen on the fit as well as the fixed predictors every
   fourth block, and carried between.** On the fourth block every channel
@@ -247,18 +255,24 @@ for what they sound like, and the repository nothing else of them.
   16-bit passes, and a 17-bit side channel whose samples fit 16 bits takes
   the 16-bit pass.
 - **Against libFLAC's fastest level, 0, which fits no predictor and codes
-  stereo as it comes**, this encoder takes 0.80 to 1.01 of its time on the
-  16-bit stereo recordings, the Fantasy at 96 kHz the one over 1.00 and the
-  orchestra at 0.99, 0.65 on the 1962 speech and 0.71 on white noise, 0.58
-  on the mono reading, and 1.07 to 1.19 on the four at 24 bits with sound
-  in them, for 0.49 to 0.99 of its bytes: the two stereo speeches 0.49 and
-  0.78, the music 0.78 to 0.96, noise 0.99. On the made sounds it is 0.81
-  to 1.14 on stereo music and 0.99 to 1.23 on the tone, 0.50 to 0.64 on
-  speech, 0.50 to 0.77 on noise, 0.50 to 0.76 on mono and 0.14 to 0.22 on
-  silence. The run before had the 16-bit stereo recordings at 0.81 to 1.04,
-  the mono reading at 0.53 and the 24-bit four at 1.11 to 1.28, the
-  morning's 1.21 to 1.79 and 1.25 to 1.89 on stereo music and tone, and the
-  night before 1.06 to 2.09 and 1.35 to 2.37. The two are not doing the
+  stereo as it comes**, this encoder takes 0.85 to 1.11 of its time on the
+  16-bit stereo recordings, the Fantasy at 96 kHz and the orchestra the two
+  over 1.00, 0.70 on the 1962 speech and 0.79 on white noise, 0.61 on the
+  mono reading, and 1.16 to 1.33 on the four at 24 bits with sound in
+  them, for 0.49 to 0.99 of its bytes: the two stereo speeches 0.49 and
+  0.78, the music 0.78 to 0.96, noise 0.99. On the made sounds it is 0.85
+  to 1.17 on stereo music and 1.10 to 1.40 on the tone, 0.55 to 0.70 on
+  speech, 0.64 to 0.83 on noise, 0.52 to 0.83 on mono and 0.14 to 0.21 on
+  silence. The evening's run before this one, the same encoder, had the
+  16-bit stereo recordings at 0.80 to 1.01, the 1962 speech at 0.65, the
+  mono reading at 0.58 and the 24-bit four at 1.07 to 1.19: this column
+  moved by libFLAC's level 0 alone, 5% to 17% faster on x86 in this run
+  where its level 5 was 1% to 13% faster, and on arm64, where neither
+  moved past 3%, the column is the run before's. The afternoon's run had
+  the 16-bit stereo recordings at 0.81 to 1.04, the mono reading at 0.53
+  and the 24-bit four at 1.11 to 1.28, the morning's 1.21 to 1.79 and 1.25
+  to 1.89 on stereo music and tone, and the night before 1.06 to 2.09 and
+  1.35 to 2.37. The two are not doing the
   same work: level 0's block of silence alone costs 12.6 µs where this
   encoder's costs 2, and what this encoder does that level 0 does not, the
   fit and the stereo choice, is most of its carried block. What was
@@ -275,20 +289,24 @@ for what they sound like, and the repository nothing else of them.
 - **On arm64 the encoder stands where it does on x86, a little further on
   its side of libFLAC's default level, and against level 0 a little behind
   x86.** The same run on the two-core Ampere Altra, in the last section:
-  the recordings are 0.31 to 0.47 of libFLAC's time a block where x86 is
-  0.33 to 0.55, the made sounds 0.26 to 0.48 against 0.27 to 0.53 and
-  silence 0.07 to 0.10 on both. This encoder's mean block is the i5's or
-  shorter on every recording, by up to 4 µs, while libFLAC's is longer on
-  every stereo recording and 14% shorter on the mono reading; this
-  encoder's 99th-percentile block is lower there on every recording, 8 to
-  61 µs against 16 to 76. Against level 0 it is 0.98 to 1.20 of its time
-  on the stereo recordings but white noise and the 1962 speech, 0.76 and
-  0.70, where x86 is 0.65 to 1.19, and 0.75 on the mono reading where x86
-  is 0.58: level 0's fixed path is cheap on the Altra. Against the run
-  before on that machine, which repeats its times to 0.2 µs, every
-  stereo recording's mean fell, by 1% to 3%, the 1962 speech's by 15%, and
-  the made speech's by 16% to 26%; the tone rose 3% to 6%, the fourth
-  block's two fits more now that it has no fixed coding to hide behind.
+  the recordings are 0.31 to 0.48 of libFLAC's time a block where x86 is
+  0.34 to 0.58, the made sounds 0.26 to 0.48 against 0.27 to 0.55 and
+  silence 0.07 to 0.10 on both. This encoder's mean block is within 0.1 µs
+  of the i5's or shorter on every recording, by up to 2 µs, while
+  libFLAC's is longer on every stereo recording and 8% shorter on the mono
+  reading; this encoder's 99th-percentile block is lower there on every
+  recording, 8 to 61 µs against 13 to 77. Against level 0 it is 0.98 to
+  1.23 of its time on the stereo recordings but white noise and the 1962
+  speech, 0.79 and 0.71, where x86 is 0.70 to 1.33, and 0.75 on the mono
+  reading where x86 is 0.61: level 0's fixed path is cheap on the Altra.
+  Against the run before on that machine, the same encoder, both coders
+  came to the same times within 3% on every made sound and recording, this
+  encoder's recordings within 1% but the 1924 record and white noise at 3%
+  and 2% over; the evening's change before it, against the afternoon's
+  run, had every stereo recording's mean fall by 1% to 3%, the 1962
+  speech's by 15% and the made speech's by 16% to 26%, and the tone rise 3%
+  to 6%, the fourth block's two fits more now that it has no fixed coding
+  to hide behind.
   Nothing in the encoder is written for either machine. LLVM vectorizes the
   residual of a fit in four 16-bit lanes with NEON's widening multiply where
   SSE2 has its own, the autocorrelation in two f64 lanes and the fixed

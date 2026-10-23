@@ -168,15 +168,15 @@ const fn tables16() -> [[u16; 256]; 8] {
     tables
 }
 
-/// x^(8 * 2^j) modulo the CRC-16 polynomial for j up to 15: what a CRC is
+/// x^(8 * 2^j) modulo the CRC-16 polynomial for j up to 31: what a CRC is
 /// multiplied by to carry it past 2^j zero bytes, so a CRC over the first
-/// half of a frame is carried past the second half's length in at most
-/// sixteen multiplications.
-const fn powers16() -> [u16; 16] {
-    let mut out = [0u16; 16];
+/// half of a frame is carried past the second half's length, a
+/// multiplication for each set bit of it, however long a frame is.
+const fn powers16() -> [u16; 32] {
+    let mut out = [0u16; 32];
     let mut p = 0x0100u16;
     let mut j = 0;
-    while j < 16 {
+    while j < 32 {
         out[j] = p;
         p = mulmod16(p, p);
         j += 1;
@@ -204,7 +204,7 @@ const fn mulmod16(a: u16, b: u16) -> u16 {
 
 static CRC8: [u8; 256] = table8();
 static CRC16: [[u16; 256]; 8] = tables16();
-static POWERS16: [u16; 16] = powers16();
+static POWERS16: [u16; 32] = powers16();
 
 /// The frame header's CRC: polynomial 0x07, from zero.
 pub fn crc8(bytes: &[u8]) -> u8 {
@@ -249,7 +249,7 @@ fn crc16_eight(crc: u16, &[b0, b1, b2, b3, b4, b5, b6, b7]: &[u8; 8]) -> u16 {
 /// `crc` carried past `n` zero bytes: multiplied by x^(8n), a power for
 /// each bit of `n`.
 fn carry16(crc: u16, n: usize) -> u16 {
-    debug_assert!(n < 1 << 16);
+    debug_assert!(u32::try_from(n).is_ok());
     POWERS16.iter().enumerate().filter(|&(j, _)| n >> j & 1 != 0).fold(crc, |crc, (_, &p)| mulmod16(crc, p))
 }
 
@@ -270,6 +270,15 @@ mod tests {
             let slow = bytes[..len].iter().fold(0u16, |crc, &byte| (crc << 8) ^ CRC16[0][usize::from((crc >> 8) as u8 ^ byte)]);
             assert_eq!(crc16(&bytes[..len]), slow, "{len} bytes");
         }
+    }
+
+    /// A frame longer than 65 535 bytes, the second half's length past
+    /// sixteen bits, is carried by the higher powers.
+    #[test]
+    fn the_crc_carries_past_sixteen_bits_of_length() {
+        let bytes: Vec<u8> = (0..200_003u32).map(|i| (i.wrapping_mul(2_654_435_761) >> 13) as u8).collect();
+        let slow = bytes.iter().fold(0u16, |crc, &byte| (crc << 8) ^ CRC16[0][usize::from((crc >> 8) as u8 ^ byte)]);
+        assert_eq!(crc16(&bytes), slow);
     }
 
     #[test]
