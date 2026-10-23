@@ -35,10 +35,16 @@ python3 -I tools/tables.py docs/bench/x86.log arm64=docs/bench/arm64.log windows
 
 In the recordings tables below, *the run before* is the run of the commit
 before this one, made the night of 2026-10-23 with the encoder of v0.0.5,
-whose log that commit carries as `docs/bench/x86.log`.
+whose log that commit carries as `docs/bench/x86.log`. The days named in
+this document and in [plan.md](plan.md), that night and 2026-10-24 among
+them, are the count the sessions that made the runs kept, which ran ahead
+of the machine's clock: by the commits, which that clock stamps in Pacific
+time, the run before was made at noon on 2026-10-23 and this run that
+afternoon, and the whole of the encoder's work from the plan to this run
+ran from the evening of 2026-10-22 to that afternoon.
 
-They were run on 2026-10-24 on a six-core Intel i5-8500T under WSL2, one
-thread, WSL restarted for the run and the machine idle but for the
+They were run on 2026-10-23 by the machine's clock, the afternoon, on a
+six-core Intel i5-8500T under WSL2, one thread, WSL restarted for the run and the machine idle but for the
 terminal session it was started from, no editor open, with rustc 1.98.1 at the x86-64 baseline (SSE2, no `target-cpu`), on
 `main` at the commit that carries them: the encoder of v0.0.5 with the
 day's changes of [plan.md](plan.md), the order of a channel's fit chosen

@@ -14,6 +14,11 @@ of that day, when the fourth block was weighed on a count in place of its
 four fixed codings; and to 2026-10-24, when the rows still on libFLAC's
 side of the line were taken up in the order of how far over they were: the
 tone's bytes and time, then the time against level 0 at 24 bits and 96 kHz.
+The days are the count the sessions kept, which ran ahead of the machine's
+clock: by the commits, which that clock stamps in Pacific time, all of it
+ran from the evening of 2026-10-22 to the afternoon of 2026-10-23, the
+night of 2026-10-23 here being noon of that day and 2026-10-24 its
+afternoon.
 
 ## What it is for
 
