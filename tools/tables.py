@@ -31,6 +31,8 @@ RECORDINGS = [
     ("Fantasy", "Chopin, Fantasy Op. 49, piano"),
     ("dso2006", "Shostakovich 5, orchestra, live"),
     ("Golf_Club", "Indie rock, 2022, mastered"),
+    ("Track10", "Mix at −13 LUFS, wide stereo"),
+    ("Track_1", "Mix at −9 LUFS, loud master"),
     ("Limehouse", "Limehouse Blues, 1924 78 rpm"),
     ("JumpinJudy", "Prison work song, 1947 field recording"),
     ("Raven", "The Raven, read, produced"),
