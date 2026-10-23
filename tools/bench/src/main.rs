@@ -7,8 +7,9 @@
 //! Every shape is coded by libFLAC at its default level 5 as v0.0.4 of this
 //! crate ran it, a stream of its own for every frame; by libFLAC at 0, its
 //! fastest, and 8, its smallest, the same way; and by this crate. A cell's
-//! time is the least of five passes over fifty blocks, each pass timed as a
-//! whole, after one pass to warm up; its bytes are the frames' over the fifty.
+//! time is the least of five passes' mean block over fifty blocks, each block
+//! timed on its own, after one pass to warm up; its bytes are the frames'
+//! over the fifty.
 //! Then every WAV under `tmp/samples` (or `SAMPLES`), the recordings of
 //! `tools/samples.txt` that `tools/samples.sh copy` brings there, is coded
 //! whole in blocks of 20 ms by each coder, three passes after one to warm up,
@@ -276,14 +277,15 @@ fn coders(shape: Shape) -> Vec<(&'static str, Box<dyn Coder>)> {
     ]
 }
 
-/// A PCM WAV, 8 to 24 bits, plain or extensible: its shape and its samples
-/// interleaved, sign-extended to i32.
+/// A PCM WAV, plain or extensible, its samples of 8 to 24 valid bits in a
+/// container of one to four bytes: its shape, at the valid bits, and its
+/// samples interleaved, sign-extended to i32.
 fn wav(path: &Path) -> (Shape, Vec<i32>) {
     let bytes = std::fs::read(path).unwrap();
     assert!(&bytes[..4] == b"RIFF" && &bytes[8..12] == b"WAVE", "{}: not a WAV", path.display());
     let u16_at = |i: usize| u16::from_le_bytes([bytes[i], bytes[i + 1]]);
     let u32_at = |i: usize| u32::from_le_bytes(bytes[i..i + 4].try_into().unwrap());
-    let (mut shape, mut data) = (None, None);
+    let (mut shape, mut data, mut container) = (None, None, 0u8);
     let mut i = 12;
     while i + 8 <= bytes.len() {
         let (id, len) = (&bytes[i..i + 4], u32_at(i + 4) as usize);
@@ -291,8 +293,21 @@ fn wav(path: &Path) -> (Shape, Vec<i32>) {
         match id {
             b"fmt " => {
                 let tag = u16_at(body);
-                assert!(tag == 1 || tag == 0xFFFE, "{}: not PCM", path.display());
-                shape = Some(Shape { rate: u32_at(body + 4), channels: u16_at(body + 2) as u8, bits: u16_at(body + 14) as u8 });
+                container = u16_at(body + 14) as u8;
+                // WAVE_FORMAT_EXTENSIBLE: the sample's valid bits apart from
+                // its container's, and the format in the subformat's first
+                // two bytes; valid bits of 0 mean the container's.
+                let bits = if tag == 0xFFFE {
+                    assert!(u16_at(body + 24) == 1, "{}: not PCM", path.display());
+                    match u16_at(body + 18) {
+                        0 => container,
+                        valid => valid as u8,
+                    }
+                } else {
+                    assert!(tag == 1, "{}: not PCM", path.display());
+                    container
+                };
+                shape = Some(Shape { rate: u32_at(body + 4), channels: u16_at(body + 2) as u8, bits });
             }
             b"data" => data = Some(&bytes[body..(body + len).min(bytes.len())]),
             _ => {}
@@ -300,14 +315,20 @@ fn wav(path: &Path) -> (Shape, Vec<i32>) {
         i = body + len + (len & 1);
     }
     let (shape, data) = (shape.expect("fmt chunk"), data.expect("data chunk"));
-    let width = shape.bits.div_ceil(8) as usize;
+    let width = container.div_ceil(8) as usize;
+    assert!((1..=4).contains(&width) && shape.bits <= container, "{}: {} bits in {container}", path.display(), shape.bits);
+    // The sample left-justified in 32 bits, as its valid bits sit at the top
+    // of its container, then down to its valid bits.
     let samples = data
         .chunks_exact(width)
-        .map(|s| match width {
-            1 => i32::from(s[0]) - 128,
-            2 => i32::from(i16::from_le_bytes([s[0], s[1]])),
-            3 => i32::from_le_bytes([0, s[0], s[1], s[2]]) >> 8,
-            _ => unreachable!(),
+        .map(|s| {
+            let left = match width {
+                1 => (i32::from(s[0]) - 128) << 24,
+                2 => i32::from(i16::from_le_bytes([s[0], s[1]])) << 16,
+                3 => i32::from_le_bytes([0, s[0], s[1], s[2]]),
+                _ => i32::from_le_bytes([s[0], s[1], s[2], s[3]]),
+            };
+            left >> (32 - u32::from(shape.bits))
         })
         .collect();
     (shape, samples)

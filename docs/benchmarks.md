@@ -13,9 +13,10 @@ that release ran it, a stream of its own for every frame, and libFLAC's sys
 crate for its levels 0 and 8. It codes two sets with each of the three and
 with this crate: five made sounds at six shapes, fifty 20 ms blocks of each,
 and fourteen recordings, twelve from archive.org, public domain or CC0, and
-two of the user's own, whole, in blocks of 20 ms. A made sound's time is one block's, the least of five passes over the
-fifty, each pass timed as a whole after one to warm up. A recording's is the
-least of three passes' mean block, each block timed on its own, and with it
+two of the user's own, whole, in blocks of 20 ms. A made sound's time is one block's, the least of five passes' mean over
+the fifty, each block timed on its own, after one pass to warm up. A
+recording's is the least of three passes' mean block, each block timed on
+its own as well, and with it
 the least of the passes' 99th-percentile and worst blocks, the latency a
 stream sees; its bytes are the frames' over the recording, a block's share.
 `tools/tables.py` makes the tables below from the log, and the logs the

@@ -302,8 +302,9 @@ fn quantize(coefs: &[f64], precision: u32) -> Option<Predictor> {
 /// The residual `predictor` leaves over `signal`, of `bps` bits a sample,
 /// from its `order`th sample on, `halves` being room for the samples as 16
 /// bits, or as their upper 16 bits and their lower bits. False where a
-/// residual would not fit a 32-bit sample, which only a wide sample's wild
-/// predictor can make.
+/// residual would not fit a 32-bit sample or would be its most negative
+/// value, which FLAC forbids a residual to be, and which only a wide
+/// sample's wild predictor can make.
 pub fn residual(signal: &[i32], predictor: &Predictor, bps: u32, halves: &mut [Vec<i16>; 2], out: &mut Vec<i32>) -> bool {
     out.clear();
     let [upper, lower] = halves;
@@ -396,7 +397,9 @@ fn split<const ORDER: usize>(upper: &[i16], lower: &[i16], signal: &[i32], predi
     }
 }
 
-/// The residual with 64-bit sums, for a sample too wide for 32.
+/// The residual with 64-bit sums, for a sample too wide for 32: false
+/// where one would not fit, or would be `i32::MIN`, which a decoder may
+/// not be able to negate (RFC 9639, 9.2.7.3).
 fn wide(signal: &[i32], predictor: &Predictor, out: &mut Vec<i32>) -> bool {
     let order = predictor.order;
     let c = &predictor.coefs[..order];
@@ -404,6 +407,9 @@ fn wide(signal: &[i32], predictor: &Predictor, out: &mut Vec<i32>) -> bool {
     for w in signal.windows(order + 1) {
         let sum: i64 = c.iter().zip(w[..order].iter().rev()).map(|(&c, &s)| i64::from(c) * i64::from(s)).sum();
         let Ok(r) = i32::try_from(i64::from(w[order]) - (sum >> shift)) else { return false };
+        if r == i32::MIN {
+            return false;
+        }
         out.push(r);
     }
     true
@@ -487,6 +493,18 @@ mod tests {
         assert_eq!(w.0[100], 1.0);
         assert_eq!(w.0[299], 1.0);
         assert_eq!(w.0[399], 0.0);
+    }
+
+    /// A wide sample's residual of exactly `i32::MIN`, which FLAC forbids, is
+    /// refused like one that would not fit, where one past it by one is kept.
+    #[test]
+    fn the_most_negative_residual_is_refused() {
+        let p = Predictor { order: 1, precision: 2, shift: 0, coefs: [1, 0, 0, 0, 0, 0, 0, 0] };
+        let mut out = Vec::new();
+        assert!(!wide(&[1, i32::MIN + 1], &p, &mut out));
+        out.clear();
+        assert!(wide(&[1, i32::MIN + 2], &p, &mut out));
+        assert_eq!(out, [i32::MIN + 1]);
     }
 }
 

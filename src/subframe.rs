@@ -51,6 +51,10 @@ const MAX_PARTITION_ORDER: u32 = 8;
 const MIN_PARTITION: usize = 16;
 /// The largest Rice parameter a 4-bit field holds, 15 being the escape.
 const MAX_PARAM_4: u32 = 14;
+/// The largest a 5-bit field holds, 31 being the escape: a parameter is
+/// never chosen past it, however wild a wide sample's residual, so a
+/// partition's header is always a parameter and never an escape.
+const MAX_PARAM_5: u32 = 30;
 /// The bits a sample a fit must be estimated to save over the best fixed
 /// predictor, after the channel's correction, for a channel coded on its
 /// own to be coded with the fit alone, its fixed path not run.
@@ -871,17 +875,17 @@ fn fixed_pass<const ORDER: usize>(signal: &[i32], out: &mut [i32]) -> u64 {
 /// The Rice parameter for `count` residuals whose zigzag values sum to `sum`,
 /// and the bits they take with it, estimated from the sum alone: the parameter
 /// near the mean's logarithm, one either side of it tried, whichever is
-/// cheapest. No division: the logarithms' difference is within one of the
-/// mean's.
+/// cheapest, none past what a 5-bit field holds. No division: the
+/// logarithms' difference is within one of the mean's.
 #[inline]
 fn best_param(sum: u64, count: u64) -> (u32, u64) {
     if sum < count {
         return (0, count + sum);
     }
-    let near = sum.ilog2() - count.ilog2();
+    let near = (sum.ilog2() - count.ilog2()).min(MAX_PARAM_5);
     let cost = |k: u32| count * (u64::from(k) + 1) + (sum >> k);
     let mut best = (near, cost(near));
-    for k in [near.saturating_sub(1), near + 1] {
+    for k in [near.saturating_sub(1), (near + 1).min(MAX_PARAM_5)] {
         let bits = cost(k);
         if bits < best.1 {
             best = (k, bits);
@@ -924,6 +928,10 @@ mod tests {
         // A mean of 8 wants a parameter near 3.
         let (k, _) = best_param(800, 100);
         assert!((2..=3).contains(&k), "{k}");
+        // A mean folded value past 2^31, which only a wide sample's wild
+        // predictor makes, still gets a parameter the 5-bit field holds.
+        let (k, _) = best_param(u64::from(u32::MAX) * 100, 100);
+        assert_eq!(k, MAX_PARAM_5);
         let (k, _) = best_param(100 << 20, 100);
         assert!((19..=20).contains(&k), "{k}");
     }
