@@ -24,7 +24,8 @@ fit is estimated to win, Rice partitions that cost least and wasted bits
 shifted out. On 20 ms blocks of 16-bit stereo at 48 kHz a block of music takes
 about 31 µs of one core and is 48% of its PCM, speech 19 µs and 30%, silence
 6 µs and sixteen bytes: the bytes libFLAC's default level makes, in two thirds
-of its time on music and half on speech.
+of its time on music and half on speech. Every shape and sound measured
+against libFLAC is in [docs/benchmarks.md](docs/benchmarks.md).
 
 Use it by release tag:
 

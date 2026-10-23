@@ -15,6 +15,10 @@
   Its tuning is for sound heard as it is made with little of a core: a change
   to it is measured first, against what it replaces, on 20 ms blocks, in time a
   block and bytes a block, and the module docs carry the numbers.
+  `tools/bench` measures the crate against libFLAC as v0.0.4 linked it, and
+  `tools/tables.py` makes the tables of `docs/benchmarks.md` from its log:
+  both are run again, and the doc's prose brought to the run, when the
+  tuning changes.
 - After changes run `cargo test` and `cargo clippy --all-targets -- -D warnings`.
   The encoder gets an independent decoder in its tests, symphonia's, which reads
   every frame back bit for bit.
