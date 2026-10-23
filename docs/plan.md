@@ -5,8 +5,8 @@ next, in which order and why. What it is now is in the module docs of
 `src/lib.rs`, `src/subframe.rs` and `src/lpc.rs`; the tables it is measured
 by are in [benchmarks.md](benchmarks.md). Written on 2026-10-22, on the
 first measurement over recordings, at commit e3173f7 of branch
-`own-encoder`; brought to the run of the fit in double precision, its first
-item, the same day.
+`own-encoder`; brought to the run of the fit in double precision the same
+day, and to the night of 2026-10-23, when its six items were measured.
 
 ## What it is for
 
@@ -28,7 +28,7 @@ the block is whole and sent. That is the one use, and it sets what counts.
   whatever it does; what it must not do is take long on one block, since a
   late frame is late sound. A block is at most 2% of its 20 ms today
   ([benchmarks.md](benchmarks.md), the block times). The share of a core is
-  what the mean says, 0.05% to 0.43% on the recordings, and it is a
+  what the mean says, 0.04% to 0.35% on the recordings, and it is a
   desktop's share beside its video encoder.
 - **Bytes are the link's.** A frame's bytes are its bitrate, 30% to 50% of
   the PCM on acoustic music and speech, 69% on a loud modern master at
@@ -77,75 +77,102 @@ plan are brought to the run.
 
 ## Where it stands
 
-From the tables of 2026-10-22, the fit in double precision: 0.46 to 1.01 of
-libFLAC's time a block on the recordings for its bytes within 0.6%, the
-late blocks 0.54 to 0.90 of its; the made sounds 0.42 to 0.94 for the same
-bytes within a byte, the tone at 24 bits 1.05. What is over the line in
-bytes is the pairing chosen before the fit, the train's 1.006, and the
-tone's quantized coefficients; in time, the two 96 kHz 24-bit recordings on
-the line. Where the time goes at 16-bit stereo: the fixed predictors on four
-channels and the pairing about 18 µs, the fit 3.2 µs a channel on two, 2.9
-of it the autocorrelation in double, its residual 1.1, the partitions 1, the
-rest the bits out and the CRC; at 24 bits the residual runs in 32-bit lanes,
-3 µs a channel.
+From the tables of 2026-10-23, after the night the items below were measured:
+0.43 to 0.87 of libFLAC's time a block on the recordings for its bytes
+within 0.2%, the late blocks 0.49 to 0.76 of its; the made sounds 0.41 to
+0.91 for the same bytes within a byte, the pure tone 1.02 at 44.1 kHz and
+1.05 at 24 bits. A block of a recording is 0.04% to 0.35% of one core. Where
+the time goes at 16-bit stereo, on the orchestra, 30 µs: three
+autocorrelations 8.3 µs and the fits from them 1.2, the four channels'
+fixed orders and sums 4.5 and their partitions 3.7, the two fits' residuals
+3.3 and partitions 2, the range check and the stereo split 1.6, the bits
+out 4.1, the CRC 1.
 
 ## Open items, in order
 
-1. **The fit before the pairing, cheaply.** The pairing is chosen on the
-   fixed predictors' bits over left, right, mid and side, then two channels
-   are fitted. libFLAC fits all four and chooses after, and where a fit
-   wins on side but not on right, or by a different margin, the pairing
-   differs: the train station's 1.006 and the Fantasy's 1.004 are this. To
-   measure: the Levinson error estimate, not the bits, of a fit on all four
-   channels, 3.2 µs each, then the pairing on the lesser of each channel's
-   fixed and fitted estimate, then the residual of the two chosen only.
-   Costs 6 µs a block on stereo for the bytes it buys; taken if it buys
-   0.3% or more on the recordings that are over, or if item 2 pays for it.
-2. **The block before as a start.** The sound of one block is mostly the
-   sound of the last: a predictor fitted to the block before, tried on this
-   block for its residual (1.1 µs a channel) without a fit (3.2 µs), is
-   taken where it is within the margin of this block's fit estimate; or the
-   fit is skipped where the block before declined it and this block's
-   order-1 fixed residual is no smaller than its order-0, which is noise.
-   Buys 3 to 6 µs a block on stationary sound and noise, which is what
-   makes noise the dearest made sound at 16 bits (31 µs against speech's
-   22). Costs nothing in bytes where the margin holds, to be measured on
-   the recordings, whose sound changes.
-3. **The late blocks.** A 99th-percentile block is 1.5 to 2.3 times the
-   mean, for both encoders, and this encoder's worst is 104 to 298 µs. To
-   find which blocks those are, by what in them, with the bench logging
-   the worst blocks' positions: if they are the loud ones, writing more
-   Rice bits, the bits writer is the item; if they are where a predictor
-   escapes to the 64-bit residual path, or where a partition order search
-   runs to its end, that path is. Taken where the 99th percentile falls
-   without the mean rising.
-4. **The 24-bit residual.** At 24 bits the predictor's residual runs in
-   32-bit lanes at 3 µs a channel, where 16-bit lanes take 1.1; a 24-bit
-   stream from a desktop is 16-bit samples shifted up as often as not, which
-   wasted bits already finds. Where the samples after the shift fit 16
-   bits, the narrow path should take them: 0.91 on made music and 1.00 on
-   the 78 rpm transfer are this. The indie rock master, 0.91 at 24 bits,
-   is not: its low bits are the mix's noise floor, there is nothing to
-   shift, and its 3 µs a channel in 32-bit lanes is the middling path's
-   own cost, to be looked at on its own if that path is touched.
-5. **The pairing's cost.** Four channels get the fixed predictors' bits,
-   about 18 µs of a 16-bit stereo block's 35. The bits of order 2 alone,
-   or the sum of absolute residuals in place of the Rice bits, may choose
-   the same pairing on nearly every block for a third of the time; measured
-   on the recordings, taken if the pairing changes on under 1% of blocks
-   and the bytes within 0.1%.
-6. **The tone's order.** A pure tone is predicted away by order 2 and every
-   higher order ties on the error estimate, which takes the coefficients as
-   exact; what the frame then costs is their rounding to the precision,
-   and the made tone's bytes moved by a tenth either way with every change
-   to the fit's arithmetic, 1.05 of libFLAC's at 24 bits today. To measure:
-   where orders tie, or where the error estimate is under a bit a sample,
-   the residual of the two lowest tied orders written and the smaller kept,
-   1.1 to 3 µs a channel on those blocks only, which are few in a stream.
-   Last, since a tone is brief.
+1. **The order search in one pass.** The four fixed orders' residuals are
+   four difference passes with their sums, and the zeroth's sum a fifth,
+   4.5 µs a block over four channels; one pass over a window of five
+   samples with the binomial taps as shifts and adds would write all four
+   and sum them, perhaps 2 µs. The passes are the fixed residuals, so the
+   outputs stay.
+2. **The partitions.** Six codings a block take 5.7 µs, 0.9 each: the fold
+   to unsigned, the finest sums, and 63 Rice parameters each tried at three
+   values from the logarithms' difference. Dropping the lowest trial cost 1%
+   to 4% of the bytes, so the three stay; what is left is the search's own
+   arithmetic, or fewer partition orders where the coarse ones have lost.
+3. **The writer.** 4.1 µs a block for two channels, four Rice codes a word;
+   the accumulator's dependency chain is the cost, and a wider gathering
+   before the shift would shorten it.
+4. **The tone's coefficients.** A pure tone's frame is its coefficients'
+   rounding, 1.02 of libFLAC's bytes at 44.1 kHz and 1.05 at 24 bits, where
+   libFLAC chooses the pair on every channel's real bits. The rounding's
+   error as order times the mean square over twelve times four to the shift
+   was measured both in the order choice and in the pairing's gain alone,
+   and cost the Raven 1.3% and 1.6% and the pianos 0.5% to 0.7%: libFLAC's
+   quantization carries each coefficient's rounding into the next, so on
+   smooth sound the errors cancel and the model overstates them. A model of
+   the carried error is the item, if a tone is worth it.
+5. **The autocorrelation**, 2.8 µs a channel at 960 samples in two passes of
+   two double lanes, is at the x86-64 baseline's floor for its 8640
+   multiply-adds; the window's multiply fused into the first pass, or AVX2
+   where a user builds for it, is what is left.
 
 ## Measured and taken
 
+- **The pair chosen on the fit** (item 1 of the plan of 2026-10-22, and
+  item 5 with it): every channel is coded with its fixed predictor first,
+  its residual being what the order search left; its fit is weighed from
+  its autocorrelation and the bits it is estimated to save come off its
+  real fixed bits; the pair is chosen on that, coded, and chosen again with
+  the coded channels' real bits until it stands. The train station went
+  from 1.006 of libFLAC's bytes to 0.995, the Fantasy from 1.004 to 1.002,
+  the prison song and the Raven to 1.000; nothing rose. On the way: chosen
+  on the estimates alone, with libFLAC's estimate clamped at none a sample,
+  the 8-bit speech was 1.63, every quiet channel looking free beside a
+  constant side; with a floor of a bit a sample fitted to the Laplacian the
+  speech came back but the pure tones went 1.05 to 1.10, all channels of a
+  tone tying at the floor where the real cost is the rounding of their
+  coefficients, which goes with amplitude; real bits less the estimated
+  gain settled both, and re-choosing on real bits gave the 48 kHz tone
+  libFLAC's 1008 back where its fits lose on the samples. The mid's
+  autocorrelation is derived from left's, right's and side's, scaled for
+  each one's wasted bits, so three passes serve four channels for no byte;
+  where a channel is one value the pair stands on the fixed bits and only
+  the pair is fitted, 23 to 16 µs on the made speech.
+- **The fit skipped on noise** (item 2): where the last fit weighed on a
+  channel was not estimated to win and this block's fixed order is 0, the
+  fit is skipped, and tried again every eighth block, since a tone high
+  enough that the differences do not shorten it is noise by this test.
+  White noise fell from 37 to 22 µs a block and the made noise from 30 to
+  17, for no byte. The margin's "declined" does not serve: on noise the fit
+  is within the margin above the fixed predictor, tried, and loses, every
+  block. Carrying the block before's predictor into this block as a start
+  was not measured, the skip taking the whole of what it could save.
+- **The late blocks** (item 3): the bench logs the block that was slowest
+  at its least over the passes and dumps every block's least time and
+  bytes. Read that way, this encoder's own 99th-percentile block is within
+  a quarter of its mean on every recording and its worst 1.2 to 1.7 times
+  it, where a single pass's 99th percentile is 1.5 to 2.3 times the mean
+  for both encoders: the spread the tables show is the machine's. The
+  encoder's own late blocks are the loud ones, and on white noise the
+  eighth blocks where the fit is tried again. Nothing to take.
+- **The 24-bit residual** (item 4), and the 17-bit side channel with it:
+  a sample of 17 to 24 bits is split into its upper 16 bits and its lower
+  bits, each part's sum taken in 16-bit lanes as the 16-bit path takes
+  them, and the two combined exactly under the shift. The 32-bit lanes the
+  side channel ran in have no multiply at the baseline and took four times
+  the 16-bit path's time, 13% of a 16-bit stereo block; the 24-bit samples
+  ran in 64-bit scalars. The Goldberg Aria fell from 84 to 66 µs a block,
+  the 78 rpm transfer from 86 to 70, made 24-bit music from 43 to 32.
+- **The time of a block, where the timers pointed**: the fixed residual
+  was computed twice, once as the order search's differences and once to
+  code, 3 µs a block, now once; the range check folded over a pair and the
+  stereo split indexed four arrays, scalar both, 3.75 µs, now two folds and
+  one zipped pass, 1.6; the finest partitions' sums ran in 32-bit lanes
+  over blocks of 32 that a partition of 30 or 60 samples never fills, so
+  scalar, now 64-bit lanes over fours; the writer took two Rice codes a
+  word, now four, with no mask on a value made to fit, 6.5 µs to 4.1.
 - **The fit in double precision** (item 1 of the first plan): the
   autocorrelation in `f32` lanes misfit the Goldberg Aria to 1.011 of
   libFLAC's bytes, the Fantasy to 1.010, the Raven to 1.006 and the made
@@ -159,11 +186,23 @@ rest the bits out and the CRC; at 24 bits the residual runs in 32-bit lanes,
   measured, exact sums making it moot. A white-noise correction of the zero
   lag, tried for the tone, cost bytes on every recording from one part in
   ten million and moved the tone's bytes either way, so none is applied.
-  The bits estimate is clamped at none a sample as libFLAC's is, so the
-  orders that predict a tone exactly tie and the lowest is taken.
 
 ## Measured and not taken
 
+- **The tone's order** (item 6): the next order tied with the fit at the
+  floor, tried on the samples beside it, changed no tone's byte at any
+  shape. The tone's loss is in the pairing, not the order. Out.
+- **The coefficients' rounding in the estimate**, as order times the mean
+  square over twelve times four to the shift: in the order choice it cost
+  the Raven 1.3%, the Fantasy 0.7% and the orchestra 0.5%; in the pairing's
+  gain alone the Raven 1.6%, and the 24-bit tone went to 1.09. Out, as said
+  under the open items.
+- **The lowest Rice parameter trial dropped**, the parameter from the
+  logarithms' difference and the one above tried alone: 1% to 4% more
+  bytes on every sound but silence, for no time. The three trials stay.
+- **The estimate clamped at none a sample**, libFLAC's, as the pairing's
+  measure: the 8-bit speech at 1.63. The floor of a bit a sample stays, and
+  the pairing stands on real bits.
 - **AVX2 by runtime dispatch** on the fixed path: nothing gained at the
   baseline's lanes, and it needs `unsafe`. Out.
 - **Fitting the tone when the fixed predictor's estimate is better**: the

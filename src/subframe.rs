@@ -3,13 +3,24 @@
 //! A channel is coded as a constant if every sample is the same, as it is if
 //! nothing beats that, and otherwise with the predictor that leaves the
 //! smallest residual: first FLAC's fixed polynomial of the order that does,
-//! and then, for a channel that is to be written, a linear predictor fitted
-//! to the block if that writes fewer bits still. A residual is Rice-coded in
-//! the partitions that cost least. Bits the samples all have zero at the
-//! bottom are shifted out first, as FLAC's wasted bits.
+//! coded and counted ([`Channel::analyse`]); then a linear predictor is
+//! fitted from the channel's autocorrelation and kept aside with the bits it
+//! is estimated to save ([`Channel::weigh`]), which is what a stereo pair is
+//! weighed on; and a channel that is to be written has the fit tried on its
+//! samples and kept where it writes fewer bits ([`Channel::code`]). A
+//! residual is Rice-coded in the partitions that cost least. Bits the
+//! samples all have zero at the bottom are shifted out first, as FLAC's
+//! wasted bits.
+//!
+//! Measured on 20 ms blocks of 16-bit stereo at 48 kHz, a channel's fixed
+//! orders and their sums are about 1.1 µs, its fixed coding's partitions 1,
+//! its autocorrelation 2.8 and the fit from it 0.3, the fit's residual 1.1
+//! through 16-bit lanes and 1.6 split for the 17-bit side channel, and its
+//! partitions 1; writing a block's two channels is about 4 µs, four Rice
+//! codes a word.
 
 use crate::bits::BitWriter;
-use crate::lpc::{self, Predictor, Window};
+use crate::lpc::{self, Autocorrelation, Candidate, Predictor, Window};
 
 /// The highest fixed predictor order FLAC has.
 const MAX_FIXED_ORDER: usize = 4;
@@ -80,12 +91,14 @@ pub struct Channel {
     best: Coding,
     /// Room for a coding tried against it.
     trial: Coding,
-    /// Room for the orders' residuals while the fixed order is chosen.
-    scratch: [Vec<i32>; 2],
+    /// The residual of each fixed predictor order from 1 to 4, which choosing
+    /// the order leaves behind, so the one chosen is not computed again.
+    scratch: [Vec<i32>; MAX_FIXED_ORDER],
     /// The samples windowed for the linear predictor's fit.
     windowed: Vec<f64>,
-    /// The samples as 16 bits, for a linear predictor's residual when they fit.
-    halves: Vec<i16>,
+    /// The samples as 16 bits for a linear predictor's residual, or where
+    /// they are wider their upper 16 bits and their lower bits.
+    halves: [Vec<i16>; 2],
     /// Sums of a folded residual over the finest partitions.
     sums: Vec<u64>,
     /// The Rice parameters of the partitioning being tried.
@@ -98,7 +111,23 @@ pub struct Channel {
     precision: u32,
     /// The fixed predictor order that left the smallest residual.
     fixed_order: usize,
+    /// The bits the channel is estimated to take, for weighing it against
+    /// another before either is coded.
+    estimate: f64,
+    /// The linear predictor weighing found worth trying.
+    fit: Option<Candidate>,
+    /// Whether `best` is the coding to write, or only the start of one.
+    coded: bool,
+    /// Whether the block is long enough for a linear predictor to be fitted.
+    predictable: bool,
+    /// Whether the last fit weighed was not worth trying.
+    fit_declined: bool,
+    /// The blocks in a row the fit has been skipped on.
+    skipped: u8,
 }
+
+/// The blocks in a row a fit is skipped on before it is tried again.
+const SKIPS: u8 = 7;
 
 impl Channel {
     /// A channel of `block` samples, coefficients at `precision` bits.
@@ -107,28 +136,48 @@ impl Channel {
             signal: vec![0; block],
             best: Coding::new(block),
             trial: Coding::new(block),
-            scratch: [vec![0; block], vec![0; block]],
+            scratch: std::array::from_fn(|_| vec![0; block]),
             windowed: vec![0.0; block],
-            halves: vec![0; block],
+            halves: [vec![0; block], vec![0; block]],
             sums: vec![0; 1 << MAX_PARTITION_ORDER],
             params: vec![0; 1 << MAX_PARTITION_ORDER],
             wasted: 0,
             bps: 0,
             precision,
             fixed_order: 0,
+            estimate: 0.0,
+            fit: None,
+            coded: false,
+            predictable: false,
+            fit_declined: false,
+            skipped: 0,
         }
     }
 
-    /// The bits the subframe takes as coded so far.
+    /// The bits the subframe takes as coded.
     pub fn bits(&self) -> u64 {
         self.best.bits
     }
 
-    /// Decide how `signal`, of `bps` bits a sample, is coded without a fit,
-    /// and count the bits. The passes over the samples are plain loops the
-    /// compiler vectorises for whatever a target is built for; compiling them
-    /// again for AVX2 and picking that at run time was measured to gain
-    /// nothing.
+    /// The bits the subframe would take written as it is.
+    pub fn verbatim(&self) -> u64 {
+        self.header() + self.signal.len() as u64 * u64::from(self.bps)
+    }
+
+    /// The bits the subframe is estimated to take once coded, for choosing
+    /// between channels before coding them.
+    pub fn estimate(&self) -> f64 {
+        self.estimate
+    }
+
+    /// Analyse `signal`, of `bps` bits a sample: shift the wasted bits out,
+    /// code it with the fixed predictor of the order that leaves the smallest
+    /// residual, or as a constant or as it is, and count the bits; then fit
+    /// a linear predictor and keep it aside where it is estimated to do
+    /// better, with the bits it is estimated to save. The passes over the
+    /// samples are plain loops the compiler vectorises for whatever a target
+    /// is built for; compiling them again for AVX2 and picking that at run
+    /// time was measured to gain nothing.
     pub fn analyse(&mut self, bps: u32) {
         let n = self.signal.len();
         let all = self.signal.iter().fold(0i32, |acc, &s| acc | s);
@@ -140,42 +189,105 @@ impl Channel {
         }
         self.bps = bps - self.wasted;
         let header = self.header();
+        self.fit = None;
+        self.fixed_order = 0;
+        self.coded = true;
+        self.predictable = false;
 
         let first = self.signal[0];
         if self.signal.iter().all(|&s| s == first) {
             self.best.kind = Kind::Constant(first);
             self.best.bits = header + u64::from(self.bps);
+            self.estimate = self.best.bits as f64;
             return;
         }
         self.best.kind = Kind::Verbatim;
-        self.best.bits = header + n as u64 * u64::from(self.bps);
-
-        self.fixed_order = 0;
+        self.best.bits = self.verbatim();
         if n <= MAX_FIXED_ORDER {
+            self.estimate = self.best.bits as f64;
             return;
         }
-        let order = best_order(&self.signal, &mut self.scratch);
-        self.fixed_order = order;
-        residual(&self.signal, order, &mut self.best.residual);
-        let bits = header + (order as u64) * u64::from(self.bps) + partition(&mut self.best, n, &mut self.sums, &mut self.params);
-        if bits < self.best.bits {
-            self.best.kind = Kind::Fixed { order };
-            self.best.bits = bits;
-        }
+        self.fixed_order = best_order(&self.signal, &mut self.scratch);
+        self.fixed();
+        self.estimate = self.best.bits as f64;
+        self.predictable = lpc::MAX_ORDER.min(n / 8) > 0;
     }
 
-    /// Fit a linear predictor to the channel analysed and keep it if it
-    /// writes fewer bits than the coding so far.
-    pub fn refine(&mut self, window: &Window) {
-        if let Kind::Constant(_) = self.best.kind {
-            return;
-        }
+    /// The autocorrelation of the channel analysed, through `window`, for
+    /// its fit; none where there is nothing to fit.
+    pub fn autocorrelation(&mut self, window: &Window) -> Option<Autocorrelation> {
+        self.predictable.then(|| lpc::autocorrelation(&self.signal, window, &mut self.windowed))
+    }
+
+    /// Fit a linear predictor from `autoc`, the channel's autocorrelation or
+    /// one derived for it, and keep it aside where it is estimated to beat
+    /// the fixed predictor, taking the bits it is estimated to save off the
+    /// channel's estimate. The estimate is good at differences and poor at
+    /// levels: the saving comes off the fixed coding's real bits, which know
+    /// the width, the Rice codes and the rounding a pure tone's coefficients
+    /// add, none of which the estimate sees.
+    pub fn weigh(&mut self, autoc: &Autocorrelation) {
         let n = self.signal.len();
-        let max_order = lpc::MAX_ORDER.min(n / 8);
-        if max_order == 0 {
-            return;
+        let estimate = lpc::estimate(autoc, n, lpc::MAX_ORDER.min(n / 8), self.bps, self.precision, self.fixed_order);
+        if let Some(fit) = &estimate.fit {
+            self.estimate -= (estimate.fixed - fit.bits()).max(0.0);
         }
-        let Some(predictor) = lpc::fit(&self.signal, window, &mut self.windowed, max_order, self.bps, self.precision, self.fixed_order) else { return };
+        // Declined for the skip's purposes where it is not estimated to win:
+        // on noise the fit is within the margin above the fixed predictor,
+        // tried, and loses, every block.
+        self.fit_declined = estimate.fit.as_ref().is_none_or(|fit| fit.bits() >= estimate.fixed);
+        self.skipped = 0;
+        self.fit = estimate.fit;
+        self.coded = false;
+    }
+
+    /// Whether a fit is worth weighing on this block: not where there is
+    /// nothing to fit, and not where the block is noise by the fixed
+    /// predictors, order 0 leaving the smallest residual, and the last fit
+    /// weighed on this channel was not estimated to win, which is what the
+    /// sound of a quiet desktop is block after block. The fit is tried again
+    /// every eighth block, since a tone high enough that the differences do
+    /// not shorten it is noise by this test and not to the fit.
+    pub fn fit_wanted(&mut self) -> bool {
+        if !self.predictable {
+            return false;
+        }
+        if self.fixed_order == 0 && self.fit_declined && self.skipped < SKIPS {
+            self.skipped += 1;
+            return false;
+        }
+        true
+    }
+
+    /// Whether the channel is one value, coded as a constant.
+    pub fn constant(&self) -> bool {
+        matches!(self.best.kind, Kind::Constant(_))
+    }
+
+    /// The bits every sample had zero at the bottom, shifted out by analysing.
+    pub fn wasted(&self) -> u32 {
+        self.wasted
+    }
+
+
+    /// Code the channel analysed: the linear predictor's residual where one
+    /// was kept aside, taken if it writes fewer bits than the coding so far;
+    /// from then on the channel's estimate is its bits.
+    pub fn code(&mut self) {
+        if !self.coded {
+            self.coded = true;
+            if let Some(fit) = self.fit.take() {
+                self.try_fit(&fit);
+            }
+        }
+        // Coded, the estimate is the bits.
+        self.estimate = self.best.bits as f64;
+    }
+
+    /// Try `fit` on the samples and keep it where it writes fewer bits than
+    /// the coding so far.
+    fn try_fit(&mut self, fit: &Candidate) {
+        let Some(predictor) = fit.quantized(self.bps, self.precision) else { return };
         if !lpc::residual(&self.signal, &predictor, self.bps, &mut self.halves, &mut self.trial.residual) {
             return;
         }
@@ -185,11 +297,26 @@ impl Channel {
             + 4
             + 5
             + order * u64::from(predictor.precision)
-            + partition(&mut self.trial, n, &mut self.sums, &mut self.params);
+            + partition(&mut self.trial, self.signal.len(), &mut self.sums, &mut self.params);
         if bits < self.best.bits {
             self.trial.kind = Kind::Lpc(predictor);
             self.trial.bits = bits;
             std::mem::swap(&mut self.best, &mut self.trial);
+        }
+    }
+
+    /// The fixed predictor of the order found, its residual as the order
+    /// search left it, kept where it beats the coding so far.
+    fn fixed(&mut self) {
+        let n = self.signal.len();
+        let order = self.fixed_order;
+        let residual = if order == 0 { &self.signal[..] } else { &self.scratch[order - 1][..n - order] };
+        self.best.residual.clear();
+        self.best.residual.extend_from_slice(residual);
+        let bits = self.header() + (order as u64) * u64::from(self.bps) + partition(&mut self.best, n, &mut self.sums, &mut self.params);
+        if bits < self.best.bits {
+            self.best.kind = Kind::Fixed { order };
+            self.best.bits = bits;
         }
     }
 
@@ -256,20 +383,28 @@ impl Channel {
             w.put(u64::from(k), param_bits);
             let start = if i == 0 { 0 } else { i * size - order };
             let mask = (1u32 << k) - 1;
-            let (pairs, odd) = coding.folded[start..(i + 1) * size - order].as_chunks::<2>();
-            for &[u1, u2] in pairs {
-                // Two codes in one write where they fit a word, which at the
-                // parameters sound gives they nearly always do.
-                let (t1, t2) = ((u1 >> k) + 1 + k, (u2 >> k) + 1 + k);
-                if t1 + t2 <= 63 {
-                    let code = |u: u32| (1u64 << k) | u64::from(u & mask);
-                    w.put((code(u1) << t2) | code(u2), t1 + t2);
+            let code = |u: u32| (1u64 << k) | u64::from(u & mask);
+            let len = |u: u32| (u >> k) + 1 + k;
+            // Four codes in one write where they fit a word, which at the
+            // parameters sound gives they nearly always do, two where four
+            // do not: the writer's work is a word's whatever the codes in it.
+            let (quads, rest) = coding.folded[start..(i + 1) * size - order].as_chunks::<4>();
+            for &[u1, u2, u3, u4] in quads {
+                let (t1, t2, t3, t4) = (len(u1), len(u2), len(u3), len(u4));
+                if t1 + t2 + t3 + t4 <= 63 {
+                    w.fitted((((code(u1) << t2 | code(u2)) << t3 | code(u3)) << t4) | code(u4), t1 + t2 + t3 + t4);
                 } else {
-                    w.rice(u1 >> k, u1 & mask, k);
-                    w.rice(u2 >> k, u2 & mask, k);
+                    for (a, b, ta, tb) in [(u1, u2, t1, t2), (u3, u4, t3, t4)] {
+                        if ta + tb <= 63 {
+                            w.fitted((code(a) << tb) | code(b), ta + tb);
+                        } else {
+                            w.rice(a >> k, a & mask, k);
+                            w.rice(b >> k, b & mask, k);
+                        }
+                    }
                 }
             }
-            for &u in odd {
+            for &u in rest {
                 w.rice(u >> k, u & mask, k);
             }
         }
@@ -280,8 +415,12 @@ impl Channel {
 /// over a block of `n`, and return the bits the residual coding takes.
 fn partition(coding: &mut Coding, n: usize, sums: &mut [u64], params: &mut [u8]) -> u64 {
     let order = n - coding.residual.len();
-    coding.folded.clear();
-    coding.folded.extend(coding.residual.iter().map(|&r| zigzag(r)));
+    // Sized first and written through a slice, which the compiler
+    // vectorises where it leaves `extend` scalar.
+    coding.folded.resize(coding.residual.len(), 0);
+    for (f, &r) in coding.folded.iter_mut().zip(&coding.residual) {
+        *f = zigzag(r);
+    }
     let finest = MAX_PARTITION_ORDER.min(n.trailing_zeros()).min((n / (order + 1).max(MIN_PARTITION)).ilog2());
     let parts = 1usize << finest;
     let size = n >> finest;
@@ -324,23 +463,20 @@ fn zigzag(r: i32) -> u32 {
     ((r << 1) ^ (r >> 31)) as u32
 }
 
-/// The sum of `values`, taken in eight lanes of 32 bits over blocks of 32,
-/// which the compiler vectorises: four of the 29 bits a folded residual can
-/// have fit a lane.
+/// The sum of `values`, taken in four lanes of 64 bits, which the compiler
+/// vectorises. Lanes of 32 bits over blocks of 32 were tried: a partition
+/// of a 20 ms block is 30 or 60 samples, which never fills a block of 32,
+/// and the sum went scalar.
 #[inline]
 fn wide_sum(values: &[u32]) -> u64 {
-    let (blocks, rest) = values.as_chunks::<32>();
-    let mut total = 0u64;
-    for block in blocks {
-        let mut lanes = [0u32; 8];
-        for eight in block.as_chunks::<8>().0 {
-            for (lane, &v) in lanes.iter_mut().zip(eight) {
-                *lane += v;
-            }
+    let (fours, rest) = values.as_chunks::<4>();
+    let mut lanes = [0u64; 4];
+    for four in fours {
+        for (lane, &v) in lanes.iter_mut().zip(four) {
+            *lane += u64::from(v);
         }
-        total += lanes.iter().map(|&lane| u64::from(lane)).sum::<u64>();
     }
-    total + rest.iter().map(|&v| u64::from(v)).sum::<u64>()
+    lanes.iter().sum::<u64>() + rest.iter().map(|&v| u64::from(v)).sum::<u64>()
 }
 
 /// The sum of the magnitudes of `values`, in eight lanes over blocks of 64:
@@ -364,24 +500,27 @@ fn abs_sum(values: &[i32]) -> u64 {
 /// The fixed predictor order whose residual is smallest in all, judged over
 /// the samples every order predicts; the lower order on a tie. Each order's
 /// residual is the difference of the one before, taken in a pass of its own
-/// through `scratch`, which the compiler vectorises.
+/// into `scratch[order - 1]`, which the compiler vectorises, and left there
+/// for the order chosen to be coded from.
 #[inline]
-fn best_order(signal: &[i32], scratch: &mut [Vec<i32>; 2]) -> usize {
+fn best_order(signal: &[i32], scratch: &mut [Vec<i32>; MAX_FIXED_ORDER]) -> usize {
     let n = signal.len();
-    let [a, b] = scratch;
-    let (a, b) = (&mut a[..n - 1], &mut b[..n - 2]);
     let mut sums = [0u64; MAX_FIXED_ORDER + 1];
     // An order's residual starts `order` samples in, so the samples every
     // order predicts begin that much later in each.
     sums[0] = abs_sum(&signal[MAX_FIXED_ORDER..]);
-    difference(signal, a);
-    sums[1] = abs_sum(&a[MAX_FIXED_ORDER - 1..]);
-    difference(a, b);
-    sums[2] = abs_sum(&b[MAX_FIXED_ORDER - 2..]);
-    difference(b, &mut a[..n - 3]);
-    sums[3] = abs_sum(&a[MAX_FIXED_ORDER - 3..n - 3]);
-    difference(&a[..n - 3], &mut b[..n - 4]);
-    sums[4] = abs_sum(&b[..n - 4]);
+    let mut before = signal;
+    let mut rest = &mut scratch[..];
+    for order in 1..=MAX_FIXED_ORDER {
+        let (this, after) = rest.split_first_mut().expect("an order's residual");
+        let this = &mut this[..n - order];
+        let whole = difference(before, this);
+        // The sum is of the whole residual; the few samples before the
+        // highest order's start come off it.
+        sums[order] = whole - this[..MAX_FIXED_ORDER - order].iter().map(|&v| u64::from(v.unsigned_abs())).sum::<u64>();
+        before = this;
+        rest = after;
+    }
     let mut best = 0;
     for order in 1..=MAX_FIXED_ORDER {
         if sums[order] < sums[best] {
@@ -391,34 +530,33 @@ fn best_order(signal: &[i32], scratch: &mut [Vec<i32>; 2]) -> usize {
     best
 }
 
-/// Each value less the one before it, into `out`, one shorter.
+/// Each value less the one before it, into `out`, one shorter, and the sum
+/// of their magnitudes, taken in the same pass in eight lanes over blocks
+/// of 64 as [`abs_sum`] takes it.
 #[inline]
-fn difference(values: &[i32], out: &mut [i32]) {
-    for ((o, &after), &before) in out.iter_mut().zip(&values[1..]).zip(values) {
-        *o = after.wrapping_sub(before);
+fn difference(values: &[i32], out: &mut [i32]) -> u64 {
+    let n = out.len();
+    let (blocks, rest) = out.as_chunks_mut::<64>();
+    let mut total = 0u64;
+    for (k, block) in blocks.iter_mut().enumerate() {
+        let from = &values[k * 64..k * 64 + 65];
+        let mut lanes = [0u32; 8];
+        for (eight, w) in block.as_chunks_mut::<8>().0.iter_mut().zip(from.windows(9).step_by(8)) {
+            for (j, (o, lane)) in eight.iter_mut().zip(lanes.iter_mut()).enumerate() {
+                let d = w[j + 1].wrapping_sub(w[j]);
+                *o = d;
+                *lane += d.unsigned_abs();
+            }
+        }
+        total += lanes.iter().map(|&lane| u64::from(lane)).sum::<u64>();
     }
-}
-
-/// The residual of the fixed predictor of `order` over `signal`, from its
-/// `order`th sample on.
-#[inline]
-fn residual(signal: &[i32], order: usize, out: &mut Vec<i32>) {
-    out.clear();
-    let s = signal;
-    match order {
-        0 => out.extend_from_slice(s),
-        1 => out.extend(s.windows(2).map(|w| w[1].wrapping_sub(w[0]))),
-        2 => out.extend(s.windows(3).map(|w| w[2].wrapping_sub(2i32.wrapping_mul(w[1])).wrapping_add(w[0]))),
-        3 => out.extend(s.windows(4).map(|w| {
-            w[3].wrapping_sub(3i32.wrapping_mul(w[2])).wrapping_add(3i32.wrapping_mul(w[1])).wrapping_sub(w[0])
-        })),
-        _ => out.extend(s.windows(5).map(|w| {
-            w[4].wrapping_sub(4i32.wrapping_mul(w[3]))
-                .wrapping_add(6i32.wrapping_mul(w[2]))
-                .wrapping_sub(4i32.wrapping_mul(w[1]))
-                .wrapping_add(w[0])
-        })),
+    let done = n - rest.len();
+    for ((o, &after), &before) in rest.iter_mut().zip(&values[done + 1..]).zip(&values[done..]) {
+        let d = after.wrapping_sub(before);
+        *o = d;
+        total += u64::from(d.unsigned_abs());
     }
+    total
 }
 
 /// The Rice parameter for `count` residuals whose zigzag values sum to `sum`,
@@ -449,7 +587,7 @@ mod tests {
 
     #[test]
     fn the_order_with_the_smallest_residual_is_chosen() {
-        let mut scratch = [vec![0; 64], vec![0; 64]];
+        let mut scratch: [Vec<i32>; MAX_FIXED_ORDER] = std::array::from_fn(|_| vec![0; 64]);
         let ramp: Vec<i32> = (0..64).collect();
         assert_eq!(best_order(&ramp, &mut scratch), 2, "a ramp has a zero second difference");
         let parabola: Vec<i32> = (0..64).map(|i| i * i).collect();
@@ -458,13 +596,17 @@ mod tests {
         assert_eq!(best_order(&noise, &mut scratch), 0, "noise is left as it is");
     }
 
+    /// Each order's residual is left where the order search put it: what
+    /// the fixed polynomial of that order misses, from its `order`th sample.
     #[test]
     fn a_residual_is_what_the_predictor_misses() {
-        let mut out = Vec::new();
-        residual(&[1, 4, 9, 16, 25, 36], 2, &mut out);
-        assert_eq!(out, [2, 2, 2, 2]);
-        residual(&[1, 4, 9, 16, 25, 36], 0, &mut out);
-        assert_eq!(out, [1, 4, 9, 16, 25, 36]);
+        let mut scratch: [Vec<i32>; MAX_FIXED_ORDER] = std::array::from_fn(|_| vec![0; 8]);
+        let squares = [1, 4, 9, 16, 25, 36, 49, 64];
+        assert_eq!(best_order(&squares, &mut scratch), 3, "a parabola has a zero third difference");
+        assert_eq!(scratch[0][..7], [3, 5, 7, 9, 11, 13, 15]);
+        assert_eq!(scratch[1][..6], [2, 2, 2, 2, 2, 2]);
+        assert_eq!(scratch[2][..5], [0, 0, 0, 0, 0]);
+        assert_eq!(scratch[3][..4], [0, 0, 0, 0]);
     }
 
     #[test]
@@ -495,15 +637,34 @@ mod tests {
     fn the_fit_is_kept_only_where_it_wins() {
         let n = 960;
         let window = Window::new(n);
+        let two_tones = |ch: &mut Channel| {
+            for (i, s) in ch.signal.iter_mut().enumerate() {
+                *s = (12000.0 * (i as f64 * 0.35).sin() + 6000.0 * (i as f64 * 0.9).sin()).round() as i32;
+            }
+        };
+        let weigh = |ch: &mut Channel| {
+            let autoc = ch.autocorrelation(&window).expect("long enough to fit");
+            ch.weigh(&autoc);
+        };
+        // Coded without the fit it was found worth, for the fixed bits.
         let mut ch = Channel::new(n, 10);
-        for (i, s) in ch.signal.iter_mut().enumerate() {
-            *s = (12000.0 * (i as f64 * 0.35).sin() + 6000.0 * (i as f64 * 0.9).sin()).round() as i32;
-        }
+        two_tones(&mut ch);
         ch.analyse(16);
-        let fixed = ch.bits();
-        ch.refine(&window);
+        weigh(&mut ch);
+        assert!(ch.fit.is_some());
+        ch.fit = None;
+        ch.code();
+        let fixed = ch.best.bits;
+        assert!(matches!(ch.best.kind, Kind::Fixed { .. }), "{:?}", ch.best.kind);
+
+        let mut ch = Channel::new(n, 10);
+        two_tones(&mut ch);
+        ch.analyse(16);
+        weigh(&mut ch);
+        assert!(ch.estimate() < fixed as f64, "estimated {} against fixed {fixed}", ch.estimate());
+        ch.code();
         assert!(matches!(ch.best.kind, Kind::Lpc(_)), "{:?}", ch.best.kind);
-        assert!(ch.bits() * 5 < fixed * 4, "fitted {} against fixed {fixed}", ch.bits());
+        assert!(ch.best.bits * 5 < fixed * 4, "fitted {} against fixed {fixed}", ch.best.bits);
         assert_eq!(ch.best.residual.len() + ch.best.kind.order(), n);
 
         let mut ch = Channel::new(n, 10);
@@ -515,8 +676,8 @@ mod tests {
             *s = (state >> 21) as i32 - 1024;
         }
         ch.analyse(16);
-        let before = (ch.best.kind, ch.bits());
-        ch.refine(&window);
-        assert_eq!((ch.best.kind, ch.bits()), before);
+        weigh(&mut ch);
+        ch.code();
+        assert!(matches!(ch.best.kind, Kind::Fixed { order: 0 }), "{:?}", ch.best.kind);
     }
 }

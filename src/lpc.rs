@@ -5,7 +5,8 @@
 //! The samples are seen through a Tukey window, their autocorrelation taken
 //! to the highest order, and Levinson-Durbin gives the predictor of every
 //! order up to it with the error each leaves; the order estimated cheapest,
-//! residual and coefficients together, is quantized and kept.
+//! residual and coefficients together, is kept as a candidate with its
+//! estimate, and quantized where the channel is to be written.
 
 /// The highest order fitted; libFLAC's default level stops here too.
 pub const MAX_ORDER: usize = 8;
@@ -14,7 +15,7 @@ const MAX_SHIFT: i32 = 15;
 /// The bits a sample the fit may be estimated to lose to the fixed predictor
 /// and still be tried: the estimates' difference was measured to be within
 /// this of the truth, no block's bytes changing between this and no margin.
-const MARGIN: f64 = 1.0 / 16.0;
+pub const MARGIN: f64 = 1.0 / 16.0;
 
 /// The quantized predictor of one block.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -65,52 +66,117 @@ pub fn precision(bits: u32, block: usize) -> u32 {
     }
 }
 
-/// Fit a predictor of up to `max_order` to `signal`, of `bps` bits a sample,
-/// with coefficients of about `precision` bits: the order whose estimated
-/// bits, residual and coefficients together, are fewest. None where nothing
-/// of the signal is left to predict, or where the fixed predictor of
-/// `fixed_order` is estimated, from the same autocorrelation, to do as well:
-/// the estimates share whatever a Rice code adds to the error's logarithm,
-/// so their difference is a fair guess at the real one.
-pub fn fit(signal: &[i32], window: &Window, windowed: &mut [f64], max_order: usize, bps: u32, precision: u32, fixed_order: usize) -> Option<Predictor> {
-    let n = signal.len();
-    debug_assert!((1..=MAX_ORDER).contains(&max_order) && n > max_order);
+/// What a channel's autocorrelation says its coding will cost, in bits
+/// estimated from the squared error a predictor leaves, as libFLAC estimates
+/// them: the estimates share whatever a Rice code adds to the error's
+/// logarithm, so their differences are fair guesses at the real ones, within
+/// 0.04 bit a sample measured at 16 bits.
+pub struct Estimate {
+    /// The bits of the fixed predictor of the order given, residual and
+    /// warm-up samples.
+    pub fixed: f64,
+    /// The fitted predictor estimated cheapest, where it is estimated to
+    /// beat the fixed one or come within [`MARGIN`] of it; none where nothing
+    /// of the signal is left to predict or the fixed predictor does as well.
+    pub fit: Option<Candidate>,
+}
+
+/// A predictor fitted but not yet quantized, with the bits it is estimated
+/// to take, residual, warm-up samples and coefficients together.
+pub struct Candidate {
+    order: usize,
+    coefs: [f64; MAX_ORDER],
+    bits: f64,
+}
+
+impl Candidate {
+    /// The bits the fit is estimated to take, on the same scale as
+    /// [`Estimate::fixed`].
+    pub fn bits(&self) -> f64 {
+        self.bits
+    }
+}
+
+/// A channel's autocorrelation through the window, at every lag to the
+/// highest order.
+pub type Autocorrelation = [f64; MAX_ORDER + 1];
+
+/// The autocorrelation of `signal` seen through `window`, `windowed` being
+/// room for the product.
+pub fn autocorrelation(signal: &[i32], window: &Window, windowed: &mut [f64]) -> Autocorrelation {
     for ((x, &s), &w) in windowed.iter_mut().zip(signal).zip(&window.0) {
         *x = f64::from(s) * w;
     }
     let mut autoc = [0f64; MAX_ORDER + 1];
-    autocorrelation(windowed, &mut autoc);
+    lags::<0, 5>(windowed, &mut autoc);
+    lags::<5, 4>(windowed, &mut autoc);
+    autoc
+}
+
+/// Fit a predictor of up to `max_order` to a channel of `n` samples of `bps`
+/// bits from its autocorrelation, with coefficients of about `precision`
+/// bits, and estimate its bits beside the fixed predictor of
+/// `fixed_order`'s from the same autocorrelation. The fit is the order
+/// whose estimated bits are fewest; the orders that predict a tone away tie
+/// at the floor and the lowest is taken.
+pub fn estimate(autoc: &Autocorrelation, n: usize, max_order: usize, bps: u32, precision: u32, fixed_order: usize) -> Estimate {
+    debug_assert!((1..=MAX_ORDER).contains(&max_order) && n > max_order);
+    // The residual's bits from the error it leaves: a Rice code of a
+    // Laplacian residual of mean magnitude m, which is the root of half the
+    // mean square, costs about log2(1 + 2m) + 1 bits a sample, a bit at the
+    // least where the residual is at the width's floor and log2(m) + 2 where
+    // it is large; libFLAC's estimate, log2(m), is the same but for the two
+    // bits and the floor, and the floor is what tells a quiet channel from a
+    // constant one. Then each warm-up sample at the width of a sample, each
+    // coefficient at that and its precision.
+    let scale = 0.5 / n as f64;
+    let bits_of = |err: f64, order: usize, overhead: f64| ((1.0 + 2.0 * (err * scale).max(0.0).sqrt()).log2() + 1.0) * (n - order) as f64 + order as f64 * overhead;
+    let fixed = bits_of(fixed_error(autoc, fixed_order), fixed_order, f64::from(bps));
 
     let mut coefs = [[0f64; MAX_ORDER]; MAX_ORDER];
     let mut errors = [0f64; MAX_ORDER];
-    let orders = levinson(&autoc, max_order, &mut coefs, &mut errors);
-    if orders == 0 {
-        return None;
-    }
-
-    // The order estimated cheapest: the residual's bits from the error it
-    // leaves, as libFLAC estimates them, no fewer than none a sample, so
-    // the orders that predict a tone away tie and the lowest is taken, and
-    // each coefficient at the width of a sample and a coefficient.
-    let scale = 0.5 / n as f64;
+    let orders = levinson(autoc, max_order, &mut coefs, &mut errors);
     let overhead = f64::from(bps + precision);
-    let estimate = |err: f64, order: usize, overhead: f64| (0.5 * (err * scale).log2()).max(0.0) * (n - order) as f64 + order as f64 * overhead;
     let mut best = (0, f64::INFINITY);
     for (i, &err) in errors[..orders].iter().enumerate() {
         let order = i + 1;
-        let bits = estimate(err, order, overhead);
+        let bits = bits_of(err, order, overhead);
         if bits < best.1 {
             best = (order, bits);
         }
     }
     let (order, bits) = best;
-    if bits >= estimate(fixed_error(&autoc, fixed_order), fixed_order, f64::from(bps)) + MARGIN * n as f64 {
-        return None;
+    let fit = (order > 0 && bits < fixed + MARGIN * n as f64).then(|| Candidate { order, coefs: coefs[order - 1], bits });
+    Estimate { fixed, fit }
+}
+
+impl Candidate {
+    /// The candidate quantized for a sample of `bps` bits: coefficients of
+    /// `precision` bits, and for a sample of 17 bits or fewer no finer than
+    /// lets the prediction's sum stay in 32 bits. None where they round to
+    /// nothing.
+    pub fn quantized(&self, bps: u32, precision: u32) -> Option<Predictor> {
+        quantize(&self.coefs[..self.order], precision_for(bps, precision, self.order))
     }
-    // Coefficients fine enough, and for a sample of 17 bits or fewer no finer
-    // than lets the prediction's sum stay in 32 bits.
-    let precision = if bps <= 17 { precision.min(32 - bps - order.ilog2()) } else { precision };
-    quantize(&coefs[order - 1][..order], precision)
+}
+
+/// The precision a predictor of `order` is quantized to for a sample of
+/// `bps` bits, from the stream's `precision`: for a sample of 17 bits or
+/// fewer no finer than lets the prediction's sum stay in 32 bits.
+fn precision_for(bps: u32, precision: u32, order: usize) -> u32 {
+    if bps <= 17 { precision.min(32 - bps - order.ilog2()) } else { precision }
+}
+
+/// The shift that puts the largest of `coefs` just under the top of
+/// `precision` bits, one kept for the sign; the field holds no more than
+/// 15, and a negative shift is not allowed, so too large a coefficient is
+/// scaled down instead. Zero where there is no coefficient to scale.
+fn shift_for(coefs: &[f64], precision: u32) -> i32 {
+    let cmax = coefs.iter().fold(0f64, |m, &c| m.max(c.abs()));
+    if cmax <= 0.0 || !cmax.is_finite() {
+        return 0;
+    }
+    (precision as i32 - 2 - cmax.log2().floor() as i32).min(MAX_SHIFT)
 }
 
 /// The squared error the fixed predictor of `order` leaves on the windowed
@@ -140,11 +206,6 @@ fn fixed_error(autoc: &[f64; MAX_ORDER + 1], order: usize) -> f64 {
 /// lanes to double every 64 to 256 samples was measured to cost as much as
 /// this for a part of the precision, and a white-noise correction of the
 /// zero lag to cost bytes on every recording from one part in ten million.
-fn autocorrelation(x: &[f64], out: &mut [f64; MAX_ORDER + 1]) {
-    lags::<0, 5>(x, out);
-    lags::<5, 4>(x, out);
-}
-
 /// `out[FIRST..FIRST + LAGS]` of the autocorrelation, in one pass of two
 /// lanes a lag.
 fn lags<const FIRST: usize, const LAGS: usize>(x: &[f64], out: &mut [f64; MAX_ORDER + 1]) {
@@ -214,12 +275,7 @@ fn quantize(coefs: &[f64], precision: u32) -> Option<Predictor> {
     if cmax <= 0.0 || !cmax.is_finite() {
         return None;
     }
-    let log2cmax = cmax.log2().floor() as i32;
-    // The shift that puts the largest coefficient just under the top, one
-    // bit kept for the sign; the field holds no more than 15, and a negative
-    // shift is not allowed, so too large a coefficient is scaled down
-    // instead.
-    let shift = (precision as i32 - 2 - log2cmax).min(MAX_SHIFT);
+    let shift = shift_for(coefs, precision);
     let scale = 2f64.powi(shift);
     let qmax = (1i64 << (precision - 1)) - 1;
     let qmin = -qmax - 1;
@@ -236,15 +292,20 @@ fn quantize(coefs: &[f64], precision: u32) -> Option<Predictor> {
 
 /// The residual `predictor` leaves over `signal`, of `bps` bits a sample,
 /// from its `order`th sample on, `halves` being room for the samples as 16
-/// bits. False where a residual would not fit a 32-bit sample, which only a
-/// wide sample's wild predictor can make.
-pub fn residual(signal: &[i32], predictor: &Predictor, bps: u32, halves: &mut Vec<i16>, out: &mut Vec<i32>) -> bool {
+/// bits, or as their upper 16 bits and their lower bits. False where a
+/// residual would not fit a 32-bit sample, which only a wide sample's wild
+/// predictor can make.
+pub fn residual(signal: &[i32], predictor: &Predictor, bps: u32, halves: &mut [Vec<i16>; 2], out: &mut Vec<i32>) -> bool {
     out.clear();
+    let [upper, lower] = halves;
     if bps <= 16 {
         // Samples and coefficients of 16 bits, which the compiler multiplies
         // and adds in pairs with one instruction at every x86-64's baseline.
-        halves.clear();
-        halves.extend(signal.iter().map(|&s| s as i16));
+        upper.resize(signal.len(), 0);
+        for (h, &s) in upper.iter_mut().zip(signal) {
+            *h = s as i16;
+        }
+        let halves = &upper[..];
         match predictor.order {
             1 => narrow::<1>(halves, predictor, out),
             2 => narrow::<2>(halves, predictor, out),
@@ -256,18 +317,25 @@ pub fn residual(signal: &[i32], predictor: &Predictor, bps: u32, halves: &mut Ve
             _ => narrow::<8>(halves, predictor, out),
         }
         true
-    } else if predictor.precision + bps + predictor.order.ilog2() <= 32 {
-        // The prediction's sum fits 32 bits when the width, the precision
-        // and the order's logarithm do.
+    } else if predictor.shift >= bps - 16 {
+        // A wider sample as its upper 16 bits and its lower `bps - 16`, each
+        // part's sum taken as the 16-bit path takes it; see `split`.
+        let low = bps - 16;
+        upper.resize(signal.len(), 0);
+        lower.resize(signal.len(), 0);
+        for ((u, l), &s) in upper.iter_mut().zip(lower.iter_mut()).zip(signal) {
+            *u = (s >> low) as i16;
+            *l = (s & ((1 << low) - 1)) as i16;
+        }
         match predictor.order {
-            1 => middling::<1>(signal, predictor, out),
-            2 => middling::<2>(signal, predictor, out),
-            3 => middling::<3>(signal, predictor, out),
-            4 => middling::<4>(signal, predictor, out),
-            5 => middling::<5>(signal, predictor, out),
-            6 => middling::<6>(signal, predictor, out),
-            7 => middling::<7>(signal, predictor, out),
-            _ => middling::<8>(signal, predictor, out),
+            1 => split::<1>(upper, lower, signal, predictor, low, out),
+            2 => split::<2>(upper, lower, signal, predictor, low, out),
+            3 => split::<3>(upper, lower, signal, predictor, low, out),
+            4 => split::<4>(upper, lower, signal, predictor, low, out),
+            5 => split::<5>(upper, lower, signal, predictor, low, out),
+            6 => split::<6>(upper, lower, signal, predictor, low, out),
+            7 => split::<7>(upper, lower, signal, predictor, low, out),
+            _ => split::<8>(upper, lower, signal, predictor, low, out),
         }
         true
     } else {
@@ -293,17 +361,29 @@ fn narrow<const ORDER: usize>(signal: &[i16], predictor: &Predictor, out: &mut V
     }
 }
 
-/// The residual with 32-bit sums of 32-bit samples.
-fn middling<const ORDER: usize>(signal: &[i32], predictor: &Predictor, out: &mut Vec<i32>) {
-    let c: [i32; ORDER] = std::array::from_fn(|j| predictor.coefs[j]);
-    let shift = predictor.shift;
+/// The residual of samples of 17 to 24 bits, split as `upper * 2^low +
+/// lower` with `upper` of 16 bits and `lower` of `low`, both as 16-bit
+/// lanes: a sum of coefficients and samples is the upper part's sum times
+/// `2^low` plus the lower's, and shifted down by `shift >= low` it is the
+/// upper's sum plus the lower's shifted down by `low`, all shifted by the
+/// rest, exactly, since the lower sum's bits below `low` cannot carry past
+/// the floor. Neither sum outgrows 32 bits: coefficients are 13 bits at the
+/// most, the upper part 16 and the lower 8, over eight taps. The 32-bit
+/// lanes this replaced have no multiply at the x86-64 baseline, and took
+/// four times as long on the side channel of a 16-bit stereo pair, which is
+/// 17 bits wide.
+fn split<const ORDER: usize>(upper: &[i16], lower: &[i16], signal: &[i32], predictor: &Predictor, low: u32, out: &mut Vec<i32>) {
+    let c: [i16; ORDER] = std::array::from_fn(|j| predictor.coefs[j] as i16);
+    let shift = predictor.shift - low;
     out.resize(signal.len() - ORDER, 0);
-    for (o, w) in out.iter_mut().zip(signal.windows(ORDER + 1)) {
-        let mut sum = 0i32;
+    for (((o, &s), u), l) in out.iter_mut().zip(&signal[ORDER..]).zip(upper.windows(ORDER)).zip(lower.windows(ORDER)) {
+        let mut sum_upper = 0i32;
+        let mut sum_lower = 0i32;
         for j in 0..ORDER {
-            sum += c[j] * w[ORDER - 1 - j];
+            sum_upper += i32::from(c[j]) * i32::from(u[ORDER - 1 - j]);
+            sum_lower += i32::from(c[j]) * i32::from(l[ORDER - 1 - j]);
         }
-        *o = w[ORDER] - (sum >> shift);
+        *o = s - ((sum_upper + (sum_lower >> low)) >> shift);
     }
 }
 
@@ -360,7 +440,7 @@ mod tests {
     }
 
     /// The fitted predictor leaves a tone's residual at little more than the
-    /// noise on it, in the 16-bit, the 32-bit and the 64-bit paths.
+    /// noise on it, in the 16-bit path and the split one.
     #[test]
     fn a_tone_is_predicted_away() {
         let n = 960;
@@ -376,9 +456,12 @@ mod tests {
         let window = Window::new(n);
         let mut windowed = vec![0f64; n];
         for bps in [16, 17, 24] {
-            let p = fit(&s, &window, &mut windowed, MAX_ORDER, bps, precision(bps, n), 2).unwrap();
+            let estimate = estimate(&autocorrelation(&s, &window, &mut windowed), n, MAX_ORDER, bps, precision(bps, n), 2);
+            let fit = estimate.fit.expect("a tone is worth fitting");
+            assert!(fit.bits() < estimate.fixed);
+            let p = fit.quantized(bps, precision(bps, n)).unwrap();
             let mut out = Vec::new();
-            assert!(residual(&s, &p, bps, &mut Vec::new(), &mut out));
+            assert!(residual(&s, &p, bps, &mut [Vec::new(), Vec::new()], &mut out));
             assert_eq!(out.len(), n - p.order);
             let worst = out.iter().map(|r| r.abs()).max().unwrap();
             // The noise, amplified by the predictor, and the coefficients'

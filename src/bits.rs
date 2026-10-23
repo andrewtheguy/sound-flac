@@ -34,6 +34,23 @@ impl<'a> BitWriter<'a> {
         }
     }
 
+    /// `value`, which has no bit above its `bits`, at most 63 of them: what
+    /// [`BitWriter::put`] does without the masking, for a value made to fit.
+    #[inline(always)]
+    pub fn fitted(&mut self, value: u64, bits: u32) {
+        debug_assert!(bits <= 63 && value >> bits == 0);
+        if bits < self.free {
+            self.free -= bits;
+            self.acc |= value << self.free;
+        } else {
+            let over = bits - self.free;
+            self.acc |= value >> over;
+            self.out.extend_from_slice(&self.acc.to_be_bytes());
+            self.free = 64 - over;
+            self.acc = if over == 0 { 0 } else { value << self.free };
+        }
+    }
+
     /// `count` zero bits, any number of them.
     #[inline]
     pub fn zeros(&mut self, mut count: u32) {
