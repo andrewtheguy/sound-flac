@@ -9,7 +9,9 @@ first measurement over recordings, at commit e3173f7 of branch
 day, to the night of 2026-10-23, when its six items were measured, to the
 day after, when the time against libFLAC's level 0 was taken up, and to
 that afternoon, when it was taken up again: the fixed path left out where
-the fit clearly wins, and the autocorrelation at the floor.
+the fit clearly wins, and the autocorrelation at the floor; and to the end
+of that day, when the fourth block was weighed on a count in place of its
+four fixed codings.
 
 ## What it is for
 
@@ -81,20 +83,24 @@ plan are brought to the run.
 ## Where it stands
 
 From the tables of 2026-10-23, after the night the items below were measured
-and the day the level-0 column was taken up twice: 0.31 to 0.59 of libFLAC's
-time a block on the recordings for its bytes within 0.2%, the late blocks
-0.38 to 0.69 of its; the made sounds 0.25 to 0.49 for the same bytes within
-a byte, the pure tone 1.02 at 44.1 kHz and 1.05 at 24 bits. A block of a
-recording is 0.04% to 0.25% of one core. Where the time goes at 16-bit
-stereo, on the orchestra, by the parts measured apart: a carried block,
-three in four, 17.5 µs, is two autocorrelations 2.8, their fits 0.6, the
-pair's residuals 2.2 and partitions 1.6, the two fixed codings 3.8 where
-the fit is not clear, the folds and bounds 1.2, the range check and the
-stereo split 1.6, the bits out 3.4 and the CRC 0.5; the fourth block, 26
-µs, has four fixed codings, three autocorrelations and four fits in their
-place, and is the late block. On arm64, the same day, the recordings are
-0.32 to 0.48 of libFLAC's time for the same bytes to a tenth of a byte, and
-against level 0 0.75 to 1.24 where x86 is 0.53 to 1.28.
+and the day the level-0 column was taken up twice and the fourth block once:
+0.33 to 0.56 of libFLAC's time a block on the recordings for its bytes
+within 0.2%, the late blocks 0.37 to 0.55 of its; the made sounds 0.27 to
+0.54 for the same bytes within two bytes, the pure tone 1.02 at 44.1 kHz
+and 1.05 at 24 bits. A block of a recording is 0.04% to 0.24% of one core.
+Where the time goes at 16-bit stereo, on the orchestra, by the parts
+measured apart: a carried block, three in four, 17.8 µs, is two
+autocorrelations 2.8, their fits 0.6, the pair's residuals 2.2 and
+partitions 1.6, the two fixed codings 3.8 where the fit is not clear, the
+folds and bounds 1.2, the range check and the stereo split 1.6, the bits
+out 3.4 and the CRC 0.5, and on two of the three one channel has its fixed
+coding made whatever the fit is estimated at, 1.9, to bring its correction
+up to date; the fourth block, 22.7 µs, has three autocorrelations, four
+fits and four one-partition counts in their place, and is the late block,
+by a quarter to a third of a carried one where it was by half before. On
+arm64, the same day, the recordings are 0.31 to 0.47 of libFLAC's time for
+the same bytes to a tenth of a byte, and against level 0 0.70 to 1.20 where
+x86 is 0.59 to 1.18.
 
 ## Against libFLAC's level 0
 
@@ -111,9 +117,13 @@ the 16-bit stereo recordings went from 1.21 to 1.79 of level 0's time to
 0.81 to 1.04, the orchestra and the Fantasy still over by 0.01 and 0.04,
 the mono reading from 0.83 to 0.53, and the recordings at 24 bits from 1.46
 to 1.79 to 0.74 to 1.28; the made stereo music and tone from 1.25 to 1.89
-to 0.81 to 1.11.
-What is left over 1.00 is the wide sample and the long block, where the
-fit's own passes are the most of the block, and the fourth block.
+to 0.81 to 1.11. The end of the day took the fourth block down and with it
+the means by 1% to 7%, the 16-bit stereo recordings to 0.80 to 1.03, the
+orchestra now under at 0.98, the 1962 speech to 0.61 and the four at 24
+bits to 1.02 to 1.18, in a run where libFLAC's own times were 1% to 8%
+longer than in the run before. What is left over 1.00 is the wide sample
+and the long block, where the fit's own passes are the most of the block,
+and the tone, whose fourth block fits two channels for nothing.
 
 ## Open items, in order
 
@@ -142,16 +152,57 @@ fit's own passes are the most of the block, and the fourth block.
    quantization carries each coefficient's rounding into the next, so on
    smooth sound the errors cancel and the model overstates them. A model of
    the carried error is the item, if a tone is worth it.
-4. **The fresh block**, every fourth, which codes all four channels with
-   their fixed predictors, fits them from three autocorrelations and tries
-   the pair's two fits: about twice a carried block, and the late block of
-   every recording. Choosing the pair on real fixed bits less the fit's
-   estimated saving is what keeps the pairing right (the estimates alone
-   put the 8-bit speech at 1.63), so its cost is the four fixed codings;
-   a cheaper true measure of a channel's cost would halve it.
+4. **The fresh block**, every fourth, still the late block: over a carried
+   block it has the third autocorrelation, two more fits and the four
+   one-partition counts, about 3 µs at 960 samples and 6 at 1920 (below,
+   the fresh block weighed). What would take that is a fit from fewer
+   lags, or the side's autocorrelation from the left's and the right's,
+   which needs their cross-correlation, one more pass of the same cost.
 
 ## Measured and taken
 
+- **The fresh block weighed on a one-partition count** (2026-10-23, late
+  afternoon, item 4 of the plan as it stood): on the block that chooses the
+  pair afresh, the four fixed codings, each an order search and a partition
+  search at 1.9 µs, are replaced by a count: the fixed order the
+  autocorrelation chooses has its residual taken and folded in one pass,
+  0.22 to 0.54 µs by the order, and counted in one Rice partition, a true
+  count of the channel's bits within the partitioning's gain, and the fit's
+  estimated saving comes off it as it came off the fixed coding's real bits
+  before. The two channels chosen are then coded the fit first as a carried
+  block codes them. Coded the fit first on every block, a channel's
+  correction went stale, both codings being made only where the fit was
+  not clear, and the orchestra cost 0.41% more bytes; so each channel of the
+  pair has both coded once a cycle whatever the estimate, the first on the
+  first carried block and the second on the next, where the cost of 1.9 µs
+  falls on blocks that are not the fresh one. A block with a constant channel, the
+  desktop playing the same sound on both channels or on one, took the
+  full choice on every block before; it now takes the carried path like
+  any other, the constant coded by the check and the pair moved to it by
+  the bound, which took the made speech, whose two channels are one
+  signal, from 1.16 to 1.37 of its time to 0.74 to 0.88, and the 1962
+  speech to 0.86, for 0.05% of the made speech's bytes and 0.16% at 8
+  bits, the fit-first cost its exact path never paid. Measured in the
+  tables' run against the commit before, by the block's place in the
+  cycle: the fourth block went from 27.1 to 22.7 µs on the orchestra, 22.2
+  to 18.7 on the Raven, 21.2 to 16.8 on the wide mix and 57.9 to 45.7 on
+  the Aria, against a carried block of 17.8, 14.3, 14.0 and 35.9; the two
+  blocks after the choice rose by 0.5 to 1 µs at 16 bits and 4 on the Aria;
+  the means fell 1% to 7% on the stereo recordings on both machines, and
+  the bytes were 1.0000 to 1.0001 of before on every recording. Both
+  codings on the fourth block instead of the carried ones left the fourth
+  block where it was, 26.4 on the orchestra; refreshing every other cycle
+  cost the orchestra 0.02% for 2.5% of the mean and left the late block the
+  same, and was not taken. Where two channels are one signal the fourth
+  block codes the three equivalent channels in turn, each coming out over
+  its estimate as the fit's saving is overstated; taking the channel's
+  correction off its saving when weighing cost the Raven 0.05% and the
+  Aria 0.09%, and taking another pair after the coding only past an eighth
+  of a bit a sample the Aria 0.1%, so the pair is chosen again as
+  estimated and that block stays, 19 µs against 12 on the 1962 speech. The
+  count without its residual stored measured no faster than with it, and
+  order 4 in one pass of five taps 0.77 µs against 0.54 as order 2 twice,
+  which is how it is taken.
 - **The fit first on a carried block, the fixed path left out where the
   fit clearly wins** (2026-10-23, the level-0 ask taken up again): on the
   three blocks in four between full choices, the carried pair's two

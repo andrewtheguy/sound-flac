@@ -34,18 +34,21 @@
 //! to order 8 fitted to it by autocorrelation through a Tukey window and
 //! Levinson-Durbin as libFLAC's default level does, whichever writes fewer
 //! bits. A stereo pair is chosen every fourth block: each of left, right,
-//! mid and side is coded with its fixed predictor and its fit is weighed
-//! from its autocorrelation, the mid's following from the other three's;
-//! the pair is chosen on each channel's real fixed bits less what its fit
-//! is estimated to save, the two chosen are coded with the fit kept where
-//! it wins, and the pair is chosen again on their real bits until it
-//! stands. On the three blocks between, the pair the last block was coded
-//! with is coded again, each channel the fit first: where the fit is
-//! estimated to beat the best fixed predictor by an eighth of a bit a
-//! sample, after a correction the channel learned the last time both were
-//! coded, the fit alone is coded, and otherwise both are and compared; the
-//! two other channels are not looked at past a constant check and a bound,
-//! and another pair is taken only where it is certainly cheaper. A channel
+//! mid and side is weighed from its autocorrelation, the mid's following
+//! from the other three's, at the fixed predictor of the order the
+//! autocorrelation chooses counted in one Rice partition, a true count,
+//! less what its fit is estimated to save; the pair is chosen on those,
+//! the two chosen are coded the fit first, and the pair is chosen again on
+//! their real bits until it stands. On the three blocks between, the pair
+//! the last block was coded with is coded again, each channel the fit
+//! first: where the fit is estimated to beat the best fixed predictor by
+//! an eighth of a bit a sample, after a correction the channel learned the
+//! last time both were coded, the fit alone is coded, and otherwise both
+//! are and compared; each channel of the pair has both coded once a cycle
+//! whatever the estimate, on the two blocks after the choice, so that its
+//! correction is of this second; the two other channels are not looked at
+//! past a constant check and a bound, and another pair is taken only where
+//! it is certainly cheaper. A channel
 //! on its own, mono or more than two, is coded the fit first on every
 //! block. The fit is skipped where the block is noise by the fixed
 //! predictors and the last fit was not estimated to win, as on noise and a
@@ -60,14 +63,14 @@
 //! out four to a word.
 //!
 //! Measured on 20 ms blocks of 16-bit stereo at 48 kHz, one core of an
-//! i5-8500T: a block of music takes about 18 µs and is 48% of its PCM, speech
-//! 14 µs and 30%, a pure tone 21 µs and 26%, noise 14 µs and 76%, silence
+//! i5-8500T: a block of music takes about 19 µs and is 48% of its PCM, speech
+//! 11 µs and 30%, a pure tone 24 µs and 26%, noise 14 µs and 76%, silence
 //! 2 µs and sixteen bytes. libFLAC at its default level, which this replaced,
-//! took 46, 37, 43, 45 and 25 µs for the same bytes within a tenth of a per
-//! cent. Mono at 48 kHz is 7 µs against libFLAC's 24, and 44.1 kHz stereo 15
-//! against 38. On recordings, 0.31 to 0.59 of its time a block for its bytes
-//! within 0.2%, the block that chooses the pair afresh, every fourth, half as
-//! long again as the mean.
+//! took 47, 39, 44, 43 and 25 µs for the same bytes within a tenth of a per
+//! cent. Mono at 48 kHz is 8 µs against libFLAC's 25, and 44.1 kHz stereo 17
+//! against 41. On recordings, 0.33 to 0.56 of its time a block for its bytes
+//! within 0.2%, the block that chooses the pair afresh, every fourth, a
+//! quarter to a third as long again as a carried one.
 //!
 //! Nothing about a wire is here: how a frame is framed in a message, how the
 //! stream's shape is agreed and what a sample's bytes are on either side belong
@@ -286,27 +289,29 @@ impl Encoder {
             right.prepare(bps);
             mid.prepare(bps);
             side.prepare(bps + 1);
-            let constant = left.constant() || right.constant() || mid.constant() || side.constant();
             // The fresh block counts as one of the `RECHOOSE`.
             let fresh = self.since_choice + 1 >= RECHOOSE;
             let mut channels = [left, right, mid, side];
-            // Every fourth block all four channels are coded with their
-            // fixed predictors and fitted, and the pair chosen on their
-            // estimates; on the blocks between, the pair the last block was
-            // coded with is coded again, each channel the fit first, and
-            // the other two channels are not looked at past the constant
-            // check. Sound changes pair seldom in 20 ms: measured on the
+            // Every fourth block all four channels are weighed from their
+            // autocorrelations and the pair chosen on that; on the blocks
+            // between, the pair the last block was coded with is coded
+            // again, each channel the fit first, and the other two
+            // channels are not looked at past the constant check and a
+            // bound. Sound changes pair seldom in 20 ms: measured on the
             // recordings, choosing afresh every eighth or sixteenth block
-            // instead left the bytes the same within 0.05%. The constant
-            // case below chooses on the fixed bits every block as before,
-            // since where a channel is one value the three others are one
-            // signal but for a scale and a shift, which a fit gains the
-            // same on; that is the desktop playing the same sound on both
-            // channels.
-            let mut best = if !constant && !fresh {
+            // instead left the bytes the same within 0.05%. A channel that
+            // is one value, the desktop playing the same sound on both
+            // channels or on one, is coded as a constant by the check,
+            // and the pair moves to it where the bound says it is cheaper.
+            let mut best = if !fresh {
                 let mut best = self.pairing;
-                for i in [PAIRS[best].0, PAIRS[best].1] {
-                    channels[i].code_alone(window);
+                // Each channel's correction is brought up to date once a
+                // cycle, both codings made and compared whatever the fit is
+                // estimated at, the first channel on the first carried block
+                // and the second on the next, so that the cost falls on
+                // blocks that are not the fresh one.
+                for (k, i) in [PAIRS[best].0, PAIRS[best].1].into_iter().enumerate() {
+                    channels[i].code_alone(window, self.since_choice == k as u8);
                 }
                 // Another pair is taken where it is certainly cheaper: where
                 // the most its channels can cost, from one pass over each
@@ -317,7 +322,7 @@ impl Encoder {
                 for (p, &(a, b)) in PAIRS.iter().enumerate() {
                     if p != best && channels[a].at_most() + channels[b].at_most() < bits {
                         for i in [a, b] {
-                            channels[i].code_alone(window);
+                            channels[i].code_alone(window, false);
                         }
                         best = p;
                         bits = channels[a].bits() + channels[b].bits();
@@ -325,46 +330,40 @@ impl Encoder {
                 }
                 best
             } else {
-                for channel in &mut channels {
-                    channel.analyse_fixed();
-                }
-                if !constant {
-                    // Every channel that wants a fit is weighed. The mid's
-                    // autocorrelation follows from the other three's, the
-                    // mid being half of left plus right and the side their
-                    // difference: autoc(m) = (2 (autoc(l) + autoc(r)) -
-                    // autoc(s)) / 4, but for the half sample the mid's
-                    // rounding loses, which is well under what any block
-                    // has in it; each is of its channel with the wasted
-                    // bits shifted out, so each is scaled back first.
-                    let [left, right, mid, side] = &mut channels;
-                    let wanted = [left.fit_wanted(), right.fit_wanted(), mid.fit_wanted(), side.fit_wanted()];
-                    let autoc = |wanted: bool, channel: &mut Channel| if wanted { channel.autocorrelation(window) } else { None };
-                    let (al, ar, as_) = (autoc(wanted[0], left), autoc(wanted[1], right), autoc(wanted[3], side));
-                    let scale = |channel: &Channel| 4f64.powi(channel.wasted() as i32);
-                    let am = match (&al, &ar, &as_) {
-                        _ if !wanted[2] => None,
-                        (Some(l), Some(r), Some(s)) => {
-                            let (sl, sr, ss, sm) = (scale(left), scale(right), scale(side), scale(mid));
-                            Some(std::array::from_fn(|i| (2.0 * (l[i] * sl + r[i] * sr) - s[i] * ss) * 0.25 / sm))
-                        }
-                        _ => mid.autocorrelation(window),
-                    };
-                    for (channel, autoc) in [(&mut **left, al), (&mut **right, ar), (&mut **mid, am), (&mut **side, as_)] {
-                        if let Some(autoc) = autoc {
-                            channel.weigh(&autoc);
-                        }
+                // Every channel that wants a fit has its autocorrelation
+                // taken, and is weighed on it: the fixed order it chooses
+                // counted in one Rice partition, a true count, less what
+                // the fit is estimated to save. The mid's autocorrelation
+                // follows from the other three's, the mid being half of
+                // left plus right and the side their difference: autoc(m) =
+                // (2 (autoc(l) + autoc(r)) - autoc(s)) / 4, but for the
+                // half sample the mid's rounding loses, which is well under
+                // what any block has in it; each is of its channel with the
+                // wasted bits shifted out, so each is scaled back first.
+                let [left, right, mid, side] = &mut channels;
+                let wanted = [left.fit_wanted(), right.fit_wanted(), mid.fit_wanted(), side.fit_wanted()];
+                let autoc = |wanted: bool, channel: &mut Channel| if wanted { channel.autocorrelation(window) } else { None };
+                let (al, ar, as_) = (autoc(wanted[0], left), autoc(wanted[1], right), autoc(wanted[3], side));
+                let scale = |channel: &Channel| 4f64.powi(channel.wasted() as i32);
+                let am = match (&al, &ar, &as_) {
+                    _ if !wanted[2] => None,
+                    (Some(l), Some(r), Some(s)) => {
+                        let (sl, sr, ss, sm) = (scale(left), scale(right), scale(side), scale(mid));
+                        Some(std::array::from_fn(|i| (2.0 * (l[i] * sl + r[i] * sr) - s[i] * ss) * 0.25 / sm))
                     }
+                    _ => mid.autocorrelation(window),
+                };
+                for (channel, autoc) in channels.iter_mut().zip([al, ar, am, as_]) {
+                    channel.weigh_alone(autoc.as_ref());
                 }
-                // The pair is chosen on what each channel is estimated to
-                // cost with the better of its fixed and its fitted
-                // predictor, the two chosen are coded, and the pair is
-                // chosen again with their real bits in place of their
-                // estimates, until it stands: a fit the estimate counted on
-                // can lose on the samples, as a pure tone's does to its
-                // coefficients' rounding, and then another pair is cheaper
-                // after all. On sound the fit wins as estimated and the
-                // pair stands the first time.
+                // The pair is chosen on what each channel is weighed at,
+                // the two chosen are coded, and the pair is chosen again
+                // with their real bits in place of their estimates, until
+                // it stands: a fit the estimate counted on can lose on the
+                // samples, as a pure tone's does to its coefficients'
+                // rounding, and then another pair is cheaper after all. On
+                // sound the fit wins as estimated and the pair stands the
+                // first time.
                 let choose = |channels: &[&mut Channel; 4]| {
                     let costs = PAIRS.map(|(a, b)| channels[a].estimate() + channels[b].estimate());
                     let mut best = 0;
@@ -376,19 +375,17 @@ impl Encoder {
                     best
                 };
                 let mut best = choose(&channels);
-                if constant {
-                    for i in [PAIRS[best].0, PAIRS[best].1] {
-                        if channels[i].fit_wanted()
-                            && let Some(autoc) = channels[i].autocorrelation(window)
-                        {
-                            channels[i].weigh(&autoc);
-                        }
-                    }
-                }
+                // Where two channels are nearly one signal, the desktop
+                // playing the same sound on both, a pair coded comes out
+                // over its estimate and the next is coded for the same
+                // bits; taking another pair only past a margin of an
+                // eighth of a bit a sample saved that and cost the Aria
+                // 0.1% of its bytes, as did the channel's correction taken
+                // off its saving, so the pair is chosen again as estimated.
                 loop {
                     let (a, b) = PAIRS[best];
-                    channels[a].code();
-                    channels[b].code();
+                    channels[a].code_weighed();
+                    channels[b].code_weighed();
                     let again = choose(&channels);
                     if again == best {
                         break;
@@ -403,8 +400,7 @@ impl Encoder {
             let (a, b) = PAIRS[best];
             if best != 0 && channels[a].bits() + channels[b].bits() > channels[0].verbatim() + channels[1].verbatim() {
                 for i in [0, 1] {
-                    channels[i].analyse_fixed();
-                    channels[i].code();
+                    channels[i].code_weighed();
                 }
                 best = 0;
             }
@@ -420,7 +416,7 @@ impl Encoder {
                     *s = sample;
                 }
                 channel.prepare(bps);
-                channel.code_alone(&self.window);
+                channel.code_alone(&self.window, false);
             }
             0
         };

@@ -18,9 +18,11 @@
   `tools/bench` measures the crate against libFLAC as v0.0.4 linked it, on
   made sounds and on the recordings of `tools/samples.txt`, and
   `tools/tables.py` makes the tables of `docs/benchmarks.md` from its log,
-  and the doc's last section from a second log of the same run on an arm64
-  machine: all three are run again, and the doc's prose and `docs/plan.md`
-  brought to the run, when the tuning changes. The recordings live in the
+  the doc's last section from a second log of the same run on an arm64
+  machine, and the recordings tables' *run before* columns from the log of
+  the commit before; the logs are kept in `docs/bench/`. All three are run
+  again, and the doc's prose and `docs/plan.md` brought to the run, when
+  the tuning changes. The recordings live in the
   artifact store (`tools/samples.sh fetch`, once) and are copied to the
   gitignored `tmp/samples` for a run (`tools/samples.sh copy`); nothing in
   the repository holds one, and the store is read, never written by a run.

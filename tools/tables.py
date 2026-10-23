@@ -1,7 +1,7 @@
 """The tables of docs/benchmarks.md, from the log of tools/bench:
 
     cargo run --release --manifest-path tools/bench/Cargo.toml > bench.log
-    python3 -I tools/tables.py bench.log [bench-arm64.log]
+    python3 -I tools/tables.py bench.log [bench-arm64.log] [--before before.log]
 
 First, over every shape and made sound, this encoder's time a block and bytes
 a block over libFLAC's at level 5 as v0.0.4 ran it, a table each; then the
@@ -10,7 +10,9 @@ shape apart, with what each coder takes in microseconds and bytes, the share
 of one core a block of 20 ms is, and the share of the PCM it comes to. Then
 the recordings of tools/samples.txt: every ratio against the three levels in
 one table, the block times apart with the 99th-percentile and worst blocks,
-and the bytes apart. Then, given a second log, the same run on an arm64
+and the bytes apart, and, given the log of the run before as `--before`,
+this encoder's mean block and bytes in that run beside this one's and this
+one over it. Then, given a second log, the same run on an arm64
 machine beside the first: this encoder's time over libFLAC's on each, the
 made sounds in grids and the desktop's shape and the recordings machine by
 machine, and whether the bytes are the same on both. A ratio is this encoder
@@ -123,10 +125,22 @@ def apart(shape, block, pcm, data):
     print()
 
 
-def recordings(files):
+def recordings(files, before):
+    """The recordings' tables; `before` is file -> this encoder's fields in the
+    run before, or None, when the block times and the bytes carry that run
+    beside this one."""
     with_all = [(name, shape, pcm, seconds, c) for name, shape, pcm, seconds, c in files if all(k in c for k in ("sound-flac", "libflac-5", "libflac-0", "libflac-8"))]
     if not with_all:
         return
+
+    def earlier(name, field, now, fmt):
+        """The run before's cell and this run over it, or two blanks."""
+        if before is None:
+            return []
+        if name not in before or field not in before[name]:
+            return ["", ""]
+        then = before[name][field]
+        return [fmt(then), colour(f"{now / then:.2f}", None if f"{now / then:.2f}" == "1.00" else now < then)]
     print("## The recordings\n")
     print("The recordings of `tools/samples.txt`, from archive.org, each coded\nwhole in blocks of 20 ms, the time a block the least of three passes' mean.\n")
     print("### Against libFLAC at levels 5, 0 and 8\n")
@@ -139,9 +153,10 @@ def recordings(files):
         print(f"| {recording_name(name)} | {shape_name(shape)} | " + " | ".join(cells) + " |")
     print()
     print("### The block times, libFLAC at level 5\n")
-    print("A block is 20 ms of sound. The 99th-percentile and worst blocks are the\nleast over the passes, so a pass the machine disturbed does not set them;\n*of one core* is the mean block over 20 ms.\n")
-    print("| Recording | libFLAC, mean µs | This encoder, mean µs | Ratio | libFLAC, 99th | This encoder, 99th | libFLAC, worst | This encoder, worst | Of one core |")
-    print("|---|---:|---:|---:|---:|---:|---:|---:|---:|")
+    print("A block is 20 ms of sound. The 99th-percentile and worst blocks are the\nleast over the passes, so a pass the machine disturbed does not set them;\n*of one core* is the mean block over 20 ms." + (" *The run before* is this\nencoder's mean block in the run of the commit before this one, and *over it*\nthis run's over that." if before is not None else "") + "\n")
+    extra = " The run before, mean µs | Over it |" if before is not None else ""
+    print("| Recording | libFLAC, mean µs | This encoder, mean µs | Ratio |" + extra + " libFLAC, 99th | This encoder, 99th | libFLAC, worst | This encoder, worst | Of one core |")
+    print("|---|---:|---:|---:|" + ("---:|---:|" if before is not None else "") + "---:|---:|---:|---:|---:|")
     for name, shape, pcm, seconds, c in with_all:
         mine, ref = c["sound-flac"], c["libflac-5"]
         cells = []
@@ -150,15 +165,26 @@ def recordings(files):
             cells.append(colour(us(mine[field]), None if us(mine[field]) == us(ref[field]) else mine[field] < ref[field]))
             if field == "us":
                 cells.append(ratio(mine["us"], ref["us"]))
+                cells.extend(earlier(name, "us", mine["us"], us))
         print(f"| {recording_name(name)} | " + " | ".join(cells) + f" | {mine['us'] / 20_000 * 100:.2f}% |")
     print()
     print("### The bytes, libFLAC at level 5\n")
-    print("| Recording | Seconds | PCM a block | libFLAC, bytes | This encoder, bytes | Ratio | Of the PCM |")
-    print("|---|---:|---:|---:|---:|---:|---:|")
+    if before is not None:
+        print("*The run before* is this encoder's bytes a block in the run of the commit\nbefore this one, and *over it* this run's over that, to a ten-thousandth.\n")
+    extra = " The run before, bytes | Over it |" if before is not None else ""
+    print("| Recording | Seconds | PCM a block | libFLAC, bytes | This encoder, bytes | Ratio |" + extra + " Of the PCM |")
+    print("|---|---:|---:|---:|---:|---:|" + ("---:|---:|" if before is not None else "") + "---:|")
     for name, shape, pcm, seconds, c in with_all:
         mine, ref = c["sound-flac"], c["libflac-5"]
         size = colour(f"{mine['bytes']:.0f}", None if round(mine["bytes"]) == round(ref["bytes"]) else mine["bytes"] < ref["bytes"])
-        print(f"| {recording_name(name)} | {seconds} | {pcm} | {ref['bytes']:.0f} | {size} | {ratio3(mine['bytes'], ref['bytes'])} | {mine['bytes'] / pcm * 100:.1f}% |")
+        cells = []
+        if before is not None:
+            if name in before and "bytes" in before[name]:
+                text = f"{mine['bytes'] / before[name]['bytes']:.4f}"
+                cells = [f"{before[name]['bytes']:.0f}", colour(text, None if text == "1.0000" else mine["bytes"] < before[name]["bytes"])]
+            else:
+                cells = ["", ""]
+        print(f"| {recording_name(name)} | {seconds} | {pcm} | {ref['bytes']:.0f} | {size} | {ratio3(mine['bytes'], ref['bytes'])} | " + "".join(f"{cell} | " for cell in cells) + f"{mine['bytes'] / pcm * 100:.1f}% |")
     print()
 
 
@@ -207,7 +233,14 @@ def arm64(data, files, data2, files2, order):
 
 
 def main():
-    data, shapes, files = read(sys.argv[1])
+    args = sys.argv[1:]
+    before = None
+    if "--before" in args:
+        at = args.index("--before")
+        _, _, earlier = read(args[at + 1])
+        before = {name: c["sound-flac"] for name, _, _, _, c in earlier if "sound-flac" in c}
+        del args[at:at + 2]
+    data, shapes, files = read(args[0])
     order = [s for s in SHAPES if s in shapes] + sorted(s for s in shapes if s not in SHAPES)
     print("## The made sounds, against libFLAC at level 5 as v0.0.4 ran it\n")
     grid("Time a block, this encoder over libFLAC", "Under 1.00 is less of a core than libFLAC at its default level.", data, order, "us", "libflac-5")
@@ -219,9 +252,9 @@ def main():
     print("libFLAC is at level 5. The time is one block's, the least of five passes;\na block is 20 ms of sound, so a share of one core is that time over 20 ms.\n")
     for s in order:
         apart(s, *shapes[s], data)
-    recordings(files)
-    if len(sys.argv) > 2:
-        data2, _, files2 = read(sys.argv[2])
+    recordings(files, before)
+    if len(args) > 1:
+        data2, _, files2 = read(args[1])
         arm64(data, files, data2, files2, order)
 
 
