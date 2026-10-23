@@ -6,8 +6,10 @@ next, in which order and why. What it is now is in the module docs of
 by are in [benchmarks.md](benchmarks.md). Written on 2026-10-22, on the
 first measurement over recordings, at commit e3173f7 of branch
 `own-encoder`; brought to the run of the fit in double precision the same
-day, to the night of 2026-10-23, when its six items were measured, and to
-the day after, when the time against libFLAC's level 0 was taken up.
+day, to the night of 2026-10-23, when its six items were measured, to the
+day after, when the time against libFLAC's level 0 was taken up, and to
+that afternoon, when it was taken up again: the fixed path left out where
+the fit clearly wins, and the autocorrelation at the floor.
 
 ## What it is for
 
@@ -79,35 +81,58 @@ plan are brought to the run.
 ## Where it stands
 
 From the tables of 2026-10-23, after the night the items below were measured
-and the day the level-0 column was taken up: 0.44 to 0.77 of libFLAC's time
-a block on the recordings for its bytes within 0.2%, the late blocks 0.45 to
-0.84 of its; the made sounds 0.40 to 0.74 for the same bytes within a byte,
-the pure tone 1.02 at 44.1 kHz and 1.05 at 24 bits. A block of a recording
-is 0.05% to 0.32% of one core. Where the time went at 16-bit stereo, on the
-orchestra, with timers after the night, 30 µs: three autocorrelations 8.3 µs
-and the fits from them 1.2, the four channels' fixed orders and sums 4.5 and
-their partitions 3.7, the two fits' residuals 3.3 and partitions 2, the
-range check and the stereo split 1.6, the bits out 4.1, the CRC 1. The day
-took the autocorrelations to two on three blocks in four, the bits out to
-3.6 and the finest sums to half: 27 µs. On arm64, a two-core Ampere Altra
-the same day, the recordings are 0.38 to 0.65 of libFLAC's time for the
-same bytes to a tenth of a byte, and against level 0 1.45 to 1.93 on the
-stereo recordings where x86 is 1.21 to 1.79: the level-0 column is further
-off there.
+and the day the level-0 column was taken up twice: 0.31 to 0.59 of libFLAC's
+time a block on the recordings for its bytes within 0.2%, the late blocks
+0.38 to 0.69 of its; the made sounds 0.25 to 0.49 for the same bytes within
+a byte, the pure tone 1.02 at 44.1 kHz and 1.05 at 24 bits. A block of a
+recording is 0.04% to 0.25% of one core. Where the time goes at 16-bit
+stereo, on the orchestra, by the parts measured apart: a carried block,
+three in four, 17.5 µs, is two autocorrelations 2.8, their fits 0.6, the
+pair's residuals 2.2 and partitions 1.6, the two fixed codings 3.8 where
+the fit is not clear, the folds and bounds 1.2, the range check and the
+stereo split 1.6, the bits out 3.4 and the CRC 0.5; the fourth block, 26
+µs, has four fixed codings, three autocorrelations and four fits in their
+place, and is the late block. On arm64, the same day, the recordings are
+0.32 to 0.48 of libFLAC's time for the same bytes to a tenth of a byte, and
+against level 0 0.75 to 1.24 where x86 is 0.53 to 1.28.
+
+## Against libFLAC's level 0
+
+The tables' one red column was the time against libFLAC's fastest level,
+which fits no predictor and codes stereo as it comes. The two are not doing
+the same work: level 0's block of silence alone costs 12.6 µs where this
+encoder's costs 3, and the ratio goes under 1.00 on sound only where this
+encoder's own work, the fit and the two codings, comes under what level 0
+spends on its two fixed codings and its frame. What was measured to bring
+it down is under the measurements below. The first day took the time bought
+with bytes, a byte a block, by fitting only the carried pair between full
+choices; the afternoon after took the rest with the bytes within 0.02%:
+the 16-bit stereo recordings went from 1.21 to 1.79 of level 0's time to
+0.81 to 1.04, the orchestra and the Fantasy still over by 0.01 and 0.04,
+the mono reading from 0.83 to 0.53, and the recordings at 24 bits from 1.46
+to 1.79 to 0.74 to 1.28; the made stereo music and tone from 1.25 to 1.89
+to 0.81 to 1.11.
+What is left over 1.00 is the wide sample and the long block, where the
+fit's own passes are the most of the block, and the fourth block.
 
 ## Open items, in order
 
-1. **The partitions' search.** Six codings a block; a coding's fold is
-   0.14 µs and its finest sums 0.09 in 32-bit lanes, and the search over
-   the partition orders 0.4: 63 Rice parameters each tried at three values
-   from the logarithms' difference. Dropping the lowest trial cost 1% to 4%
-   of the bytes, so the three stay; what is left is the search's own
-   arithmetic, or fewer partition orders where the coarse ones have lost.
-2. **The writer**, 3.6 µs a block for two channels, four Rice codes a word
-   with the accumulator in locals. The work is the codes' arithmetic, not
-   the word's flush: a branchless writer that stored eight bytes on every
-   word and advanced by the whole bytes was slower, 2.1 µs a channel against
-   1.7 measured apart.
+1. **The partitions' search.** A coding's fold is 0.14 µs and its finest
+   sums 0.09 in 32-bit lanes, and the search over the partition orders 0.4:
+   63 Rice parameters each tried at three values from the logarithms'
+   difference. Dropping the lowest trial cost 1% to 4% of the bytes, and
+   stopping the search at the first rise from the coarsest order cost
+   0.07% on the orchestra, two rises nothing in bytes and nothing in time
+   (below). What is left is the search's own arithmetic.
+2. **The writer**, about 3.4 µs a block for two channels, four Rice codes
+   a word joined as pairs, with the accumulator in locals. Measured apart
+   on 1920 codes, every grouping tried comes to 3.65 to 4.1 µs and one code
+   at a time 4.3 to 5.0: the work is each code's arithmetic, two or three
+   shifts by a variable count at three µops each on the x86-64 baseline,
+   which has no single-µop variable shift. Taking the quotients, remainders
+   and lengths of four codes as arrays, which the compiler shifts in one
+   vector, gained nothing over the pairs joined as a tree; eight codes a
+   word lost.
 3. **The tone's coefficients.** A pure tone's frame is its coefficients'
    rounding, 1.02 of libFLAC's bytes at 44.1 kHz and 1.05 at 24 bits, where
    libFLAC chooses the pair on every channel's real bits. The rounding's
@@ -117,32 +142,80 @@ off there.
    quantization carries each coefficient's rounding into the next, so on
    smooth sound the errors cancel and the model overstates them. A model of
    the carried error is the item, if a tone is worth it.
-4. **The autocorrelation**, 2.8 µs a channel at 960 samples in two passes of
-   two double lanes, is near the x86-64 baseline's floor for its 8640
-   multiply-adds: measured apart, one pass of all nine lags was 2.1 against
-   2.3, four lanes a lag 3.7 and eight 2.9, but in the encoder the one pass
-   was a tenth slower on every sound that fits, so the two passes stay. The
-   window's multiply fused into the first pass, or AVX2 where a user builds
-   for it, is what is left.
-
-## Against libFLAC's level 0
-
-The tables' one red column is the time against libFLAC's fastest level,
-which fits no predictor and codes stereo as it comes: 1.1 to 2.1 of its time
-on stereo music and tone, for 0.78 to 0.96 of its bytes on music and 0.49
-to 0.78 on speech. The two are not doing the same work. Of this encoder's
-30 µs on the orchestra, the fit and the stereo choice are about 15, and the
-fixed path on four channels, the split, the writer and the CRC the other
-15; level 0 runs the fixed path on two channels, and this encoder's would be
-about 9 µs there, under level 0's 18, of which 12.6 is its frame's fixed
-cost (its block of silence). The ratio goes under 1.00 only by dropping the
-fit, which is the bytes. What was tried to bring it down without dropping
-the fit is under the measurements below: carrying the predictor cost bytes,
-fitting only the carried pair between full choices was taken, and the items
-that cost no bytes were taken or measured out.
+4. **The fresh block**, every fourth, which codes all four channels with
+   their fixed predictors, fits them from three autocorrelations and tries
+   the pair's two fits: about twice a carried block, and the late block of
+   every recording. Choosing the pair on real fixed bits less the fit's
+   estimated saving is what keeps the pairing right (the estimates alone
+   put the 8-bit speech at 1.63), so its cost is the four fixed codings;
+   a cheaper true measure of a channel's cost would halve it.
 
 ## Measured and taken
 
+- **The fit first on a carried block, the fixed path left out where the
+  fit clearly wins** (2026-10-23, the level-0 ask taken up again): on the
+  three blocks in four between full choices, the carried pair's two
+  channels are each coded from their autocorrelation alone, and the two
+  other channels are not looked at past a one-pass constant check. The
+  fit's estimate and the best fixed predictor's are taken from the one
+  autocorrelation, with the fixed order chosen from it too; where the fit
+  is estimated to win by an eighth of a bit a sample after the channel's
+  correction, it is coded and the order search and the fixed partitions
+  are not run, and otherwise both are coded and compared as before. The
+  correction is what the channel's last block with both codings showed: the
+  estimates are from the windowed samples and blind to the coefficients'
+  rounding, so the fit's advantage is overstated, by 0.2 bits a sample and
+  more on three blocks in five of the orchestra at 16 bits and by about
+  none on the Aria at 24, and a fit coded alone whose real bits run a
+  quarter of a bit a sample past what its estimate and the channel's last
+  fit said has the fixed coding made after all. The margin was swept over
+  0, 1/16, 1/8 and 1/4 a sample on eight recordings: at 0 the bytes were
+  1.0002 to 1.0008 of before on the orchestra, the Raven and the mix, at
+  1/8 at most 1.0002 and at 1/4 at most 1.0001, the mono reading taking
+  0.01% at 1/8 and nothing at 1/4, for 3% to 8% more time at 1/4 than at
+  1/8 on the reading and the train. 1/8 is taken. Another pair is still
+  taken on a carried block where it is certainly cheaper: a channel not
+  coded is bounded from one pass over its first differences, the fixed
+  predictor of order 1 in one Rice partition, which what it would be coded
+  at never exceeds, and the pair moves where two bounds come under the pair
+  coded; without it the wide stereo mix was 1.0006, with it 1.0001, for no
+  measurable time. A channel on its own, mono and more than two, is coded
+  the fit first on every block, there being no pair to choose. Against the
+  tables of the morning, the time a block on the eight recordings fell to
+  0.60 to 0.81 and the bytes rose by 0.00% to 0.02%, the autocorrelation
+  below counted in.
+- **The autocorrelation in one pass without a check** (the same day, the
+  item 4 below closed): the two passes of five and four lags indexed each
+  pair of samples and checked it, two bounds checks and three shuffles on
+  every two samples, 24 µops where the floating-point work was 8, and ran
+  front-end bound at 2.4 µs measured apart and 2.8 in the encoder for 8640
+  multiply-adds whose floor at the baseline's two floating-point ports is
+  4320 cycles, 1.4 µs at this machine's 3.1 GHz. Seen through a window of
+  the two samples and the eight after them, stepped by two, every lag's
+  pair is in bounds by the window's length and the compiler lays the nine
+  lags out two to a register, a sample broadcast against the pairs after
+  it: 1.37 µs, the floor, and the same bytes to the bit. Four lanes a lag
+  were 1.46 to 1.68 in the same form, and three passes of three lags 1.7
+  to 2.1: once the checks are gone the floating-point work is the whole
+  cost and lanes do not change it. The one pass is not inlined, so that
+  its nine sums have the registers to themselves whatever the caller holds,
+  which is where the one pass lost before. The recordings fell by 4% to
+  13% and the made sounds by 5% to 15%.
+- **The frame's CRC as two halves** (the same day): one chain of lookups
+  eight bytes at a time was its loads' latency, 0.77 µs on a 2300-byte
+  frame; the two halves of the frame as independent chains, the first
+  carried past the second's length by multiplication modulo the polynomial
+  with a table of the sixteen powers, 0.47. Slicing by sixteen in one chain
+  was 0.62. **The Rice word joined as pairs**, the two pairs of codes joined
+  and then the two, a chain of two variable shifts rather than three, 3.65
+  µs on 1920 codes against 3.83. **The constant check as a fold**: every
+  sample against the first, leaving at the first that differs, is a loop
+  the compiler cannot vectorise, and it went scalar over 960 samples on
+  four channels a block; the samples' differences from the first are now
+  or-folded in the one pass that folds their bits for the wasted bits and
+  their magnitudes for the width the samples need, by which a side channel
+  that is 17 bits wide by the stream and 16 in its samples takes the 16-bit
+  residual pass, 1.1 µs against the split path's 1.6.
 - **Only the carried pair fitted between full choices** (2026-10-23, the
   level-0 ask): every fourth block all four channels are fitted and the
   pair chosen on their estimates as before; on the blocks between, only
@@ -205,7 +278,14 @@ that cost no bytes were taken or measured out.
   it, where a single pass's 99th percentile is 1.5 to 2.3 times the mean
   for both encoders: the spread the tables show is the machine's. The
   encoder's own late blocks are the loud ones, and on white noise the
-  eighth blocks where the fit is tried again. Nothing to take.
+  eighth blocks where the fit is tried again. Nothing to take. That was
+  read when every block chose its pair; since the carried pair, the
+  encoder's own late block is the fourth, at 1.5 times its mean, and the
+  bench read it right only from that afternoon, when each pass was given
+  an encoder that had seen no block (the morning's bench ran one encoder
+  on through the passes, and on a recording whose blocks are not a
+  multiple of four the fourth block moved by one each pass, so a block's
+  least over the passes was its cheaper kind).
 - **The 24-bit residual** (item 4), and the 17-bit side channel with it:
   a sample of 17 to 24 bits is split into its upper 16 bits and its lower
   bits, each part's sum taken in 16-bit lanes as the 16-bit path takes
@@ -238,6 +318,21 @@ that cost no bytes were taken or measured out.
 
 ## Measured and not taken
 
+- **The partitions' search stopped early** (2026-10-23, afternoon): the
+  sums folded into a pyramid first and the orders walked from the coarsest,
+  stopping at the first order that did not beat the best: 3% to 12% of a
+  block, for 0.07% more bytes on the orchestra, 0.02% on the made speech
+  and 0.01% on the Aria and the rock master, the bits over the orders not
+  falling and rising once. Stopped at the second rise, the bytes were the
+  same but for one part in ten thousand on the orchestra, and the time was
+  the same within the noise: the pyramid and the walk from the coarse end
+  cost what the fine orders skipped had cost. Out.
+- **Four lanes a lag in the autocorrelation**, taken up again on the
+  user's ask: in the checked two-pass form it was 3.7 µs against 2.4,
+  and in the window form without checks 1.46 to 1.68 against two lanes'
+  1.37 in one pass and 1.6 in two; eight lanes in three passes 2.4. The
+  lanes were never the cost; the checks and the shuffles were. Out, the
+  one pass of two lanes taken above.
 - **The predictor carried between blocks** (2026-10-23): each channel kept
   the quantized predictor it was last coded with where a fit won, the block
   tried the carried pair with its carried predictors on its samples first,
@@ -266,8 +361,11 @@ that cost no bytes were taken or measured out.
   advanced by the whole bytes: 2.1 µs a channel against 1.9 for the
   current and 1.7 with the accumulator in locals. The branch on the word's
   edge is not the cost. **Pairs a word** with locals, 2.2.
-- **The nine lags in one pass**: 2.1 µs against 2.3 measured apart, a tenth
-  slower in the encoder on every sound that fits, the same bytes. Out.
+- **The nine lags in one pass, inlined**: 2.1 µs against 2.3 measured
+  apart, a tenth slower in the encoder on every sound that fits, the same
+  bytes; the pass spilled its sums inside the encoder's own register use.
+  Taken that afternoon, not inlined and without the bounds checks,
+  as above.
 - **The tone's order** (item 6): the next order tied with the fit at the
   floor, tried on the samples beside it, changed no tone's byte at any
   shape. The tone's loss is in the pairing, not the order. Out.

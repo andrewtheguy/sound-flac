@@ -10,6 +10,8 @@
 
 /// The highest order fitted; libFLAC's default level stops here too.
 pub const MAX_ORDER: usize = 8;
+/// The highest fixed predictor order FLAC has.
+pub const MAX_FIXED_ORDER: usize = 4;
 /// The most a coefficient shift can be, FLAC's field holding 0 to 15.
 const MAX_SHIFT: i32 = 15;
 /// The bits a sample the fit may be estimated to lose to the fixed predictor
@@ -72,9 +74,11 @@ pub fn precision(bits: u32, block: usize) -> u32 {
 /// logarithm, so their differences are fair guesses at the real ones, within
 /// 0.04 bit a sample measured at 16 bits.
 pub struct Estimate {
-    /// The bits of the fixed predictor of the order given, residual and
+    /// The bits of the fixed predictor of `fixed_order`, residual and
     /// warm-up samples.
     pub fixed: f64,
+    /// The fixed order estimated: the one given, or the one chosen here.
+    pub fixed_order: usize,
     /// The fitted predictor estimated cheapest, where it is estimated to
     /// beat the fixed one or come within [`MARGIN`] of it; none where nothing
     /// of the signal is left to predict or the fixed predictor does as well.
@@ -107,20 +111,21 @@ pub fn autocorrelation(signal: &[i32], window: &Window, windowed: &mut [f64]) ->
     for ((x, &s), &w) in windowed.iter_mut().zip(signal).zip(&window.0) {
         *x = f64::from(s) * w;
     }
-    let mut autoc = [0f64; MAX_ORDER + 1];
-    lags::<0, 5>(windowed, &mut autoc);
-    lags::<5, 4>(windowed, &mut autoc);
-    autoc
+    lags(windowed)
 }
 
 /// Fit a predictor of up to `max_order` to a channel of `n` samples of `bps`
 /// bits from its autocorrelation, with coefficients of about `precision`
-/// bits, and estimate its bits beside the fixed predictor of
-/// `fixed_order`'s from the same autocorrelation. The fit is the order
+/// bits, and estimate its bits beside the fixed predictor's from the same
+/// autocorrelation, of `fixed_order` where the samples have chosen one and
+/// otherwise of the order the autocorrelation says is best. The fit is the order
 /// whose estimated bits are fewest; the orders that predict a tone away tie
 /// at the floor and the lowest is taken.
-pub fn estimate(autoc: &Autocorrelation, n: usize, max_order: usize, bps: u32, precision: u32, fixed_order: usize) -> Estimate {
+pub fn estimate(autoc: &Autocorrelation, n: usize, max_order: usize, bps: u32, precision: u32, fixed_order: Option<usize>) -> Estimate {
     debug_assert!((1..=MAX_ORDER).contains(&max_order) && n > max_order);
+    // The fixed order given, or the one the autocorrelation says leaves the
+    // least error, where the samples' own order search has not run.
+    let fixed_order = fixed_order.unwrap_or_else(|| (0..=MAX_FIXED_ORDER).min_by(|&a, &b| fixed_error(autoc, a).total_cmp(&fixed_error(autoc, b))).expect("five orders"));
     // The residual's bits from the error it leaves: a Rice code of a
     // Laplacian residual of mean magnitude m, which is the root of half the
     // mean square, costs about log2(1 + 2m) + 1 bits a sample, a bit at the
@@ -147,7 +152,7 @@ pub fn estimate(autoc: &Autocorrelation, n: usize, max_order: usize, bps: u32, p
     }
     let (order, bits) = best;
     let fit = (order > 0 && bits < fixed + MARGIN * n as f64).then(|| Candidate { order, coefs: coefs[order - 1], bits });
-    Estimate { fixed, fit }
+    Estimate { fixed, fixed_order, fit }
 }
 
 impl Candidate {
@@ -195,42 +200,43 @@ fn fixed_error(autoc: &[f64; MAX_ORDER + 1], order: usize) -> f64 {
     taps[0] * autoc[0] + 2.0 * taps[1..].iter().zip(&autoc[1..]).map(|(&t, &r)| t * r).sum::<f64>()
 }
 
-/// `out[lag]` is the sum of `x[i] * x[i + lag]` over the block for every lag
-/// to the highest order, in double precision: the predictor of a quiet,
-/// resonant block is as sensitive to the sum's rounding as to its own
-/// quantization, and single precision was measured to cost 0.5% to 1% of
-/// the bytes on piano and voice. The lags go in two passes of two lanes,
-/// five then four, so each pass's accumulators stay in registers: 1.7 µs a
-/// channel more than single precision at 960 samples and 3 at 1920, where
-/// one pass of eight double lanes spilled to 2.5 and 5. Measured apart, one
-/// pass of all nine lags in two lanes was a tenth faster, 2.1 against 2.3
-/// µs, and four lanes a lag slower, 3.7; in the encoder the one pass was
-/// a tenth slower on every sound that fits, so the two passes stay.
-/// Flushing single lanes to double every 64 to 256 samples was measured to
-/// cost as much as this for a part of the precision, and a white-noise
-/// correction of the zero lag to cost bytes on every recording from one
-/// part in ten million. `out[FIRST..FIRST + LAGS]` of the autocorrelation,
-/// in one pass of two lanes a lag.
-fn lags<const FIRST: usize, const LAGS: usize>(x: &[f64], out: &mut [f64; MAX_ORDER + 1]) {
+/// The sum of `x[i] * x[i + lag]` over the block for every lag to the
+/// highest order, in double precision: the predictor of a quiet, resonant
+/// block is as sensitive to the sum's rounding as to its own quantization,
+/// and single precision was measured to cost 0.5% to 1% of the bytes on
+/// piano and voice.
+///
+/// One pass over the samples two at a time, each seen through a window of
+/// the two and the eight after them, so every lag's pair is in bounds by
+/// the window's length and nothing is checked in the loop. The compiler
+/// lays the nine lags' sums out two to a register, a sample broadcast
+/// against the pairs of samples after it, 18 floating-point operations on
+/// two samples, which is the floor the x86-64 baseline's two ports set:
+/// 1.4 µs at 960 samples, where the two passes of five and four lags this
+/// replaced, each pair indexed and checked, took 2.4 measured apart and
+/// 2.8 in the encoder. Four lanes a lag were measured no faster, the
+/// floating-point work being the same. Not inlined, so that the nine sums
+/// and their operands have the registers to themselves whatever the caller
+/// holds, which is where the one pass lost before.
+#[inline(never)]
+fn lags(x: &[f64]) -> Autocorrelation {
+    const W: usize = 2;
     let n = x.len();
-    let mut lanes = [[0f64; 2]; LAGS];
-    let mut i = 0;
-    while i + 2 + MAX_ORDER <= n {
-        let base: &[f64; 2] = x[i..i + 2].try_into().expect("two");
-        for (k, lanes) in lanes.iter_mut().enumerate() {
-            let lag = FIRST + k;
-            let shifted: &[f64; 2] = x[i + lag..i + lag + 2].try_into().expect("two");
-            for ((lane, &a), &b) in lanes.iter_mut().zip(base).zip(shifted) {
-                *lane += a * b;
+    let mut lanes = [[0f64; W]; MAX_ORDER + 1];
+    let whole = n.saturating_sub(MAX_ORDER) / W * W;
+    for w in x[..whole + MAX_ORDER.min(n)].windows(W + MAX_ORDER).step_by(W) {
+        for (lag, lanes) in lanes.iter_mut().enumerate() {
+            for j in 0..W {
+                lanes[j] += w[j] * w[j + lag];
             }
         }
-        i += 2;
     }
-    for (k, lanes) in lanes.iter().enumerate() {
-        let lag = FIRST + k;
-        let tail = x[i..n - lag].iter().zip(&x[i + lag..]).map(|(&a, &b)| a * b).sum::<f64>();
-        out[lag] = lanes[0] + lanes[1] + tail;
+    let mut out = [0f64; MAX_ORDER + 1];
+    for (lag, (o, lanes)) in out.iter_mut().zip(&lanes).enumerate() {
+        let tail = x[whole.min(n.saturating_sub(lag))..n.saturating_sub(lag)].iter().zip(&x[(whole + lag).min(n)..]).map(|(&a, &b)| a * b).sum::<f64>();
+        *o = lanes.iter().sum::<f64>() + tail;
     }
+    out
 }
 
 /// Levinson-Durbin: the predictor of each order from 1 to `max_order` from
@@ -459,7 +465,7 @@ mod tests {
         let window = Window::new(n);
         let mut windowed = vec![0f64; n];
         for bps in [16, 17, 24] {
-            let estimate = estimate(&autocorrelation(&s, &window, &mut windowed), n, MAX_ORDER, bps, precision(bps, n), 2);
+            let estimate = estimate(&autocorrelation(&s, &window, &mut windowed), n, MAX_ORDER, bps, precision(bps, n), Some(2));
             let fit = estimate.fit.expect("a tone is worth fitting");
             assert!(fit.bits() < estimate.fixed);
             let p = fit.quantized(bps, precision(bps, n)).unwrap();

@@ -11,11 +11,13 @@
 //! whole, after one pass to warm up; its bytes are the frames' over the fifty.
 //! Then every WAV under `tmp/samples` (or `SAMPLES`), the recordings of
 //! `tools/samples.txt` that `tools/samples.sh copy` brings there, is coded
-//! whole in blocks of 20 ms by each coder, three passes after one to warm up:
-//! a recording's time is the least pass's mean block, and with it the least
-//! of the passes' 99th-percentile and worst blocks, the latency a stream
-//! sees, and `worst_at`, the block that was slowest at its least over the
-//! passes, which is the encoder's doing where a pass's worst may be the
+//! whole in blocks of 20 ms by each coder, three passes after one to warm up,
+//! each pass from an encoder that has seen no block, so that what an
+//! encoder carries from block to block falls on the same blocks in every
+//! pass: a recording's time is the least pass's mean block, and with it the
+//! least of the passes' 99th-percentile and worst blocks, the latency a
+//! stream sees, and `worst_at`, the block that was slowest at its least over
+//! the passes, which is the encoder's doing where a pass's worst may be the
 //! machine's. Arguments narrow the shapes by substring (`48k`, `mono`);
 //! `KINDS` the made sounds (`KINDS=music,tone`, `KINDS=` for none); `FILES`
 //! the recordings the same way; `coder=` the coders
@@ -124,6 +126,11 @@ fn signal(shape: Shape, blocks: usize, kind: &str) -> Vec<i32> {
 
 trait Coder {
     fn encode(&mut self, block: &[i32], out: &mut Vec<u8>);
+    /// Back to the state before any block, at the start of a pass: an
+    /// encoder that carries something from block to block then costs each
+    /// block the same in every pass, and the least over the passes is the
+    /// block's own.
+    fn restart(&mut self) {}
 }
 
 /// libFLAC as v0.0.4 ran it: a stream of its own per frame, level 5.
@@ -170,6 +177,9 @@ impl Coder for Own {
     fn encode(&mut self, block: &[i32], out: &mut Vec<u8>) {
         self.0.encode(block, out).unwrap();
     }
+    fn restart(&mut self) {
+        self.0 = sound_flac::Encoder::new(self.0.stream()).unwrap();
+    }
 }
 
 /// One coder over the blocks of `samples`: the least of `passes` passes'
@@ -192,6 +202,7 @@ fn measure(shape: Shape, samples: &[i32], coder: &mut dyn Coder, passes: usize, 
     let bytes = sizes.iter().sum::<usize>() as f64 / blocks as f64;
     let mut pass = |out: &mut Vec<u8>, times: &mut [f64]| {
         out.clear();
+        coder.restart();
         for (block, t) in samples.chunks_exact(shape.samples()).zip(times.iter_mut()) {
             let start = Instant::now();
             coder.encode(block, out);
