@@ -32,45 +32,45 @@
 //! A channel is predicted with FLAC's fixed polynomials, of the order up to
 //! four that leaves the smallest residual, or with a linear predictor of up
 //! to order 8 fitted to it by autocorrelation through a Tukey window and
-//! Levinson-Durbin as libFLAC's default level does, whichever writes fewer
-//! bits. A stereo pair is chosen every fourth block: each of left, right,
-//! mid and side is weighed from its autocorrelation, the mid's following
-//! from the other three's, at the fixed predictor of the order the
-//! autocorrelation chooses counted in one Rice partition, a true count,
-//! less what its fit is estimated to save; the pair is chosen on those,
-//! the two chosen are coded the fit first, and the pair is chosen again on
-//! their real bits until it stands. On the three blocks between, the pair
-//! the last block was coded with is coded again, each channel the fit
-//! first: where the fit is estimated to beat the best fixed predictor by
-//! an eighth of a bit a sample, after a correction the channel learned the
-//! last time both were coded, the fit alone is coded, and otherwise both
-//! are and compared; each channel of the pair has both coded once a cycle
-//! whatever the estimate, on the two blocks after the choice, so that its
-//! correction is of this second; the two other channels are not looked at
-//! past a constant check and a bound, and another pair is taken only where
-//! it is certainly cheaper. A channel
-//! on its own, mono or more than two, is coded the fit first on every
-//! block. The fit is skipped where the block is noise by the fixed
-//! predictors and the last fit was not estimated to win, as on noise and a
-//! quiet desktop. A residual is Rice-coded in the partitions that cost
-//! least. Bits every sample of a channel has zero at the bottom, as 8-bit
-//! content in a 16-bit stream does, are shifted out as FLAC's wasted bits.
-//! A channel that is one value is a constant, and one nothing shortens
+//! Levinson-Durbin as libFLAC's default level does, its order chosen with the
+//! error its coefficients' rounding adds weighed exactly, whichever writes
+//! fewer bits. A stereo pair is chosen every fourth block: each of left, right,
+//! mid and side is weighed from its autocorrelation, the mid's following from
+//! the other three's, at the fixed predictor of the order the autocorrelation
+//! chooses counted in one Rice partition, a true count, less what its fit is
+//! estimated to save; the pair is chosen on those, the two chosen are coded the
+//! fit first, and the pair is chosen again on their real bits until it stands.
+//! On the three blocks between, the pair the last block was coded with is coded
+//! again, each channel the fit first: where the fit is estimated to beat the
+//! best fixed predictor by an eighth of a bit a sample, after a correction the
+//! channel learned the last time both were coded, the fit alone is coded, and
+//! otherwise both are and compared; each channel of the pair has both coded
+//! once a cycle whatever the estimate, on the two blocks after the choice, so
+//! that its correction is of this second; the two other channels are not looked
+//! at past a constant check and a bound, and another pair is taken only where
+//! it is certainly cheaper. A channel on its own, mono or more than two, is
+//! coded the fit first on every block. The fit is skipped where the block is
+//! noise by the fixed predictors and the last fit was not estimated to win, as
+//! on noise and a quiet desktop. A residual is Rice-coded in the partitions
+//! that cost least. Bits every sample of a channel has zero at the bottom, as
+//! 8-bit content in a 16-bit stream does, are shifted out as FLAC's wasted
+//! bits. A channel that is one value is a constant, and one nothing shortens
 //! goes as it is. Every pass over the samples is a plain loop the compiler
-//! vectorises at a target's baseline, the autocorrelation in double
-//! precision in one pass of lanes that stay in registers, the residual of
-//! a sample wider than 16 bits in two 16-bit passes, and the Rice codes go
-//! out four to a word.
+//! vectorises at a target's baseline, the autocorrelation in double precision
+//! in one pass of lanes that stay in registers, the residual of a sample wider
+//! than 16 bits in two 16-bit passes, and the Rice codes go out four, three or
+//! two to a word as the parameter lets them.
 //!
 //! Measured on 20 ms blocks of 16-bit stereo at 48 kHz, one core of an
 //! i5-8500T: a block of music takes about 17 µs and is 48% of its PCM, speech
-//! 11 µs and 30%, a pure tone 22 µs and 26%, noise 13 µs and 76%, silence
-//! 2 µs and sixteen bytes. libFLAC at its default level, which this replaced,
-//! took 42, 36, 41, 42 and 25 µs for the same bytes within a tenth of a per
-//! cent. Mono at 48 kHz is 7 µs against libFLAC's 22, and 44.1 kHz stereo 15
-//! against 37. On recordings, 0.34 to 0.58 of its time a block for its bytes
-//! within 0.2%, the block that chooses the pair afresh, every fourth, a
-//! quarter to a third as long again as a carried one.
+//! 10 µs and 30%, a pure tone 21 µs and 26%, noise 11 µs and 76%, silence
+//! a microsecond and sixteen bytes. libFLAC at its default level, which this
+//! replaced, took 44, 37, 42, 43 and 25 µs for the same bytes within a tenth
+//! of a per cent, and 1% more on the tone. Mono at 48 kHz is 7 µs against
+//! libFLAC's 24, and 44.1 kHz stereo 14 against 38. On recordings, 0.28 to
+//! 0.52 of its time a block for its bytes within 0.2%, the block that
+//! chooses the pair afresh, every fourth, a quarter to a third as long again
+//! as a carried one.
 //!
 //! Nothing about a wire is here: how a frame is framed in a message, how the
 //! stream's shape is agreed and what a sample's bytes are on either side belong
@@ -264,29 +264,26 @@ impl Encoder {
         if block.len() != stream.samples() {
             return Err(Error::Block { got: block.len(), want: stream.samples() });
         }
-        let held = -(1i32 << (stream.bits - 1))..(1i32 << (stream.bits - 1));
-        // Two passes the compiler vectorises, where one over a pair stays scalar.
-        let low = block.iter().copied().fold(i32::MAX, i32::min);
-        let high = block.iter().copied().fold(i32::MIN, i32::max);
-        if !held.contains(&low) || !held.contains(&high) {
-            let value = *block.iter().find(|s| !held.contains(s)).expect("the bound found one");
-            return Err(Error::Sample { value, bits: stream.bits });
-        }
-
+        // A sample outside the width is found by the channels' preparing,
+        // which folds the width the samples need in any case: a pass of
+        // its own over the block cost 0.8 µs at 960 frames of a pair.
         let bps = u32::from(stream.bits);
         const PAIRS: [(usize, usize); 4] = [(0, 1), (0, 3), (1, 3), (2, 3)];
         let pairing = if stream.channels == 2 {
             let [left, right, mid, side] = &mut self.channels[..] else { unreachable!("a stereo encoder has four candidates") };
             let pairs = block.as_chunks::<2>().0;
+            // Wrapping, since a sample outside the width has not been
+            // refused yet; the mid and side of a block with one are not used.
             for ((((&[l, r], le), ri), mi), si) in pairs.iter().zip(&mut left.signal).zip(&mut right.signal).zip(&mut mid.signal).zip(&mut side.signal) {
                 *le = l;
                 *ri = r;
-                *mi = (l + r) >> 1;
-                *si = l - r;
+                *mi = l.wrapping_add(r) >> 1;
+                *si = l.wrapping_sub(r);
             }
             let window = &self.window;
-            left.prepare(bps);
-            right.prepare(bps);
+            if !left.prepare(bps) || !right.prepare(bps) {
+                return Err(outside(block, stream.bits));
+            }
             mid.prepare(bps);
             side.prepare(bps + 1);
             // The fresh block counts as one of the `RECHOOSE`.
@@ -415,7 +412,9 @@ impl Encoder {
                 for (s, &sample) in channel.signal.iter_mut().zip(block[c..].iter().step_by(channels)) {
                     *s = sample;
                 }
-                channel.prepare(bps);
+                if !channel.prepare(bps) {
+                    return Err(outside(block, stream.bits));
+                }
                 channel.code_alone(&self.window, false);
             }
             0
@@ -454,6 +453,13 @@ impl Encoder {
         out.extend_from_slice(&crc.to_be_bytes());
         Ok(())
     }
+}
+
+/// The error for a block with a sample outside `bits`, naming the first.
+fn outside(block: &[i32], bits: u8) -> Error {
+    let held = -(1i32 << (bits - 1))..(1i32 << (bits - 1));
+    let value = *block.iter().find(|s| !held.contains(s)).expect("a channel found one");
+    Error::Sample { value, bits }
 }
 
 #[cfg(test)]

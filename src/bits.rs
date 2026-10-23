@@ -1,5 +1,10 @@
 //! Bits into bytes, and the two CRCs a frame carries.
 
+/// The largest Rice parameter at which four codes go to a word.
+const QUADS_TO: u32 = 14;
+/// The largest at which three do; past it, two.
+const TRIPLES_TO: u32 = 19;
+
 /// Bits appended to a `Vec<u8>`, most significant first, as FLAC lays them.
 pub struct BitWriter<'a> {
     out: &'a mut Vec<u8>,
@@ -44,11 +49,19 @@ impl<'a> BitWriter<'a> {
         self.put(0, count);
     }
 
-    /// The Rice codes of `folded` at parameter `k`: four to a word where they
-    /// fit one, which at the parameters sound gives they nearly always do,
-    /// two or one where they do not, so the writer's work is a word's
-    /// whatever the codes in it. The accumulator and its free bits are
-    /// locals through the loop, measured a tenth faster than through `self`.
+    /// The Rice codes of `folded` at parameter `k`: as many to a word as
+    /// the parameter lets fit one, four to [`QUADS_TO`], three to
+    /// [`TRIPLES_TO`] and two past it, so the writer's work is a word's
+    /// whatever the codes in it, and a group that does not fit, or a code
+    /// of over 63 bits, goes in its parts. Measured on 1920 codes of an
+    /// exponential residual at each parameter: four to a word is the
+    /// fastest to 14, where four of 15 bits leave three for the
+    /// quotients; from 15 to 19, where four seldom fit and each group
+    /// falls to its pairs, three to a word take 0.73 to 0.77 of four's
+    /// time and pairs 0.88 to 0.93; from 20, where three of 21 bits do not
+    /// fit, pairs take 0.92 of four's and three 1.1. The accumulator and
+    /// its free bits are locals through the loop, measured a tenth faster
+    /// than through `self`.
     pub fn rice_codes(&mut self, folded: &[u32], k: u32) {
         let mask = (1u32 << k) - 1;
         let code = |u: u32| (1u64 << k) | u64::from(u & mask);
@@ -86,28 +99,56 @@ impl<'a> BitWriter<'a> {
                 fit(out, acc, free, (1u64 << k) | u64::from(u & ((1u32 << k) - 1)), 1 + k);
             }
         }
-        let (quads, rest) = folded.as_chunks::<4>();
-        for &[u1, u2, u3, u4] in quads {
-            let (t1, t2, t3, t4) = (len(u1), len(u2), len(u3), len(u4));
-            let (t12, t34) = (t1 + t2, t3 + t4);
-            let total = t12 + t34;
-            if total <= 63 {
-                // The pairs joined, then the two: a chain of two shifts
-                // rather than three, a twentieth of the writer measured.
-                let first = (code(u1) << t2) | code(u2);
-                let second = (code(u3) << t4) | code(u4);
-                fit(out, &mut acc, &mut free, (first << t34) | second, total);
+        /// Two codes as one where they fit a word, else each on its own.
+        #[inline(always)]
+        fn pair(out: &mut Vec<u8>, acc: &mut u64, free: &mut u32, (a, b): (u32, u32), (ta, tb): (u32, u32), k: u32) {
+            if ta + tb <= 63 {
+                let mask = (1u32 << k) - 1;
+                let code = |u: u32| (1u64 << k) | u64::from(u & mask);
+                fit(out, acc, free, (code(a) << tb) | code(b), ta + tb);
             } else {
-                for (a, b, ta, tb) in [(u1, u2, t1, t2), (u3, u4, t3, t4)] {
-                    if ta + tb <= 63 {
-                        fit(out, &mut acc, &mut free, (code(a) << tb) | code(b), ta + tb);
-                    } else {
-                        one(out, &mut acc, &mut free, a, k);
-                        one(out, &mut acc, &mut free, b, k);
-                    }
-                }
+                one(out, acc, free, a, k);
+                one(out, acc, free, b, k);
             }
         }
+        let rest = if k <= QUADS_TO {
+            let (quads, rest) = folded.as_chunks::<4>();
+            for &[u1, u2, u3, u4] in quads {
+                let (t1, t2, t3, t4) = (len(u1), len(u2), len(u3), len(u4));
+                let (t12, t34) = (t1 + t2, t3 + t4);
+                let total = t12 + t34;
+                if total <= 63 {
+                    // The pairs joined, then the two: a chain of two shifts
+                    // rather than three, a twentieth of the writer measured.
+                    let first = (code(u1) << t2) | code(u2);
+                    let second = (code(u3) << t4) | code(u4);
+                    fit(out, &mut acc, &mut free, (first << t34) | second, total);
+                } else {
+                    pair(out, &mut acc, &mut free, (u1, u2), (t1, t2), k);
+                    pair(out, &mut acc, &mut free, (u3, u4), (t3, t4), k);
+                }
+            }
+            rest
+        } else if k <= TRIPLES_TO {
+            let (triples, rest) = folded.as_chunks::<3>();
+            for &[u1, u2, u3] in triples {
+                let (t1, t2, t3) = (len(u1), len(u2), len(u3));
+                let total = t1 + t2 + t3;
+                if total <= 63 {
+                    fit(out, &mut acc, &mut free, (((code(u1) << t2) | code(u2)) << t3) | code(u3), total);
+                } else {
+                    pair(out, &mut acc, &mut free, (u1, u2), (t1, t2), k);
+                    one(out, &mut acc, &mut free, u3, k);
+                }
+            }
+            rest
+        } else {
+            let (pairs, rest) = folded.as_chunks::<2>();
+            for &[u1, u2] in pairs {
+                pair(out, &mut acc, &mut free, (u1, u2), (len(u1), len(u2)), k);
+            }
+            rest
+        };
         for &u in rest {
             one(out, &mut acc, &mut free, u, k);
         }
@@ -295,39 +336,53 @@ mod tests {
         assert_eq!(out, [0b1011_1110, 0b0010_1000, 0, 0, 0, 0, 0, 0, 0, 0, 0b0001_0000]);
     }
 
-    /// Rice codes written four to a word, two, or one at a time, and codes
-    /// of over 63 bits, all come out as the codes written bit by bit.
+    /// Rice codes written four, three or two to a word by the parameter,
+    /// and one at a time where a group does not fit, and codes of over 63
+    /// bits, all come out as the codes written bit by bit, at parameters
+    /// either side of each grouping's edge and in every count of codes
+    /// modulo the group. The quotients run to 2^9 as a rule, to 2^12 in one
+    /// code of fifty and 2^18 in another, whatever the parameter, so that
+    /// each group fits or falls to its parts, a code runs past 63 bits and
+    /// its zeros past 63, and the writer that checks it, a bit at a time,
+    /// has no more zeros to put than that.
     #[test]
     fn rice_codes_come_out_as_written_singly() {
         let mut seed = 0x9E37_79B9u32;
-        let folded: Vec<u32> = (0..203)
-            .map(|i| {
-                seed ^= seed << 13;
-                seed ^= seed >> 17;
-                seed ^= seed << 5;
-                match i % 50 {
-                    49 => seed,
-                    48 => seed >> 12,
-                    _ => seed >> 23,
+        let mut next = || {
+            seed ^= seed << 13;
+            seed ^= seed >> 17;
+            seed ^= seed << 5;
+            seed
+        };
+        for k in [0u32, 3, 9, QUADS_TO, QUADS_TO + 1, 17, TRIPLES_TO, TRIPLES_TO + 1, 25, 30] {
+            let folded: Vec<u32> = (0..203)
+                .map(|i| {
+                    let bits = k + match i % 50 {
+                        49 => 18,
+                        48 => 12,
+                        _ => 9,
+                    };
+                    next() >> (32 - bits.min(32))
+                })
+                .collect();
+            for count in [folded.len(), folded.len() - 1, folded.len() - 2, 5] {
+                let folded = &folded[..count];
+                let mut fast = Vec::new();
+                let mut w = BitWriter::new(&mut fast);
+                w.rice_codes(folded, k);
+                w.align();
+                let mut slow = Vec::new();
+                let mut w = BitWriter::new(&mut slow);
+                for &u in folded {
+                    w.zeros(u >> k);
+                    w.put(1, 1);
+                    for b in (0..k).rev() {
+                        w.put(u64::from((u >> b) & 1), 1);
+                    }
                 }
-            })
-            .collect();
-        for k in [0u32, 3, 9, 14, 20] {
-            let mut fast = Vec::new();
-            let mut w = BitWriter::new(&mut fast);
-            w.rice_codes(&folded, k);
-            w.align();
-            let mut slow = Vec::new();
-            let mut w = BitWriter::new(&mut slow);
-            for &u in &folded {
-                w.zeros(u >> k);
-                w.put(1, 1);
-                for b in (0..k).rev() {
-                    w.put(u64::from((u >> b) & 1), 1);
-                }
+                w.align();
+                assert_eq!(fast, slow, "parameter {k}, {count} codes");
             }
-            w.align();
-            assert_eq!(fast, slow, "parameter {k}");
         }
     }
 

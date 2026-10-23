@@ -4,9 +4,10 @@
 //!
 //! The samples are seen through a Tukey window, their autocorrelation taken
 //! to the highest order, and Levinson-Durbin gives the predictor of every
-//! order up to it with the error each leaves; the order estimated cheapest,
-//! residual and coefficients together, is kept as a candidate with its
-//! estimate, and quantized where the channel is to be written.
+//! order up to it with the error each leaves; each is quantized, the error
+//! its rounding adds is taken from the autocorrelation, and the order
+//! estimated cheapest, residual, rounding and coefficients together, is
+//! kept as a candidate with its estimate and its quantized predictor.
 
 /// The highest order fitted; libFLAC's default level stops here too.
 pub const MAX_ORDER: usize = 8;
@@ -85,11 +86,10 @@ pub struct Estimate {
     pub fit: Option<Candidate>,
 }
 
-/// A predictor fitted but not yet quantized, with the bits it is estimated
-/// to take, residual, warm-up samples and coefficients together.
+/// A predictor fitted and quantized, with the bits it is estimated to
+/// take, residual, warm-up samples and coefficients together.
 pub struct Candidate {
-    order: usize,
-    coefs: [f64; MAX_ORDER],
+    predictor: Predictor,
     bits: f64,
 }
 
@@ -98,6 +98,11 @@ impl Candidate {
     /// [`Estimate::fixed`].
     pub fn bits(&self) -> f64 {
         self.bits
+    }
+
+    /// The predictor as it is written.
+    pub fn predictor(&self) -> Predictor {
+        self.predictor
     }
 }
 
@@ -118,9 +123,11 @@ pub fn autocorrelation(signal: &[i32], window: &Window, windowed: &mut [f64]) ->
 /// bits from its autocorrelation, with coefficients of about `precision`
 /// bits, and estimate its bits beside the fixed predictor's from the same
 /// autocorrelation, of `fixed_order` where the samples have chosen one and
-/// otherwise of the order the autocorrelation says is best. The fit is the order
-/// whose estimated bits are fewest; the orders that predict a tone away tie
-/// at the floor and the lowest is taken.
+/// otherwise of the order the autocorrelation says is best. Each order's
+/// predictor is quantized and weighed with the error its rounding adds
+/// ([`rounding_error`]), which on a pure tone is the whole of the residual
+/// and on sound is nothing; the fit is the order whose estimated bits are
+/// fewest, the lowest on a tie.
 pub fn estimate(autoc: &Autocorrelation, n: usize, max_order: usize, bps: u32, precision: u32, fixed_order: Option<usize>) -> Estimate {
     debug_assert!((1..=MAX_ORDER).contains(&max_order) && n > max_order);
     // The fixed order given, or the one the autocorrelation says leaves the
@@ -142,27 +149,37 @@ pub fn estimate(autoc: &Autocorrelation, n: usize, max_order: usize, bps: u32, p
     let mut errors = [0f64; MAX_ORDER];
     let orders = levinson(autoc, max_order, &mut coefs, &mut errors);
     let overhead = f64::from(bps + precision);
-    let mut best = (0, f64::INFINITY);
+    // Each order's bits before its rounding, and the order they are fewest
+    // at, which is quantized first; the rounding only adds, so another
+    // order is quantized only where its bits before rounding are still
+    // under the best with it, which on sound, where the rounding is
+    // nothing, is no other order, and on a tone, where the orders tie at
+    // the floor, is each of them.
+    let mut plain = [f64::INFINITY; MAX_ORDER];
     for (i, &err) in errors[..orders].iter().enumerate() {
+        plain[i] = bits_of(err, i + 1, overhead);
+    }
+    let first = (0..orders).min_by(|&a, &b| plain[a].total_cmp(&plain[b]));
+    let mut best: Option<Candidate> = None;
+    let weigh = |i: usize, best: &mut Option<Candidate>| {
         let order = i + 1;
-        let bits = bits_of(err, order, overhead);
-        if bits < best.1 {
-            best = (order, bits);
+        if let Some((predictor, rounding)) = quantize(&coefs[i][..order], precision_for(bps, precision, order), autoc) {
+            let bits = bits_of(errors[i] + rounding, order, overhead);
+            if best.as_ref().is_none_or(|b| bits < b.bits) {
+                *best = Some(Candidate { predictor, bits });
+            }
+        }
+    };
+    if let Some(first) = first {
+        weigh(first, &mut best);
+        for i in (0..orders).filter(|&i| i != first) {
+            if best.as_ref().is_none_or(|b| plain[i] < b.bits) {
+                weigh(i, &mut best);
+            }
         }
     }
-    let (order, bits) = best;
-    let fit = (order > 0 && bits < fixed + MARGIN * n as f64).then(|| Candidate { order, coefs: coefs[order - 1], bits });
+    let fit = best.filter(|b| b.bits < fixed + MARGIN * n as f64);
     Estimate { fixed, fixed_order, fit }
-}
-
-impl Candidate {
-    /// The candidate quantized for a sample of `bps` bits: coefficients of
-    /// `precision` bits, and for a sample of 17 bits or fewer no finer than
-    /// lets the prediction's sum stay in 32 bits. None where they round to
-    /// nothing.
-    pub fn quantized(&self, bps: u32, precision: u32) -> Option<Predictor> {
-        quantize(&self.coefs[..self.order], precision_for(bps, precision, self.order))
-    }
 }
 
 /// The precision a predictor of `order` is quantized to for a sample of
@@ -172,16 +189,38 @@ fn precision_for(bps: u32, precision: u32, order: usize) -> u32 {
     if bps <= 17 { precision.min(32 - bps - order.ilog2()) } else { precision }
 }
 
-/// The shift that puts the largest of `coefs` just under the top of
-/// `precision` bits, one kept for the sign; the field holds no more than
-/// 15, and a negative shift is not allowed, so too large a coefficient is
-/// scaled down instead. Zero where there is no coefficient to scale.
-fn shift_for(coefs: &[f64], precision: u32) -> i32 {
-    let cmax = coefs.iter().fold(0f64, |m, &c| m.max(c.abs()));
+/// The shift that puts `cmax`, the largest coefficient's magnitude, just
+/// under the top of `precision` bits, one kept for the sign; the field
+/// holds no more than 15, and a negative shift is not allowed, so too
+/// large a coefficient is scaled down instead. Zero where there is no
+/// coefficient to scale.
+fn shift_for(cmax: f64, precision: u32) -> i32 {
     if cmax <= 0.0 || !cmax.is_finite() {
         return 0;
     }
-    (precision as i32 - 2 - cmax.log2().floor() as i32).min(MAX_SHIFT)
+    (precision as i32 - 2 - exponent(cmax)).min(MAX_SHIFT)
+}
+
+/// The floor of the logarithm to base 2 of `x`, positive and finite, from
+/// its exponent bits, a subnormal counting as the smallest normal: the
+/// library's `log2` and `floor` are calls at the x86-64 baseline, and
+/// every order's predictor is quantized on every fit.
+fn exponent(x: f64) -> i32 {
+    debug_assert!(x > 0.0 && x.is_finite());
+    ((x.to_bits() >> 52) & 0x7FF) as i32 - 1023
+}
+
+/// Two to the power `e`, for `e` within a double's exponent, from the bits.
+fn pow2(e: i32) -> f64 {
+    debug_assert!((-1022..=1023).contains(&e));
+    f64::from_bits(((1023 + e) as u64) << 52)
+}
+
+/// `x` rounded to the nearest whole, halves away from zero, as a
+/// conversion that truncates, which is one instruction where `round` is a
+/// call at the x86-64 baseline.
+fn round(x: f64) -> i64 {
+    (x + 0.5f64.copysign(x)) as i64
 }
 
 /// The squared error the fixed predictor of `order` leaves on the windowed
@@ -278,25 +317,58 @@ fn levinson(autoc: &[f64; MAX_ORDER + 1], max_order: usize, coefs: &mut [[f64; M
 
 /// The coefficients quantized to `precision` bits with the shift that keeps
 /// the largest of them in range, each rounded with the error of the ones
-/// before it carried along, as libFLAC does. None where they are all zero.
-fn quantize(coefs: &[f64], precision: u32) -> Option<Predictor> {
+/// before it carried along, as libFLAC does, and the squared error the
+/// rounding adds to the predictor's over the windowed signal, from `autoc`.
+/// A coefficient at the precision's edge, as a low tone's first, two
+/// cosines of its frequency and just under 2, is clamped there, and the
+/// carry takes most of the clamp's error into the next coefficient: the
+/// shift one less, tried for that case, changed no byte of any sound
+/// measured and is not tried. None where the coefficients are all zero.
+fn quantize(coefs: &[f64], precision: u32, autoc: &Autocorrelation) -> Option<(Predictor, f64)> {
     let cmax = coefs.iter().fold(0f64, |m, &c| m.max(c.abs()));
     if cmax <= 0.0 || !cmax.is_finite() {
         return None;
     }
-    let shift = shift_for(coefs, precision);
-    let scale = 2f64.powi(shift);
+    let shift = shift_for(cmax, precision);
+    let scale = pow2(shift);
     let qmax = (1i64 << (precision - 1)) - 1;
     let qmin = -qmax - 1;
     let mut out = Predictor { order: coefs.len(), precision, shift: shift.max(0) as u32, coefs: [0; MAX_ORDER] };
     let mut error = 0f64;
     for (q, &c) in out.coefs.iter_mut().zip(coefs) {
         error += c * scale;
-        let rounded = (error.round() as i64).clamp(qmin, qmax);
+        let rounded = round(error).clamp(qmin, qmax);
         error -= rounded as f64;
         *q = rounded as i32;
     }
-    Some(out)
+    let error = rounding_error(coefs, &out, autoc);
+    Some((out, error))
+}
+
+/// The squared error `predictor`'s rounding adds to what `coefs`, the
+/// exact fit, leave over the signal as the autocorrelation sees it, the
+/// windowed block with zeros beyond it: the fit's error is least there
+/// over the coefficients, so the quantized predictor's is the fit's and
+/// the quadratic form of the coefficients' errors over the autocorrelation,
+/// exactly, the floor of the prediction's shift aside. On the samples
+/// themselves the fit's own error at the block's edges adds a cross term
+/// of either sign. On sound the form is nothing beside the residual; on a
+/// pure tone it is most of it, and what tells the orders apart.
+fn rounding_error(coefs: &[f64], predictor: &Predictor, autoc: &Autocorrelation) -> f64 {
+    let scale = pow2(-(predictor.shift as i32));
+    let mut e = [0f64; MAX_ORDER];
+    for ((e, &c), &q) in e.iter_mut().zip(coefs).zip(&predictor.coefs) {
+        *e = c - f64::from(q) * scale;
+    }
+    let e = &e[..coefs.len()];
+    let mut total = 0f64;
+    for (i, &ei) in e.iter().enumerate() {
+        total += ei * ei * autoc[0];
+        for (j, &ej) in e[i + 1..].iter().enumerate() {
+            total += 2.0 * ei * ej * autoc[j + 1];
+        }
+    }
+    total.max(0.0)
 }
 
 /// The residual `predictor` leaves over `signal`, of `bps` bits a sample,
@@ -444,14 +516,68 @@ mod tests {
 
     #[test]
     fn quantized_coefficients_fit_their_precision() {
-        let p = quantize(&[1.6, -0.8], 10).unwrap();
+        let autoc = [1.0, 0.5, 0.25, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
+        let (p, _) = quantize(&[1.6, -0.8], 10, &autoc).unwrap();
         assert_eq!((p.order, p.precision, p.shift), (2, 10, 8));
         assert_eq!(p.coefs[..2], [410, -205]);
         // A coefficient past the precision is scaled, never shifted up.
-        let p = quantize(&[3000.0, 1.0], 10).unwrap();
+        let (p, _) = quantize(&[3000.0, 1.0], 10, &autoc).unwrap();
         assert_eq!(p.shift, 0);
         assert!(p.coefs[0] <= 511, "{:?}", p.coefs);
-        assert!(quantize(&[0.0, 0.0], 10).is_none());
+        assert!(quantize(&[0.0, 0.0], 10, &autoc).is_none());
+    }
+
+    /// A low tone's predictor, two cosines of its frequency and minus one,
+    /// has its first coefficient just under 2, which rounds past the edge
+    /// of the precision at the shift the largest coefficient sets and is
+    /// clamped there, the clamp's error carried into the second, where it
+    /// is nearly cancelled: the rounding error is the quadratic form, and
+    /// a tenth of what the first coefficient's error alone would be.
+    #[test]
+    fn a_clamped_coefficient_carries_its_error_into_the_next() {
+        let w: f64 = 200.0 / 48000.0 * std::f64::consts::TAU;
+        let coefs = [2.0 * w.cos(), -1.0];
+        let autoc: Autocorrelation = std::array::from_fn(|lag| (lag as f64 * w).cos());
+        let (p, error) = quantize(&coefs, 10, &autoc).unwrap();
+        assert_eq!((p.shift, p.coefs[0], p.coefs[1]), (8, 511, -255), "{p:?}");
+        let e = [coefs[0] - 511.0 / 256.0, coefs[1] + 255.0 / 256.0];
+        assert_eq!(error, e[0] * e[0] * autoc[0] + e[1] * e[1] * autoc[0] + 2.0 * e[0] * e[1] * autoc[1]);
+        assert!(error * 10.0 < e[0] * e[0] * autoc[0], "{error}");
+        // The error of the exact predictor is nothing, and of one off by a
+        // whole in its first coefficient the autocorrelation's zero lag.
+        let exact = Predictor { order: 2, precision: 10, shift: 0, coefs: [0; MAX_ORDER] };
+        assert_eq!(rounding_error(&[0.0, 0.0], &exact, &autoc), 0.0);
+        let off = Predictor { order: 1, precision: 10, shift: 0, coefs: [1, 0, 0, 0, 0, 0, 0, 0] };
+        assert_eq!(rounding_error(&[0.0], &off, &autoc), autoc[0]);
+        assert_eq!((round(2.5), round(-2.5), round(0.4), round(-0.4)), (3, -3, 0, 0));
+        assert_eq!((exponent(1.0), exponent(1.9999), exponent(0.3), pow2(-3), pow2(10)), (0, 0, -2, 0.125, 1024.0));
+    }
+
+    /// What the quantized predictor adds to the fit's squared error on a
+    /// tone, worked over the signal as the autocorrelation sees it, zeros
+    /// beyond the block, with the exact coefficients and with the quantized
+    /// ones, is the quadratic form of the rounding over the autocorrelation
+    /// to a part in a million: a tone's residual is nearly all rounding,
+    /// and the form is what the order choice weighs.
+    #[test]
+    fn the_rounding_error_is_what_the_quantized_predictor_adds() {
+        let n = 960;
+        let s: Vec<f64> = (0..n).map(|i| 16000.0 * (i as f64 * 440.0 / 48000.0 * std::f64::consts::TAU).sin() + ((i * 7919) % 13) as f64 - 6.0).collect();
+        let mut autoc = [0f64; MAX_ORDER + 1];
+        for (lag, o) in autoc.iter_mut().enumerate() {
+            *o = (0..n - lag).map(|i| s[i] * s[i + lag]).sum();
+        }
+        let mut coefs = [[0f64; MAX_ORDER]; MAX_ORDER];
+        let mut errors = [0f64; MAX_ORDER];
+        assert!(levinson(&autoc, 2, &mut coefs, &mut errors) == 2);
+        let exact = &coefs[1][..2];
+        let (p, model) = quantize(exact, 10, &autoc).unwrap();
+        let scale = pow2(-(p.shift as i32));
+        let rounded = [f64::from(p.coefs[0]) * scale, f64::from(p.coefs[1]) * scale];
+        let at = |i: i64| if (0..n as i64).contains(&i) { s[i as usize] } else { 0.0 };
+        let energy = |c: &[f64]| (0..n as i64 + 2).map(|i| (at(i) - c[0] * at(i - 1) - c[1] * at(i - 2)).powi(2)).sum::<f64>();
+        let added = energy(&rounded) - energy(exact);
+        assert!(added > 0.0 && (added - model).abs() < 1e-6 * added, "added {added} against the model's {model}");
     }
 
     /// The fitted predictor leaves a tone's residual at little more than the
@@ -474,7 +600,7 @@ mod tests {
             let estimate = estimate(&autocorrelation(&s, &window, &mut windowed), n, MAX_ORDER, bps, precision(bps, n), Some(2));
             let fit = estimate.fit.expect("a tone is worth fitting");
             assert!(fit.bits() < estimate.fixed);
-            let p = fit.quantized(bps, precision(bps, n)).unwrap();
+            let p = fit.predictor();
             let mut out = Vec::new();
             assert!(residual(&s, &p, bps, &mut [Vec::new(), Vec::new()], &mut out));
             assert_eq!(out.len(), n - p.order);
