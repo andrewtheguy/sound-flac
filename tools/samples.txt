@@ -1,0 +1,17 @@
+# The recordings docs/benchmarks.md is measured on, one a line: the
+# archive.org item, the file in it, and the licence the item states. All are
+# public domain as archive.org has them, lossless as uploaded; a FLAC is
+# decoded to WAV beside it on fetch, and the harness reads the WAVs.
+# tools/samples.sh fetches them into the artifact store and copies them to
+# tmp/samples for a run.
+OpenGoldbergVariations	Kimiko Ishizaka - J.S. Bach- -Open- Goldberg Variations, BWV 988 (Piano) - 01 Aria.flac	CC0 1.0
+musopen-chopin-complete-works-flac	Fantasy, Op. 49.flac	CC0 1.0
+dso20060204old	dso20060204.2.wav	public domain, as stated
+TheColumbiansCollection1924-1929DirectedByBenSelvin	Limehouse Blues 1924 The Columbians - Dance Orchestra De Luxe.flac	public domain mark 1.0
+negroprisonsongs	JumpinJudy.wav	public domain, as stated
+TheRavenByEdgarAllanPoe	TheRavenByEdgarAllanPoe.wav	public domain, as stated
+LeviticusKJV	03013_Leviticus_13.wav	public domain, as stated
+NasaAudioHighlightReels	JFK-Rice-Speech.wav	public domain mark 1.0
+TenMinutesOfWhiteNoisePinkNoiseAndBrownianNoise	WhiteNoise.flac	public domain, as stated
+TenMinutesOfWhiteNoisePinkNoiseAndBrownianNoise	PinkNoise.flac	public domain, as stated
+aporee_53029_60598	PotniskiVlak.wav	public domain mark 1.0

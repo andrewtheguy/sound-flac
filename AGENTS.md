@@ -15,10 +15,14 @@
   Its tuning is for sound heard as it is made with little of a core: a change
   to it is measured first, against what it replaces, on 20 ms blocks, in time a
   block and bytes a block, and the module docs carry the numbers.
-  `tools/bench` measures the crate against libFLAC as v0.0.4 linked it, and
+  `tools/bench` measures the crate against libFLAC as v0.0.4 linked it, on
+  made sounds and on the recordings of `tools/samples.txt`, and
   `tools/tables.py` makes the tables of `docs/benchmarks.md` from its log:
-  both are run again, and the doc's prose brought to the run, when the
-  tuning changes.
+  both are run again, and the doc's prose and `docs/plan.md` brought to the
+  run, when the tuning changes. The recordings live in the artifact store
+  (`tools/samples.sh fetch`, once) and are copied to the gitignored
+  `tmp/samples` for a run (`tools/samples.sh copy`); nothing in the
+  repository holds one, and the store is read, never written by a run.
 - After changes run `cargo test` and `cargo clippy --all-targets -- -D warnings`.
   The encoder gets an independent decoder in its tests, symphonia's, which reads
   every frame back bit for bit.

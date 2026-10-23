@@ -9,9 +9,16 @@
 //! fastest, and 8, its smallest, the same way; and by this crate. A cell's
 //! time is the least of five passes over fifty blocks, each pass timed as a
 //! whole, after one pass to warm up; its bytes are the frames' over the fifty.
-//! Arguments narrow the shapes by substring (`48k`, `mono`); `KINDS` the
-//! sounds (`KINDS=music,tone`); `coder=` the coders (`coder=sound-flac`).
+//! Then every WAV under `tmp/samples` (or `SAMPLES`), the recordings of
+//! `tools/samples.txt` that `tools/samples.sh copy` brings there, is coded
+//! whole in blocks of 20 ms by each coder, three passes after one to warm up:
+//! a recording's time is the least pass's mean block, and with it the least
+//! of the passes' 99th-percentile and worst blocks, the latency a stream
+//! sees. Arguments narrow the shapes by substring (`48k`, `mono`); `KINDS`
+//! the made sounds (`KINDS=music,tone`, `KINDS=` for none); `FILES` the
+//! recordings the same way; `coder=` the coders (`coder=sound-flac`).
 use std::ffi::c_void;
+use std::path::{Path, PathBuf};
 use std::ptr;
 use std::time::Instant;
 
@@ -33,7 +40,7 @@ impl Shape {
         self.samples() * self.bits.div_ceil(8) as usize
     }
     fn name(&self) -> String {
-        let rate = if self.rate % 1000 == 0 { format!("{}k", self.rate / 1000) } else { format!("{:.1}k", self.rate as f64 / 1000.0) };
+        let rate = if self.rate.is_multiple_of(1000) { format!("{}k", self.rate / 1000) } else { format!("{:.1}k", self.rate as f64 / 1000.0) };
         let channels = match self.channels {
             1 => "mono",
             2 => "stereo",
@@ -161,34 +168,103 @@ impl Coder for Own {
     }
 }
 
-fn run(name: &str, shape: Shape, kind: &str, samples: &[i32], coder: &mut dyn Coder) {
+/// One coder over the blocks of `samples`: the least of `passes` passes'
+/// mean block in microseconds, and the least of their 99th-percentile and
+/// worst blocks, each pass timed block by block after one pass to warm up;
+/// and the bytes a block.
+fn measure(shape: Shape, samples: &[i32], coder: &mut dyn Coder, passes: usize, least_ms: u128) -> (f64, f64, f64, f64) {
     let blocks = samples.len() / shape.samples();
     let mut out = Vec::new();
-    let mut pass = |out: &mut Vec<u8>| {
+    let mut times = vec![0f64; blocks];
+    let mut pass = |out: &mut Vec<u8>, times: &mut [f64]| {
         out.clear();
-        for block in samples.chunks_exact(shape.samples()) {
+        for (block, t) in samples.chunks_exact(shape.samples()).zip(times.iter_mut()) {
+            let start = Instant::now();
             coder.encode(block, out);
+            *t = start.elapsed().as_secs_f64() * 1e6;
         }
     };
-    pass(&mut out);
-    let bytes = out.len();
-    let mut least = f64::INFINITY;
-    for _ in 0..5 {
-        let mut passes = 0u32;
+    pass(&mut out, &mut times);
+    let bytes = out.len() as f64 / blocks as f64;
+    let (mut mean, mut p99, mut worst) = (f64::INFINITY, f64::INFINITY, f64::INFINITY);
+    for _ in 0..passes {
         let start = Instant::now();
-        while start.elapsed().as_millis() < 60 {
-            pass(&mut out);
-            passes += 1;
+        let mut done = 0;
+        let (mut sum, mut p, mut w) = (0.0, f64::INFINITY, f64::INFINITY);
+        // At least `least_ms` of passes, so a short signal is timed long enough.
+        while done == 0 || start.elapsed().as_millis() < least_ms {
+            pass(&mut out, &mut times);
+            sum += times.iter().sum::<f64>();
+            let mut sorted = times.clone();
+            sorted.sort_by(f64::total_cmp);
+            p = p.min(sorted[(blocks * 99 / 100).min(blocks - 1)]);
+            w = w.min(sorted[blocks - 1]);
+            done += 1;
         }
-        least = least.min(start.elapsed().as_secs_f64() * 1e6 / (passes as f64 * blocks as f64));
+        mean = mean.min(sum / (done * blocks) as f64);
+        p99 = p99.min(p);
+        worst = worst.min(w);
     }
-    println!(
-        "shape={} block={} pcm={} kind={kind} coder={name} us={least:.2} bytes={:.1}",
-        shape.name(),
-        shape.block(),
-        shape.pcm_bytes(),
-        bytes as f64 / blocks as f64
-    );
+    (mean, p99, worst, bytes)
+}
+
+fn coders(shape: Shape) -> Vec<(&'static str, Box<dyn Coder>)> {
+    let block = shape.block() as u16;
+    vec![
+        ("libflac-5", Box::new(RefCoder(libflac_ref::Encoder::new(libflac_ref::Stream { rate: shape.rate, channels: shape.channels, bits: shape.bits, block }).unwrap()))),
+        ("libflac-0", Box::new(LibFlac { shape, level: 0 })),
+        ("libflac-8", Box::new(LibFlac { shape, level: 8 })),
+        ("sound-flac", Box::new(Own(sound_flac::Encoder::new(sound_flac::Stream { rate: shape.rate, channels: shape.channels, bits: shape.bits, block }).unwrap()))),
+    ]
+}
+
+/// A PCM WAV, 8 to 24 bits, plain or extensible: its shape and its samples
+/// interleaved, sign-extended to i32.
+fn wav(path: &Path) -> (Shape, Vec<i32>) {
+    let bytes = std::fs::read(path).unwrap();
+    assert!(&bytes[..4] == b"RIFF" && &bytes[8..12] == b"WAVE", "{}: not a WAV", path.display());
+    let u16_at = |i: usize| u16::from_le_bytes([bytes[i], bytes[i + 1]]);
+    let u32_at = |i: usize| u32::from_le_bytes(bytes[i..i + 4].try_into().unwrap());
+    let (mut shape, mut data) = (None, None);
+    let mut i = 12;
+    while i + 8 <= bytes.len() {
+        let (id, len) = (&bytes[i..i + 4], u32_at(i + 4) as usize);
+        let body = i + 8;
+        match id {
+            b"fmt " => {
+                let tag = u16_at(body);
+                assert!(tag == 1 || tag == 0xFFFE, "{}: not PCM", path.display());
+                shape = Some(Shape { rate: u32_at(body + 4), channels: u16_at(body + 2) as u8, bits: u16_at(body + 14) as u8 });
+            }
+            b"data" => data = Some(&bytes[body..(body + len).min(bytes.len())]),
+            _ => {}
+        }
+        i = body + len + (len & 1);
+    }
+    let (shape, data) = (shape.expect("fmt chunk"), data.expect("data chunk"));
+    let width = shape.bits.div_ceil(8) as usize;
+    let samples = data
+        .chunks_exact(width)
+        .map(|s| match width {
+            1 => i32::from(s[0]) - 128,
+            2 => i32::from(i16::from_le_bytes([s[0], s[1]])),
+            3 => i32::from_le_bytes([0, s[0], s[1], s[2]]) >> 8,
+            _ => unreachable!(),
+        })
+        .collect();
+    (shape, samples)
+}
+
+fn wavs(dir: &Path, out: &mut Vec<PathBuf>) {
+    let Ok(entries) = std::fs::read_dir(dir) else { return };
+    for entry in entries.flatten() {
+        let path = entry.path();
+        if path.is_dir() {
+            wavs(&path, out);
+        } else if path.extension().is_some_and(|e| e.eq_ignore_ascii_case("wav")) {
+            out.push(path);
+        }
+    }
 }
 
 fn main() {
@@ -202,7 +278,14 @@ fn main() {
     ];
     let only: Vec<String> = std::env::args().skip(1).filter(|a| !a.starts_with("coder=")).collect();
     let coder_only: Option<String> = std::env::args().find_map(|a| a.strip_prefix("coder=").map(str::to_owned));
-    let kinds: Vec<String> = std::env::var("KINDS").map(|k| k.split(',').map(str::to_owned).collect()).unwrap_or_else(|_| KINDS.iter().map(|s| s.to_string()).collect());
+    let chosen = |name: &str| coder_only.as_deref().is_none_or(|c| name.contains(c));
+    let list = |var: &str, all: Vec<String>| -> Vec<String> {
+        match std::env::var(var) {
+            Ok(v) => v.split(',').filter(|s| !s.is_empty()).map(str::to_owned).collect(),
+            Err(_) => all,
+        }
+    };
+    let kinds = list("KINDS", KINDS.iter().map(|s| s.to_string()).collect());
     for shape in shapes {
         let name = shape.name();
         if !only.is_empty() && !only.iter().any(|o| name.contains(o.as_str())) {
@@ -210,19 +293,30 @@ fn main() {
         }
         for kind in kinds.iter().map(String::as_str) {
             let samples = signal(shape, 50, kind);
-            let block = shape.block() as u16;
-            let mut coders: Vec<(&str, Box<dyn Coder>)> = vec![
-                ("libflac-5", Box::new(RefCoder(libflac_ref::Encoder::new(libflac_ref::Stream { rate: shape.rate, channels: shape.channels, bits: shape.bits, block }).unwrap()))),
-                ("libflac-0", Box::new(LibFlac { shape, level: 0 })),
-                ("libflac-8", Box::new(LibFlac { shape, level: 8 })),
-                ("sound-flac", Box::new(Own(sound_flac::Encoder::new(sound_flac::Stream { rate: shape.rate, channels: shape.channels, bits: shape.bits, block }).unwrap()))),
-            ];
-            for (name, coder) in coders.iter_mut() {
-                if coder_only.as_deref().is_some_and(|c| !name.contains(c)) {
-                    continue;
-                }
-                run(name, shape, kind, &samples, coder.as_mut());
+            for (coder_name, coder) in coders(shape).iter_mut().filter(|(n, _)| chosen(n)) {
+                let (us, p99, worst, bytes) = measure(shape, &samples, coder.as_mut(), 5, 60);
+                println!("shape={name} block={} pcm={} kind={kind} coder={coder_name} us={us:.2} p99={p99:.2} worst={worst:.2} bytes={bytes:.1}", shape.block(), shape.pcm_bytes());
             }
+        }
+    }
+    let dir = std::env::var("SAMPLES").map(PathBuf::from).unwrap_or_else(|_| PathBuf::from("tmp/samples"));
+    let mut files = Vec::new();
+    wavs(&dir, &mut files);
+    files.sort();
+    let wanted = list("FILES", Vec::new());
+    for path in files {
+        let file = path.strip_prefix(&dir).unwrap_or(&path).to_string_lossy().replace(' ', "_");
+        if !wanted.is_empty() && !wanted.iter().any(|w| file.contains(w.as_str())) {
+            continue;
+        }
+        let (shape, samples) = wav(&path);
+        if shape.block() == 0 || samples.len() < shape.samples() {
+            continue;
+        }
+        let seconds = samples.len() / shape.samples() / 50;
+        for (coder_name, coder) in coders(shape).iter_mut().filter(|(n, _)| chosen(n)) {
+            let (us, p99, worst, bytes) = measure(shape, &samples, coder.as_mut(), 3, 0);
+            println!("shape={} block={} pcm={} file={file} seconds={seconds} coder={coder_name} us={us:.2} p99={p99:.2} worst={worst:.2} bytes={bytes:.1}", shape.name(), shape.block(), shape.pcm_bytes());
         }
     }
 }
