@@ -83,7 +83,7 @@ pub struct Channel {
     /// Room for the orders' residuals while the fixed order is chosen.
     scratch: [Vec<i32>; 2],
     /// The samples windowed for the linear predictor's fit.
-    windowed: Vec<f32>,
+    windowed: Vec<f64>,
     /// The samples as 16 bits, for a linear predictor's residual when they fit.
     halves: Vec<i16>,
     /// Sums of a folded residual over the finest partitions.

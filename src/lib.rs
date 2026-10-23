@@ -42,17 +42,17 @@
 //! 16-bit stream does, are shifted out as FLAC's wasted bits. A channel that
 //! is one value is a constant, and one nothing shortens goes as it is. Every
 //! pass over the samples is a plain loop the compiler vectorises at a
-//! target's baseline, the autocorrelation in single precision as libFLAC long
-//! took it, and the Rice codes go out two to a word.
+//! target's baseline, the autocorrelation in double precision in lanes that
+//! stay in registers, and the Rice codes go out two to a word.
 //!
 //! Measured on 20 ms blocks of 16-bit stereo at 48 kHz, one core of an
-//! i5-8500T: a block of music takes about 31 µs and is 48% of its PCM, speech
-//! 19 µs and 30%, a pure tone 32 µs and 26%, noise 30 µs and 76%, silence
+//! i5-8500T: a block of music takes about 35 µs and is 48% of its PCM, speech
+//! 22 µs and 30%, a pure tone 33 µs and 26%, noise 31 µs and 76%, silence
 //! 6 µs and sixteen bytes. libFLAC at its default level, which this replaced,
-//! took 46, 39, 48, 45 and 27 µs for the same bytes within a tenth of a per
+//! took 47, 41, 45, 46 and 26 µs for the same bytes within a tenth of a per
 //! cent; without the fit the crate took 24, 18, 22 and 6 µs for 7% more bytes
-//! on music and 2% more on speech. Mono at 48 kHz is 11 µs against libFLAC's
-//! 25, and 44.1 kHz stereo 26 against 44.
+//! on music and 2% more on speech. Mono at 48 kHz is 13 µs against libFLAC's
+//! 26, and 44.1 kHz stereo 28 against 40.
 //!
 //! Nothing about a wire is here: how a frame is framed in a message, how the
 //! stream's shape is agreed and what a sample's bytes are on either side belong

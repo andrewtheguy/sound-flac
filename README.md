@@ -22,9 +22,9 @@ order on every channel, the cheapest stereo pairing chosen on that, and a
 linear predictor of up to order 8 fitted to the two channels written where the
 fit is estimated to win, Rice partitions that cost least and wasted bits
 shifted out. On 20 ms blocks of 16-bit stereo at 48 kHz a block of music takes
-about 31 µs of one core and is 48% of its PCM, speech 19 µs and 30%, silence
-6 µs and sixteen bytes: the bytes libFLAC's default level makes, in two thirds
-of its time on music and half on speech. Every shape, made sound and
+about 35 µs of one core and is 48% of its PCM, speech 22 µs and 30%, silence
+6 µs and sixteen bytes: the bytes libFLAC's default level makes, in three
+quarters of its time on music and half on speech. Every shape, made sound and
 recording measured against libFLAC is in
 [docs/benchmarks.md](docs/benchmarks.md), and what is taken up next in
 [docs/plan.md](docs/plan.md).

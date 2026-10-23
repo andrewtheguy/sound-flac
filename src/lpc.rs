@@ -29,14 +29,14 @@ pub struct Predictor {
 
 /// The window the samples are seen through before the fit: Tukey, a quarter
 /// of the block tapered by a half cosine at each end, as libFLAC's default.
-pub struct Window(Vec<f32>);
+pub struct Window(Vec<f64>);
 
 impl Window {
     pub fn new(n: usize) -> Self {
         let taper = n / 4;
-        let mut w = vec![1.0f32; n];
+        let mut w = vec![1.0f64; n];
         for i in 0..taper {
-            let v = (0.5 - 0.5 * (std::f64::consts::PI * i as f64 / taper as f64).cos()) as f32;
+            let v = 0.5 - 0.5 * (std::f64::consts::PI * i as f64 / taper as f64).cos();
             w[i] = v;
             w[n - 1 - i] = v;
         }
@@ -72,11 +72,11 @@ pub fn precision(bits: u32, block: usize) -> u32 {
 /// `fixed_order` is estimated, from the same autocorrelation, to do as well:
 /// the estimates share whatever a Rice code adds to the error's logarithm,
 /// so their difference is a fair guess at the real one.
-pub fn fit(signal: &[i32], window: &Window, windowed: &mut [f32], max_order: usize, bps: u32, precision: u32, fixed_order: usize) -> Option<Predictor> {
+pub fn fit(signal: &[i32], window: &Window, windowed: &mut [f64], max_order: usize, bps: u32, precision: u32, fixed_order: usize) -> Option<Predictor> {
     let n = signal.len();
     debug_assert!((1..=MAX_ORDER).contains(&max_order) && n > max_order);
     for ((x, &s), &w) in windowed.iter_mut().zip(signal).zip(&window.0) {
-        *x = s as f32 * w;
+        *x = f64::from(s) * w;
     }
     let mut autoc = [0f64; MAX_ORDER + 1];
     autocorrelation(windowed, &mut autoc);
@@ -89,11 +89,12 @@ pub fn fit(signal: &[i32], window: &Window, windowed: &mut [f32], max_order: usi
     }
 
     // The order estimated cheapest: the residual's bits from the error it
-    // leaves, as libFLAC estimates them, and each coefficient at the width
-    // of a sample and a coefficient.
+    // leaves, as libFLAC estimates them, no fewer than none a sample, so
+    // the orders that predict a tone away tie and the lowest is taken, and
+    // each coefficient at the width of a sample and a coefficient.
     let scale = 0.5 / n as f64;
     let overhead = f64::from(bps + precision);
-    let estimate = |err: f64, order: usize, overhead: f64| 0.5 * (err * scale).log2() * (n - order) as f64 + order as f64 * overhead;
+    let estimate = |err: f64, order: usize, overhead: f64| (0.5 * (err * scale).log2()).max(0.0) * (n - order) as f64 + order as f64 * overhead;
     let mut best = (0, f64::INFINITY);
     for (i, &err) in errors[..orders].iter().enumerate() {
         let order = i + 1;
@@ -129,28 +130,42 @@ fn fixed_error(autoc: &[f64; MAX_ORDER + 1], order: usize) -> f64 {
 }
 
 /// `out[lag]` is the sum of `x[i] * x[i + lag]` over the block for every lag
-/// to the highest order, all nine taken in one pass of eight lanes of single
-/// precision, which the compiler vectorises; a block's rounding is a few
-/// parts in a thousand million, and the predictor is quantized far coarser.
-/// A pass a lag, or lanes split so their accumulators stay in registers, both
-/// measured slower.
-fn autocorrelation(x: &[f32], out: &mut [f64; MAX_ORDER + 1]) {
+/// to the highest order, in double precision: the predictor of a quiet,
+/// resonant block is as sensitive to the sum's rounding as to its own
+/// quantization, and single precision was measured to cost 0.5% to 1% of
+/// the bytes on piano and voice. The lags go in two passes of two lanes,
+/// five then four, so each pass's accumulators stay in registers: 1.7 µs a
+/// channel more than single precision at 960 samples and 3 at 1920, where
+/// one pass of eight double lanes spilled to 2.5 and 5. Flushing single
+/// lanes to double every 64 to 256 samples was measured to cost as much as
+/// this for a part of the precision, and a white-noise correction of the
+/// zero lag to cost bytes on every recording from one part in ten million.
+fn autocorrelation(x: &[f64], out: &mut [f64; MAX_ORDER + 1]) {
+    lags::<0, 5>(x, out);
+    lags::<5, 4>(x, out);
+}
+
+/// `out[FIRST..FIRST + LAGS]` of the autocorrelation, in one pass of two
+/// lanes a lag.
+fn lags<const FIRST: usize, const LAGS: usize>(x: &[f64], out: &mut [f64; MAX_ORDER + 1]) {
     let n = x.len();
-    let mut lanes = [[0f32; 8]; MAX_ORDER + 1];
+    let mut lanes = [[0f64; 2]; LAGS];
     let mut i = 0;
-    while i + 8 + MAX_ORDER <= n {
-        let base: &[f32; 8] = x[i..i + 8].try_into().expect("eight");
-        for (lag, lanes) in lanes.iter_mut().enumerate() {
-            let shifted: &[f32; 8] = x[i + lag..i + lag + 8].try_into().expect("eight");
+    while i + 2 + MAX_ORDER <= n {
+        let base: &[f64; 2] = x[i..i + 2].try_into().expect("two");
+        for (k, lanes) in lanes.iter_mut().enumerate() {
+            let lag = FIRST + k;
+            let shifted: &[f64; 2] = x[i + lag..i + lag + 2].try_into().expect("two");
             for ((lane, &a), &b) in lanes.iter_mut().zip(base).zip(shifted) {
                 *lane += a * b;
             }
         }
-        i += 8;
+        i += 2;
     }
-    for (lag, (o, lanes)) in out.iter_mut().zip(&lanes).enumerate() {
-        let tail = x[i..n - lag].iter().zip(&x[i + lag..]).map(|(&a, &b)| f64::from(a * b)).sum::<f64>();
-        *o = lanes.iter().map(|&lane| f64::from(lane)).sum::<f64>() + tail;
+    for (k, lanes) in lanes.iter().enumerate() {
+        let lag = FIRST + k;
+        let tail = x[i..n - lag].iter().zip(&x[i + lag..]).map(|(&a, &b)| a * b).sum::<f64>();
+        out[lag] = lanes[0] + lanes[1] + tail;
     }
 }
 
@@ -359,7 +374,7 @@ mod tests {
             })
             .collect();
         let window = Window::new(n);
-        let mut windowed = vec![0f32; n];
+        let mut windowed = vec![0f64; n];
         for bps in [16, 17, 24] {
             let p = fit(&s, &window, &mut windowed, MAX_ORDER, bps, precision(bps, n), 2).unwrap();
             let mut out = Vec::new();
