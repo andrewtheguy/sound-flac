@@ -102,7 +102,11 @@ fits and four one-partition counts in their place, and is the late block,
 by a quarter to a third of a carried one where it was by half before. On
 arm64, the same day, the recordings are 0.31 to 0.48 of libFLAC's time for
 the same bytes to a tenth of a byte, and against level 0 0.71 to 1.23 where
-x86 is 0.61 to 1.33.
+x86 is 0.61 to 1.33. Under Windows, natively on the same i5, run on demand
+the same night, the encoder's blocks are the WSL run's within 3% for the
+same bytes, and against level 0 0.55 to 1.18 where WSL's 0.61 to 1.33 is of
+a run whose level 0 was a tenth faster than it is run again: level 0 takes
+the same under both systems.
 
 ## Against libFLAC's level 0
 
