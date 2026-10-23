@@ -1,4 +1,4 @@
-//! FLAC for a desktop's sound, as wlshare and the remotex gateway both code it.
+//! FLAC for a desktop's sound, as wlshare and the zdesk gateway both code it.
 //!
 //! wlshare sends what its desktop plays as FLAC and the gateway decodes it, so
 //! the sound is lossless between them. Both ends are libFLAC, the reference
