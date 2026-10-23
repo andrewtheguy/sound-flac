@@ -24,14 +24,17 @@
 //! Rice-coded in the partitions that cost least.
 //!
 //! Measured on 20 ms blocks of 16-bit stereo at 48 kHz, a channel's fixed
-//! orders and their sums are about 1.1 µs, its fixed coding's partitions
+//! orders and their sums are about 1.1 µs where all four orders are tried,
+//! a pass each, and the search stops at the first order that does not win,
+//! its fixed coding's partitions
 //! 0.8, its autocorrelation 1.4 and the fit from it 0.3, the fit's residual
 //! 1.1 through 16-bit lanes, which a side channel takes too where its
 //! samples fit 16 bits, and 1.6 split where they do not, and its partitions
 //! 0.8; the bound 0.3; the weighing's one-partition count 0.3 at order 0,
 //! 0.22, 0.27 and 0.33 at orders 1 to 3 and 0.54 at order 4, taken as
 //! order 2 twice where one pass of five taps took 0.77; writing a block's
-//! two channels is about 3.4 µs, four Rice codes a word. Measured apart at
+//! two channels is about 3.4 µs at 16 bits and 6 at 24, the Rice codes
+//! four, three or two to a word by the parameter. Measured apart at
 //! 960 samples: the four fixed orders in one pass, with the binomial taps
 //! as differences of differences, did not vectorise and took 4.3 µs
 //! against the four passes' 1.1, and the sums alone then the chosen order
@@ -238,8 +241,9 @@ impl Channel {
     /// differences from the first for the constant, and their magnitudes
     /// for the width, which the compiler vectorises where a test of every
     /// sample against the first, leaving at the first that differs, stayed
-    /// scalar.
-    pub fn prepare(&mut self, bps: u32) {
+    /// scalar. False where a sample does not fit `bps`, which the width
+    /// says for nothing; the channel is then not to be coded.
+    pub fn prepare(&mut self, bps: u32) -> bool {
         let n = self.signal.len();
         let first = self.signal[0];
         let (mut all, mut differ, mut magnitude) = (0i32, 0i32, 0i32);
@@ -248,6 +252,11 @@ impl Channel {
             differ |= s ^ first;
             magnitude |= s ^ (s >> 31);
         }
+        // A sample's two's complement is the bits of its magnitude, less
+        // one for a negative, which the fold has, and a sign bit.
+        if 33 - magnitude.leading_zeros() > bps {
+            return false;
+        }
         self.wasted = if all == 0 { 0 } else { all.trailing_zeros() };
         if self.wasted > 0 {
             for s in &mut self.signal {
@@ -255,9 +264,7 @@ impl Channel {
             }
         }
         self.bps = bps - self.wasted;
-        // A sample's two's complement is the bits of its magnitude, less
-        // one for a negative, which the fold above has, and a sign bit.
-        self.width = (33 - (magnitude >> self.wasted).leading_zeros()).min(self.bps);
+        self.width = 33 - (magnitude >> self.wasted).leading_zeros();
         let header = self.header();
         self.weighed = None;
         self.coded = false;
@@ -275,6 +282,7 @@ impl Channel {
             self.predictable = lpc::MAX_ORDER.min(n / 8) > 0;
         }
         self.estimate = self.best.bits as f64;
+        true
     }
 
     /// Code the channel prepared with the fixed predictor of the order that
@@ -536,11 +544,10 @@ impl Channel {
         }
     }
 
-    /// `fit` quantized and coded on the samples as the trial coding, and
-    /// its bits; none where its coefficients round to nothing or its
-    /// residual would not fit a sample.
+    /// `fit` coded on the samples as the trial coding, and its bits; none
+    /// where its residual would not fit a sample.
     fn fit_into_trial(&mut self, fit: &Candidate) -> Option<u64> {
-        let predictor = fit.quantized(self.bps, self.precision)?;
+        let predictor = fit.predictor();
         if !lpc::residual(&self.signal, &predictor, self.width, &mut self.halves, &mut self.trial.residual) {
             return None;
         }
@@ -746,17 +753,23 @@ fn abs_sum(values: &[i32]) -> u64 {
 }
 
 /// The fixed predictor order whose residual is smallest in all, judged over
-/// the samples every order predicts; the lower order on a tie. Each order's
-/// residual is the difference of the one before, taken in a pass of its own
-/// into `scratch[order - 1]`, which the compiler vectorises, and left there
-/// for the order chosen to be coded from.
+/// the samples every order predicts, the orders taken from 0 up to the
+/// first whose residual is not smaller than the one before's; the lower
+/// order on a tie. Each order's residual is the difference of the one
+/// before, taken in a pass of its own into `scratch[order - 1]`, which the
+/// compiler vectorises, and left there for the order chosen to be coded
+/// from. The residual's size over the order falls and then rises, the
+/// differences shortening what is smooth and lengthening what is noise:
+/// stopped at the first rise, the bytes were the same on every made sound
+/// and recording measured, and a block of noise, where order 0 wins, takes
+/// one difference pass in place of four.
 #[inline]
 fn best_order(signal: &[i32], scratch: &mut [Vec<i32>; MAX_FIXED_ORDER]) -> usize {
     let n = signal.len();
-    let mut sums = [0u64; MAX_FIXED_ORDER + 1];
     // An order's residual starts `order` samples in, so the samples every
     // order predicts begin that much later in each.
-    sums[0] = abs_sum(&signal[MAX_FIXED_ORDER..]);
+    let mut least = abs_sum(&signal[MAX_FIXED_ORDER..]);
+    let mut best = 0;
     let mut before = signal;
     let mut rest = &mut scratch[..];
     for order in 1..=MAX_FIXED_ORDER {
@@ -765,15 +778,14 @@ fn best_order(signal: &[i32], scratch: &mut [Vec<i32>; MAX_FIXED_ORDER]) -> usiz
         let whole = difference(before, this);
         // The sum is of the whole residual; the few samples before the
         // highest order's start come off it.
-        sums[order] = whole - this[..MAX_FIXED_ORDER - order].iter().map(|&v| u64::from(v.unsigned_abs())).sum::<u64>();
+        let sum = whole - this[..MAX_FIXED_ORDER - order].iter().map(|&v| u64::from(v.unsigned_abs())).sum::<u64>();
+        if sum >= least {
+            break;
+        }
+        least = sum;
+        best = order;
         before = this;
         rest = after;
-    }
-    let mut best = 0;
-    for order in 1..=MAX_FIXED_ORDER {
-        if sums[order] < sums[best] {
-            best = order;
-        }
     }
     best
 }
@@ -876,7 +888,12 @@ fn fixed_pass<const ORDER: usize>(signal: &[i32], out: &mut [i32]) -> u64 {
 /// and the bits they take with it, estimated from the sum alone: the parameter
 /// near the mean's logarithm, one either side of it tried, whichever is
 /// cheapest, none past what a 5-bit field holds. No division: the
-/// logarithms' difference is within one of the mean's.
+/// logarithms' difference is within one of the mean's. The cost is convex
+/// in the parameter, and a walk from the difference by exact cost
+/// differences, a comparison of two quotients a step in place of a
+/// multiplication a trial, found the same parameter on every sound and
+/// took 1.01 to 1.05 of the time a block on arm64, so the three trials
+/// stay.
 #[inline]
 fn best_param(sum: u64, count: u64) -> (u32, u64) {
     if sum < count {
@@ -922,6 +939,9 @@ mod tests {
         assert_eq!(scratch[3][..4], [0, 0, 0, 0]);
     }
 
+    /// The parameter found is the one of least cost by the estimate, as
+    /// trying every parameter finds it, on sums from a residual at the
+    /// floor to a wide sample's wild one, and the bits are the cost at it.
     #[test]
     fn the_parameter_tracks_the_mean() {
         assert_eq!(best_param(0, 100), (0, 100));
@@ -934,6 +954,20 @@ mod tests {
         assert_eq!(k, MAX_PARAM_5);
         let (k, _) = best_param(100 << 20, 100);
         assert!((19..=20).contains(&k), "{k}");
+        let cost = |sum: u64, count: u64, k: u32| count * (u64::from(k) + 1) + (sum >> k);
+        let mut seed = 0x9E37_79B9u64;
+        for count in [1u64, 15, 30, 60, 240, 960, 1920] {
+            for e in 0..40 {
+                seed ^= seed << 13;
+                seed ^= seed >> 7;
+                seed ^= seed << 17;
+                let sum = (seed % (count * 3 + 1)) << e;
+                let (k, bits) = best_param(sum, count);
+                assert_eq!(bits, cost(sum, count, k));
+                let least = (0..=MAX_PARAM_5).map(|k| cost(sum, count, k)).min().unwrap();
+                assert_eq!(bits, least, "sum {sum} count {count}: parameter {k}");
+            }
+        }
     }
 
     #[test]
@@ -942,11 +976,25 @@ mod tests {
         for (i, s) in ch.signal.iter_mut().enumerate() {
             *s = ((i as i32 % 7) - 3) << 8;
         }
-        ch.prepare(16);
+        assert!(ch.prepare(16));
         ch.analyse_fixed();
         assert_eq!(ch.wasted, 8);
         assert_eq!(ch.bps, 8);
         assert!(ch.signal.iter().all(|&s| (-3..=3).contains(&s)));
+    }
+
+    /// A sample outside the width is caught by the fold that finds the
+    /// width, at either edge, where the two edge values themselves pass.
+    #[test]
+    fn a_sample_outside_the_width_is_caught_by_preparing() {
+        let mut ch = Channel::new(64, 10);
+        for (i, s) in ch.signal.iter_mut().enumerate() {
+            *s = (i as i32 % 7) - 3;
+        }
+        for (value, fits) in [(1 << 15, false), ((1 << 15) - 1, true), (-1 << 15, true), ((-1 << 15) - 1, false), (i32::MIN, false), (i32::MAX, false)] {
+            ch.signal[5] = value;
+            assert_eq!(ch.prepare(16), fits, "{value}");
+        }
     }
 
     /// A tone the fixed predictors leave much of is nearly all predicted by
