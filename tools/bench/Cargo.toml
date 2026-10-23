@@ -1,0 +1,16 @@
+# The measurement docs/benchmarks.md is made from: this crate against libFLAC,
+# on 20 ms blocks of a desktop's sound. Not a workspace member, so the crate
+# itself keeps to `thiserror`; libFLAC comes in as v0.0.4 of this repository,
+# the last release that linked it, and as its sys crate at the other levels.
+[package]
+name = "bench"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+sound-flac = { path = "../.." }
+libflac-ref = { package = "sound-flac", git = "https://github.com/andrewtheguy/sound-flac", tag = "v0.0.4" }
+flac-sys = { package = "libflac-prebuilt-sys", git = "https://github.com/andrewtheguy/libflac-prebuilt", tag = "v1.5.0-20261002034056-4ba69e8" }
+
+[workspace]

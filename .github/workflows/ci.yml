@@ -1,8 +1,8 @@
 name: CI
 
 # Every target a user builds this crate for: Linux x86_64 and aarch64 for the
-# daemon and the gateway, macOS arm64 and Windows x86_64 for the gateway.
-# libFLAC is the prebuilt archive the build downloads.
+# daemon and the gateway, macOS arm64 and Windows x86_64 for the gateway. Pure
+# Rust throughout, so nothing is downloaded or compiled but crates.
 on:
   push:
     branches: ["**"]
