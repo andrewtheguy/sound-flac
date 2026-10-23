@@ -6,7 +6,8 @@ next, in which order and why. What it is now is in the module docs of
 by are in [benchmarks.md](benchmarks.md). Written on 2026-10-22, on the
 first measurement over recordings, at commit e3173f7 of branch
 `own-encoder`; brought to the run of the fit in double precision the same
-day, and to the night of 2026-10-23, when its six items were measured.
+day, to the night of 2026-10-23, when its six items were measured, and to
+the day after, when the time against libFLAC's level 0 was taken up.
 
 ## What it is for
 
@@ -77,34 +78,33 @@ plan are brought to the run.
 
 ## Where it stands
 
-From the tables of 2026-10-23, after the night the items below were measured:
-0.43 to 0.87 of libFLAC's time a block on the recordings for its bytes
-within 0.2%, the late blocks 0.49 to 0.76 of its; the made sounds 0.41 to
-0.91 for the same bytes within a byte, the pure tone 1.02 at 44.1 kHz and
-1.05 at 24 bits. A block of a recording is 0.04% to 0.35% of one core. Where
-the time goes at 16-bit stereo, on the orchestra, 30 µs: three
-autocorrelations 8.3 µs and the fits from them 1.2, the four channels'
-fixed orders and sums 4.5 and their partitions 3.7, the two fits' residuals
-3.3 and partitions 2, the range check and the stereo split 1.6, the bits
-out 4.1, the CRC 1.
+From the tables of 2026-10-23, after the night the items below were measured
+and the day the level-0 column was taken up: 0.44 to 0.77 of libFLAC's time
+a block on the recordings for its bytes within 0.2%, the late blocks 0.45 to
+0.84 of its; the made sounds 0.40 to 0.74 for the same bytes within a byte,
+the pure tone 1.02 at 44.1 kHz and 1.05 at 24 bits. A block of a recording
+is 0.05% to 0.32% of one core. Where the time went at 16-bit stereo, on the
+orchestra, with timers after the night, 30 µs: three autocorrelations 8.3 µs
+and the fits from them 1.2, the four channels' fixed orders and sums 4.5 and
+their partitions 3.7, the two fits' residuals 3.3 and partitions 2, the
+range check and the stereo split 1.6, the bits out 4.1, the CRC 1. The day
+took the autocorrelations to two on three blocks in four, the bits out to
+3.6 and the finest sums to half: 27 µs.
 
 ## Open items, in order
 
-1. **The order search in one pass.** The four fixed orders' residuals are
-   four difference passes with their sums, and the zeroth's sum a fifth,
-   4.5 µs a block over four channels; one pass over a window of five
-   samples with the binomial taps as shifts and adds would write all four
-   and sum them, perhaps 2 µs. The passes are the fixed residuals, so the
-   outputs stay.
-2. **The partitions.** Six codings a block take 5.7 µs, 0.9 each: the fold
-   to unsigned, the finest sums, and 63 Rice parameters each tried at three
-   values from the logarithms' difference. Dropping the lowest trial cost 1%
-   to 4% of the bytes, so the three stay; what is left is the search's own
+1. **The partitions' search.** Six codings a block; a coding's fold is
+   0.14 µs and its finest sums 0.09 in 32-bit lanes, and the search over
+   the partition orders 0.4: 63 Rice parameters each tried at three values
+   from the logarithms' difference. Dropping the lowest trial cost 1% to 4%
+   of the bytes, so the three stay; what is left is the search's own
    arithmetic, or fewer partition orders where the coarse ones have lost.
-3. **The writer.** 4.1 µs a block for two channels, four Rice codes a word;
-   the accumulator's dependency chain is the cost, and a wider gathering
-   before the shift would shorten it.
-4. **The tone's coefficients.** A pure tone's frame is its coefficients'
+2. **The writer**, 3.6 µs a block for two channels, four Rice codes a word
+   with the accumulator in locals. The work is the codes' arithmetic, not
+   the word's flush: a branchless writer that stored eight bytes on every
+   word and advanced by the whole bytes was slower, 2.1 µs a channel against
+   1.7 measured apart.
+3. **The tone's coefficients.** A pure tone's frame is its coefficients'
    rounding, 1.02 of libFLAC's bytes at 44.1 kHz and 1.05 at 24 bits, where
    libFLAC chooses the pair on every channel's real bits. The rounding's
    error as order times the mean square over twelve times four to the shift
@@ -113,20 +113,65 @@ out 4.1, the CRC 1.
    quantization carries each coefficient's rounding into the next, so on
    smooth sound the errors cancel and the model overstates them. A model of
    the carried error is the item, if a tone is worth it.
-5. **The autocorrelation**, 2.8 µs a channel at 960 samples in two passes of
-   two double lanes, is at the x86-64 baseline's floor for its 8640
-   multiply-adds; the window's multiply fused into the first pass, or AVX2
-   where a user builds for it, is what is left.
+4. **The autocorrelation**, 2.8 µs a channel at 960 samples in two passes of
+   two double lanes, is near the x86-64 baseline's floor for its 8640
+   multiply-adds: measured apart, one pass of all nine lags was 2.1 against
+   2.3, four lanes a lag 3.7 and eight 2.9, but in the encoder the one pass
+   was a tenth slower on every sound that fits, so the two passes stay. The
+   window's multiply fused into the first pass, or AVX2 where a user builds
+   for it, is what is left.
+
+## Against libFLAC's level 0
+
+The tables' one red column is the time against libFLAC's fastest level,
+which fits no predictor and codes stereo as it comes: 1.1 to 2.1 of its time
+on stereo music and tone, for 0.78 to 0.96 of its bytes on music and 0.49
+to 0.78 on speech. The two are not doing the same work. Of this encoder's
+30 µs on the orchestra, the fit and the stereo choice are about 15, and the
+fixed path on four channels, the split, the writer and the CRC the other
+15; level 0 runs the fixed path on two channels, and this encoder's would be
+about 9 µs there, under level 0's 18, of which 12.6 is its frame's fixed
+cost (its block of silence). The ratio goes under 1.00 only by dropping the
+fit, which is the bytes. What was tried to bring it down without dropping
+the fit is under the measurements below: carrying the predictor cost bytes,
+fitting only the carried pair between full choices was taken, and the items
+that cost no bytes were taken or measured out.
 
 ## Measured and taken
 
+- **Only the carried pair fitted between full choices** (2026-10-23, the
+  level-0 ask): every fourth block all four channels are fitted and the
+  pair chosen on their estimates as before; on the blocks between, only
+  the pair the last block was coded with is fitted, the other two channels
+  stand on their fixed bits, and another pair is taken where its fixed
+  codings alone are cheaper. One autocorrelation and two fits fewer a
+  block, 12% to 15% of the time on 16-bit stereo recordings, for 0.00% to
+  0.09% of the bytes: the Raven 1.0007, the prison song 1.0009, the
+  orchestra 1.0002, the Fantasy 1.0001, the train 1.0001, a byte a block at
+  the most. The bytes were the same within 0.05% chosen afresh every
+  eighth or sixteenth block, so it is not the period but the blocks between
+  that cost, where the pair cannot move to one whose fit would win. Giving
+  the two channels not fitted an estimate from their last coding's saving
+  over its fixed coding, and fitting a pair that estimate favoured before
+  choosing it, bought no byte back and cost most of the time saved. This
+  is time bought with bytes, a byte a block, which the rule above does not
+  do on its own; it was taken on the ask to bring the level-0 column down
+  and is undone by setting `RECHOOSE` to 0, every block then choosing afresh.
+- **The writer's accumulator in locals**: the Rice codes of a partition go
+  through one call that holds the accumulator and its free bits in locals
+  through the loop, 1.7 µs a channel against 1.9 measured apart, the same
+  bytes. **The finest partition sums in 32-bit lanes** where the largest
+  folded value times the partition fits one, which a 16-bit stream's always
+  does, 0.09 µs a coding against 0.18 in 64-bit lanes, the fold's or-fold
+  giving the bound for nothing. Together 2% to 5% of a block against the
+  control.
 - **The pair chosen on the fit** (item 1 of the plan of 2026-10-22, and
   item 5 with it): every channel is coded with its fixed predictor first,
   its residual being what the order search left; its fit is weighed from
   its autocorrelation and the bits it is estimated to save come off its
   real fixed bits; the pair is chosen on that, coded, and chosen again with
   the coded channels' real bits until it stands. The train station went
-  from 1.006 of libFLAC's bytes to 0.995, the Fantasy from 1.004 to 1.002,
+  from 1.006 of libFLAC's bytes to 1.000, the Fantasy from 1.004 to 1.002,
   the prison song and the Raven to 1.000; nothing rose. On the way: chosen
   on the estimates alone, with libFLAC's estimate clamped at none a sample,
   the 8-bit speech was 1.63, every quiet channel looking free beside a
@@ -189,6 +234,36 @@ out 4.1, the CRC 1.
 
 ## Measured and not taken
 
+- **The predictor carried between blocks** (2026-10-23): each channel kept
+  the quantized predictor it was last coded with where a fit won, the block
+  tried the carried pair with its carried predictors on its samples first,
+  and fitted afresh where a carried predictor lost, where another pair's
+  fixed bits alone were cheaper, and every Nth block. Refitted every eighth
+  block: 0.70 to 0.83 of the time on the recordings for 0.1% to 1.7% more
+  bytes, the Leviticus reading 1.7%, the Raven 1.6%, the Fantasy 1.0%; every
+  fourth, still 0.9% on the Raven and the reading. The staleness is the
+  coefficients': speech and piano move within 20 ms. Adaptive triggers in
+  place of the cadence, refitting where the fixed coding's bits moved by
+  more than a fraction since the block before or where the carried
+  predictor's saving fell by more than a fraction from the fresh fit's,
+  were swept over 2% to 10% and 5% to 30%: the Fantasy still paid 0.7% to
+  1.6%, the Raven 0.1% to 0.4%, and the orchestra and the 24-bit speech
+  never took the fast path (a side channel without a predictor, the saving
+  moving block to block) and got slower from the recalls thrown away, 1.07
+  to 1.13. Out: bytes for time at a rate the rule does not take, and the
+  late block no better, since the refit block costs the whole.
+- **The four fixed orders in one pass** (item 1 of the night's plan): the
+  binomial taps as differences of differences over a window of five, all
+  four residuals written and summed in the pass. It did not vectorise, 4.3
+  µs a channel against the four passes' 1.1 measured apart; the sums alone
+  in one pass and then the chosen order's residual, 1.2. The four passes
+  stay.
+- **A branchless writer**, eight bytes stored on every word and the pointer
+  advanced by the whole bytes: 2.1 µs a channel against 1.9 for the
+  current and 1.7 with the accumulator in locals. The branch on the word's
+  edge is not the cost. **Pairs a word** with locals, 2.2.
+- **The nine lags in one pass**: 2.1 µs against 2.3 measured apart, a tenth
+  slower in the encoder on every sound that fits, the same bytes. Out.
 - **The tone's order** (item 6): the next order tied with the fit at the
   floor, tried on the samples beside it, changed no tone's byte at any
   shape. The tone's loss is in the pairing, not the order. Out.

@@ -13,11 +13,16 @@
 //! wasted bits.
 //!
 //! Measured on 20 ms blocks of 16-bit stereo at 48 kHz, a channel's fixed
-//! orders and their sums are about 1.1 µs, its fixed coding's partitions 1,
-//! its autocorrelation 2.8 and the fit from it 0.3, the fit's residual 1.1
-//! through 16-bit lanes and 1.6 split for the 17-bit side channel, and its
-//! partitions 1; writing a block's two channels is about 4 µs, four Rice
-//! codes a word.
+//! orders and their sums are about 1.1 µs, its fixed coding's partitions
+//! 0.8, its autocorrelation 2.8 and the fit from it 0.3, the fit's residual
+//! 1.1 through 16-bit lanes and 1.6 split for the 17-bit side channel, and
+//! its partitions 0.8; writing a block's two channels is about 3.6 µs, four
+//! Rice codes a word. Measured apart at 960 samples: the four fixed orders
+//! in one pass, with the binomial taps as differences of differences, did
+//! not vectorise and took 4.3 µs against the four passes' 1.1, and the sums
+//! alone then the chosen order 1.2, so the four passes stay; a partition's
+//! fold is 0.14 and its finest sums 0.09 in 32-bit lanes against 0.18 in
+//! 64-bit, the search over the orders 0.4.
 
 use crate::bits::BitWriter;
 use crate::lpc::{self, Autocorrelation, Candidate, Predictor, Window};
@@ -382,31 +387,7 @@ impl Channel {
             let k = u32::from(coding.chosen[i]);
             w.put(u64::from(k), param_bits);
             let start = if i == 0 { 0 } else { i * size - order };
-            let mask = (1u32 << k) - 1;
-            let code = |u: u32| (1u64 << k) | u64::from(u & mask);
-            let len = |u: u32| (u >> k) + 1 + k;
-            // Four codes in one write where they fit a word, which at the
-            // parameters sound gives they nearly always do, two where four
-            // do not: the writer's work is a word's whatever the codes in it.
-            let (quads, rest) = coding.folded[start..(i + 1) * size - order].as_chunks::<4>();
-            for &[u1, u2, u3, u4] in quads {
-                let (t1, t2, t3, t4) = (len(u1), len(u2), len(u3), len(u4));
-                if t1 + t2 + t3 + t4 <= 63 {
-                    w.fitted((((code(u1) << t2 | code(u2)) << t3 | code(u3)) << t4) | code(u4), t1 + t2 + t3 + t4);
-                } else {
-                    for (a, b, ta, tb) in [(u1, u2, t1, t2), (u3, u4, t3, t4)] {
-                        if ta + tb <= 63 {
-                            w.fitted((code(a) << tb) | code(b), ta + tb);
-                        } else {
-                            w.rice(a >> k, a & mask, k);
-                            w.rice(b >> k, b & mask, k);
-                        }
-                    }
-                }
-            }
-            for &u in rest {
-                w.rice(u >> k, u & mask, k);
-            }
+            w.rice_codes(&coding.folded[start..(i + 1) * size - order], k);
         }
     }
 }
@@ -418,15 +399,22 @@ fn partition(coding: &mut Coding, n: usize, sums: &mut [u64], params: &mut [u8])
     // Sized first and written through a slice, which the compiler
     // vectorises where it leaves `extend` scalar.
     coding.folded.resize(coding.residual.len(), 0);
+    let mut all = 0u32;
     for (f, &r) in coding.folded.iter_mut().zip(&coding.residual) {
         *f = zigzag(r);
+        all |= *f;
     }
     let finest = MAX_PARTITION_ORDER.min(n.trailing_zeros()).min((n / (order + 1).max(MIN_PARTITION)).ilog2());
     let parts = 1usize << finest;
     let size = n >> finest;
-    for (i, sum) in sums[..parts].iter_mut().enumerate() {
+    // The finest sums in 32-bit lanes where the largest value times the
+    // partition fits one, which a 16-bit stream's always does, and in 64-bit
+    // lanes where it may not: measured apart over 32 partitions of 30, 0.09
+    // against 0.18 µs, the widening to 64 bits costing more than the adds.
+    let sum: fn(&[u32]) -> u64 = if u64::from(all) * size as u64 <= u64::from(u32::MAX) { narrow_sum } else { wide_sum };
+    for (i, s) in sums[..parts].iter_mut().enumerate() {
         let start = if i == 0 { 0 } else { i * size - order };
-        *sum = wide_sum(&coding.folded[start..(i + 1) * size - order]);
+        *s = sum(&coding.folded[start..(i + 1) * size - order]);
     }
     let mut best = (u64::MAX, 0, false);
     for p in (0..=finest).rev() {
@@ -463,10 +451,24 @@ fn zigzag(r: i32) -> u32 {
     ((r << 1) ^ (r >> 31)) as u32
 }
 
-/// The sum of `values`, taken in four lanes of 64 bits, which the compiler
-/// vectorises. Lanes of 32 bits over blocks of 32 were tried: a partition
-/// of a 20 ms block is 30 or 60 samples, which never fills a block of 32,
-/// and the sum went scalar.
+/// The sum of `values`, each at most `u32::MAX / values.len()`, in four
+/// lanes of 32 bits.
+#[inline]
+fn narrow_sum(values: &[u32]) -> u64 {
+    let (fours, rest) = values.as_chunks::<4>();
+    let mut lanes = [0u32; 4];
+    for four in fours {
+        for (lane, &v) in lanes.iter_mut().zip(four) {
+            *lane += v;
+        }
+    }
+    u64::from(lanes.iter().sum::<u32>()) + rest.iter().map(|&v| u64::from(v)).sum::<u64>()
+}
+
+/// The sum of `values` whatever they are, in four lanes of 64 bits. Lanes of
+/// 32 bits over blocks of 32 were tried first: a partition of a 20 ms block
+/// is 30 or 60 samples, which never fills a block of 32, and the sum went
+/// scalar.
 #[inline]
 fn wide_sum(values: &[u32]) -> u64 {
     let (fours, rest) = values.as_chunks::<4>();

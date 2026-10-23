@@ -202,12 +202,15 @@ fn fixed_error(autoc: &[f64; MAX_ORDER + 1], order: usize) -> f64 {
 /// the bytes on piano and voice. The lags go in two passes of two lanes,
 /// five then four, so each pass's accumulators stay in registers: 1.7 µs a
 /// channel more than single precision at 960 samples and 3 at 1920, where
-/// one pass of eight double lanes spilled to 2.5 and 5. Flushing single
-/// lanes to double every 64 to 256 samples was measured to cost as much as
-/// this for a part of the precision, and a white-noise correction of the
-/// zero lag to cost bytes on every recording from one part in ten million.
-/// `out[FIRST..FIRST + LAGS]` of the autocorrelation, in one pass of two
-/// lanes a lag.
+/// one pass of eight double lanes spilled to 2.5 and 5. Measured apart, one
+/// pass of all nine lags in two lanes was a tenth faster, 2.1 against 2.3
+/// µs, and four lanes a lag slower, 3.7; in the encoder the one pass was
+/// a tenth slower on every sound that fits, so the two passes stay.
+/// Flushing single lanes to double every 64 to 256 samples was measured to
+/// cost as much as this for a part of the precision, and a white-noise
+/// correction of the zero lag to cost bytes on every recording from one
+/// part in ten million. `out[FIRST..FIRST + LAGS]` of the autocorrelation,
+/// in one pass of two lanes a lag.
 fn lags<const FIRST: usize, const LAGS: usize>(x: &[f64], out: &mut [f64; MAX_ORDER + 1]) {
     let n = x.len();
     let mut lanes = [[0f64; 2]; LAGS];
