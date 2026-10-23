@@ -10,7 +10,7 @@ item, the same day.
 
 ## What it is for
 
-The wlshare daemon's and the remotex gateway's, which stream a desktop's
+The wlshare daemon's and the zDesk gateway's, which stream a desktop's
 sound as it is made: one FLAC frame of every 20 ms block, coded the moment
 the block is whole and sent. That is the one use, and it sets what counts.
 
@@ -36,7 +36,7 @@ the block is whole and sent. That is the one use, and it sets what counts.
   is better everywhere, and worth more than time: the time is already not
   felt.
 - **The shapes are the users'.** wlshare codes 8-bit and 16-bit at 8 to
-  96 kHz, remotex 16-bit at 44.1 kHz; the crate takes 4 to 24 bits, 1 to 8
+  96 kHz, zDesk 16-bit at 44.1 kHz; the crate takes 4 to 24 bits, 1 to 8
   channels. The tables cover 44.1, 48 and 96 kHz, mono and stereo, 8, 16
   and 24 bits.
 
