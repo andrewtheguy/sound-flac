@@ -84,23 +84,23 @@ plan are brought to the run.
 
 From the tables of 2026-10-23, after the night the items below were measured
 and the day the level-0 column was taken up twice and the fourth block once:
-0.33 to 0.56 of libFLAC's time a block on the recordings for its bytes
-within 0.2%, the late blocks 0.37 to 0.55 of its; the made sounds 0.27 to
-0.54 for the same bytes within two bytes, the pure tone 1.02 at 44.1 kHz
-and 1.05 at 24 bits. A block of a recording is 0.04% to 0.24% of one core.
+0.33 to 0.55 of libFLAC's time a block on the recordings for its bytes
+within 0.2%, the late blocks 0.37 to 0.53 of its; the made sounds 0.27 to
+0.53 for the same bytes within two bytes, the pure tone 1.02 at 44.1 kHz
+and 1.05 at 24 bits. A block of a recording is 0.04% to 0.23% of one core.
 Where the time goes at 16-bit stereo, on the orchestra, by the parts
-measured apart: a carried block, three in four, 17.8 µs, is two
+measured apart: a carried block, three in four, 17.6 µs, is two
 autocorrelations 2.8, their fits 0.6, the pair's residuals 2.2 and
 partitions 1.6, the two fixed codings 3.8 where the fit is not clear, the
 folds and bounds 1.2, the range check and the stereo split 1.6, the bits
 out 3.4 and the CRC 0.5, and on two of the three one channel has its fixed
 coding made whatever the fit is estimated at, 1.9, to bring its correction
-up to date; the fourth block, 22.7 µs, has three autocorrelations, four
+up to date; the fourth block, 22.5 µs, has three autocorrelations, four
 fits and four one-partition counts in their place, and is the late block,
 by a quarter to a third of a carried one where it was by half before. On
 arm64, the same day, the recordings are 0.31 to 0.47 of libFLAC's time for
 the same bytes to a tenth of a byte, and against level 0 0.70 to 1.20 where
-x86 is 0.59 to 1.18.
+x86 is 0.58 to 1.19.
 
 ## Against libFLAC's level 0
 
@@ -118,10 +118,10 @@ the 16-bit stereo recordings went from 1.21 to 1.79 of level 0's time to
 the mono reading from 0.83 to 0.53, and the recordings at 24 bits from 1.46
 to 1.79 to 0.74 to 1.28; the made stereo music and tone from 1.25 to 1.89
 to 0.81 to 1.11. The end of the day took the fourth block down and with it
-the means by 1% to 7%, the 16-bit stereo recordings to 0.80 to 1.03, the
-orchestra now under at 0.98, the 1962 speech to 0.61 and the four at 24
-bits to 1.02 to 1.18, in a run where libFLAC's own times were 1% to 8%
-longer than in the run before. What is left over 1.00 is the wide sample
+the means by up to 8%, the 16-bit stereo recordings to 0.80 to 1.01, the
+orchestra now under at 0.99, the 1962 speech to 0.65 and the four at 24
+bits to 1.07 to 1.19, in a run where libFLAC's own times were within 3% of
+the run before's. What is left over 1.00 is the wide sample
 and the long block, where the fit's own passes are the most of the block,
 and the tone, whose fourth block fits two channels for nothing.
 
@@ -180,16 +180,17 @@ and the tone, whose fourth block fits two channels for nothing.
   full choice on every block before; it now takes the carried path like
   any other, the constant coded by the check and the pair moved to it by
   the bound, which took the made speech, whose two channels are one
-  signal, from 1.16 to 1.37 of its time to 0.74 to 0.88, and the 1962
+  signal, from 1.16 to 1.37 of its time to 0.75 to 0.88, and the 1962
   speech to 0.86, for 0.05% of the made speech's bytes and 0.16% at 8
   bits, the fit-first cost its exact path never paid. Measured in the
   tables' run against the commit before, by the block's place in the
-  cycle: the fourth block went from 27.1 to 22.7 µs on the orchestra, 22.2
-  to 18.7 on the Raven, 21.2 to 16.8 on the wide mix and 57.9 to 45.7 on
-  the Aria, against a carried block of 17.8, 14.3, 14.0 and 35.9; the two
-  blocks after the choice rose by 0.5 to 1 µs at 16 bits and 4 on the Aria;
-  the means fell 1% to 7% on the stereo recordings on both machines, and
-  the bytes were 1.0000 to 1.0001 of before on every recording. Both
+  cycle: the fourth block went from 27.1 to 22.5 µs on the orchestra, 22.2
+  to 18.3 on the Raven, 21.2 to 16.7 on the wide mix and 57.9 to 45.1 on
+  the Aria, against a carried block of 17.6, 14.0, 13.9 and 35.4; the two
+  blocks after the choice rose by about 1 µs at 16 bits and 4 on the Aria;
+  the means fell by up to 8% on the stereo music on both machines and stood
+  within 2% on the stereo speech and the mixes, and the bytes were 1.0000
+  to 1.0001 of before on every recording. Both
   codings on the fourth block instead of the carried ones left the fourth
   block where it was, 26.4 on the orchestra; refreshing every other cycle
   cost the orchestra 0.02% for 2.5% of the mean and left the late block the
