@@ -1,7 +1,7 @@
 # sound-flac
 
 FLAC for a desktop's sound, as [wlshare](https://github.com/andrewtheguy/wlshare)
-and the [remotex](https://github.com/andrewtheguy/remotex) gateway both code it.
+and the [zdesk](https://github.com/andrewtheguy/zdesk) gateway both code it.
 
 - `Stream`: what the two ends agree on before any sound — the rate, the
   channels, the sample width and the block, the frames of samples in every FLAC
