@@ -14,9 +14,13 @@
 //! whole in blocks of 20 ms by each coder, three passes after one to warm up:
 //! a recording's time is the least pass's mean block, and with it the least
 //! of the passes' 99th-percentile and worst blocks, the latency a stream
-//! sees. Arguments narrow the shapes by substring (`48k`, `mono`); `KINDS`
-//! the made sounds (`KINDS=music,tone`, `KINDS=` for none); `FILES` the
-//! recordings the same way; `coder=` the coders (`coder=sound-flac`).
+//! sees, and `worst_at`, the block that was slowest at its least over the
+//! passes, which is the encoder's doing where a pass's worst may be the
+//! machine's. Arguments narrow the shapes by substring (`48k`, `mono`);
+//! `KINDS` the made sounds (`KINDS=music,tone`, `KINDS=` for none); `FILES`
+//! the recordings the same way; `coder=` the coders
+//! (`coder=sound-flac,libflac-5`). `BLOCKS=dir` writes each measurement's
+//! blocks to a file there, a block's least time and its bytes a line.
 use std::ffi::c_void;
 use std::path::{Path, PathBuf};
 use std::ptr;
@@ -172,10 +176,20 @@ impl Coder for Own {
 /// mean block in microseconds, and the least of their 99th-percentile and
 /// worst blocks, each pass timed block by block after one pass to warm up;
 /// and the bytes a block.
-fn measure(shape: Shape, samples: &[i32], coder: &mut dyn Coder, passes: usize, least_ms: u128) -> (f64, f64, f64, f64) {
+fn measure(shape: Shape, samples: &[i32], coder: &mut dyn Coder, passes: usize, least_ms: u128, dump: Option<PathBuf>) -> Measured {
     let blocks = samples.len() / shape.samples();
     let mut out = Vec::new();
     let mut times = vec![0f64; blocks];
+    // Each block's size, from the warm-up pass, and the least time each block
+    // was ever coded in: the block that is slow in every pass is the
+    // encoder's doing, where a pass's worst may be the machine's.
+    let mut sizes = vec![0usize; blocks];
+    for (block, size) in samples.chunks_exact(shape.samples()).zip(sizes.iter_mut()) {
+        out.clear();
+        coder.encode(block, &mut out);
+        *size = out.len();
+    }
+    let bytes = sizes.iter().sum::<usize>() as f64 / blocks as f64;
     let mut pass = |out: &mut Vec<u8>, times: &mut [f64]| {
         out.clear();
         for (block, t) in samples.chunks_exact(shape.samples()).zip(times.iter_mut()) {
@@ -184,8 +198,7 @@ fn measure(shape: Shape, samples: &[i32], coder: &mut dyn Coder, passes: usize, 
             *t = start.elapsed().as_secs_f64() * 1e6;
         }
     };
-    pass(&mut out, &mut times);
-    let bytes = out.len() as f64 / blocks as f64;
+    let mut least = vec![f64::INFINITY; blocks];
     let (mut mean, mut p99, mut worst) = (f64::INFINITY, f64::INFINITY, f64::INFINITY);
     for _ in 0..passes {
         let start = Instant::now();
@@ -195,6 +208,9 @@ fn measure(shape: Shape, samples: &[i32], coder: &mut dyn Coder, passes: usize, 
         while done == 0 || start.elapsed().as_millis() < least_ms {
             pass(&mut out, &mut times);
             sum += times.iter().sum::<f64>();
+            for (l, &t) in least.iter_mut().zip(&times) {
+                *l = l.min(t);
+            }
             let mut sorted = times.clone();
             sorted.sort_by(f64::total_cmp);
             p = p.min(sorted[(blocks * 99 / 100).min(blocks - 1)]);
@@ -205,7 +221,35 @@ fn measure(shape: Shape, samples: &[i32], coder: &mut dyn Coder, passes: usize, 
         p99 = p99.min(p);
         worst = worst.min(w);
     }
-    (mean, p99, worst, bytes)
+    let worst_at = (0..blocks).max_by(|&a, &b| least[a].total_cmp(&least[b])).unwrap_or(0);
+    if let Some(dump) = dump {
+        let lines: String = least.iter().zip(&sizes).enumerate().map(|(i, (t, s))| format!("{i}\t{t:.2}\t{s}\n")).collect();
+        std::fs::write(dump, lines).unwrap();
+    }
+    Measured { mean, p99, worst, worst_at, bytes }
+}
+
+struct Measured {
+    mean: f64,
+    p99: f64,
+    worst: f64,
+    /// The block that was slowest at its least over the passes.
+    worst_at: usize,
+    bytes: f64,
+}
+
+impl std::fmt::Display for Measured {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "us={:.2} p99={:.2} worst={:.2} worst_at={} bytes={:.1}", self.mean, self.p99, self.worst, self.worst_at, self.bytes)
+    }
+}
+
+/// Where a run dumps each block's least time and bytes, `BLOCKS` naming a
+/// directory for a file a measurement.
+fn dump_path(label: &str, coder: &str) -> Option<PathBuf> {
+    let dir = std::env::var_os("BLOCKS")?;
+    let safe: String = label.chars().map(|c| if c.is_ascii_alphanumeric() || c == '-' || c == '.' { c } else { '_' }).collect();
+    Some(PathBuf::from(dir).join(format!("{safe}-{coder}.tsv")))
 }
 
 fn coders(shape: Shape) -> Vec<(&'static str, Box<dyn Coder>)> {
@@ -277,8 +321,8 @@ fn main() {
         Shape { rate: 48_000, channels: 2, bits: 24 },
     ];
     let only: Vec<String> = std::env::args().skip(1).filter(|a| !a.starts_with("coder=")).collect();
-    let coder_only: Option<String> = std::env::args().find_map(|a| a.strip_prefix("coder=").map(str::to_owned));
-    let chosen = |name: &str| coder_only.as_deref().is_none_or(|c| name.contains(c));
+    let coder_only: Option<Vec<String>> = std::env::args().find_map(|a| a.strip_prefix("coder=").map(|c| c.split(',').map(str::to_owned).collect()));
+    let chosen = |name: &str| coder_only.as_deref().is_none_or(|cs| cs.iter().any(|c| name.contains(c.as_str())));
     let list = |var: &str, all: Vec<String>| -> Vec<String> {
         match std::env::var(var) {
             Ok(v) => v.split(',').filter(|s| !s.is_empty()).map(str::to_owned).collect(),
@@ -294,8 +338,8 @@ fn main() {
         for kind in kinds.iter().map(String::as_str) {
             let samples = signal(shape, 50, kind);
             for (coder_name, coder) in coders(shape).iter_mut().filter(|(n, _)| chosen(n)) {
-                let (us, p99, worst, bytes) = measure(shape, &samples, coder.as_mut(), 5, 60);
-                println!("shape={name} block={} pcm={} kind={kind} coder={coder_name} us={us:.2} p99={p99:.2} worst={worst:.2} bytes={bytes:.1}", shape.block(), shape.pcm_bytes());
+                let measured = measure(shape, &samples, coder.as_mut(), 5, 60, dump_path(&format!("{name}-{kind}"), coder_name));
+                println!("shape={name} block={} pcm={} kind={kind} coder={coder_name} {measured}", shape.block(), shape.pcm_bytes());
             }
         }
     }
@@ -315,8 +359,8 @@ fn main() {
         }
         let seconds = samples.len() / shape.samples() / 50;
         for (coder_name, coder) in coders(shape).iter_mut().filter(|(n, _)| chosen(n)) {
-            let (us, p99, worst, bytes) = measure(shape, &samples, coder.as_mut(), 3, 0);
-            println!("shape={} block={} pcm={} file={file} seconds={seconds} coder={coder_name} us={us:.2} p99={p99:.2} worst={worst:.2} bytes={bytes:.1}", shape.name(), shape.block(), shape.pcm_bytes());
+            let measured = measure(shape, &samples, coder.as_mut(), 3, 0, dump_path(path.file_stem().unwrap_or_default().to_string_lossy().as_ref(), coder_name));
+            println!("shape={} block={} pcm={} file={file} seconds={seconds} coder={coder_name} {measured}", shape.name(), shape.block(), shape.pcm_bytes());
         }
     }
 }
