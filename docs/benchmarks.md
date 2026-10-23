@@ -24,6 +24,7 @@ stream sees; its bytes are the frames' over the recording, a block's share.
 tools/samples.sh copy      # the recordings into tmp/samples, from the store
 cargo run --release --manifest-path tools/bench/Cargo.toml > bench.log
 python3 -I tools/tables.py bench.log
+python3 -I tools/tables.py bench.log bench-arm64.log   # with an arm64 run's log, the last section too
 ```
 
 They were run on 2026-10-23 on a six-core Intel i5-8500T under WSL2, one
@@ -42,6 +43,19 @@ so it is read as an order of magnitude. The bench also logs `worst_at`, the
 block that was slowest at its least over the passes, and dumps every
 block's least time and bytes when asked (`BLOCKS=dir`), which is how the
 late blocks below were read.
+
+The arm64 run of the last section was made the same day from the same
+commit on a two-core Ampere Altra (Neoverse N1) in a Debian 13 LXC container,
+one thread, the machine idle, with rustc 1.98.1 at the aarch64 baseline, whose
+NEON the compiler uses on its own: the tree and the recordings were copied
+there, the bench run, and its log brought back as the second log of
+`tools/tables.py`. Its first run was two to three times slow on the made
+sounds while the file system was still compressing the recordings just
+copied, and was run again once the machine was idle; the recordings, coded
+after the compression was done, came to the same bytes and the same times
+within 0.2 µs in both runs, and the made sounds run twice more agreed to
+0.1 µs, so a time on that machine is repeatable where this one's moves by a
+tenth.
 
 Throughout, a *ratio* is this encoder over libFLAC, so under 1.00 is less
 time or fewer bytes. A block is 20 ms of sound, so *of one core* is its time
@@ -186,6 +200,29 @@ the repository holds a recording.
   which no predictor takes out and Rice writes as it is. The same track
   dithered to 16 bits, measured aside on 2026-10-22 and not in the tables,
   was 69% of its PCM, 2645 bytes a block against libFLAC's 2638 (1.003).
+- **On arm64 the encoder stands where it does on x86, a little further on
+  its side of libFLAC's default level and a little further off its level
+  0.** The same run on the two-core Ampere Altra, in the last section: the
+  recordings are 0.38 to 0.65 of libFLAC's time a block where x86 is 0.44
+  to 0.77, the made sounds 0.29 to 0.66 against 0.40 to 0.74 and silence
+  0.14 to 0.17 against 0.09 to 0.15. This encoder's mean block is within
+  2 µs of the i5's on every recording, while libFLAC's is 5% to 21% longer
+  on every stereo recording and 11% shorter on the mono reading; this
+  encoder's 99th-percentile block is lower there on every recording, 10 to
+  82 µs against 28 to 103. Against level 0 it is 1.50 to 1.93 of its time
+  on the stereo recordings but white noise and the 1962 speech, 0.93 and
+  0.91, where x86 is 1.22 to 1.79, and 1.04 on the mono reading where x86
+  is 0.83: level 0's fixed path is cheap on the Altra. Against level 8 it
+  is 0.14 to 0.28 where x86 is 0.17 to 0.33. Nothing in the encoder is
+  written for either machine. LLVM vectorizes the residual of a fit in four
+  16-bit lanes with NEON's widening multiply where SSE2 has its own, the
+  autocorrelation in two f64 lanes and the fixed predictors' residual sums
+  in eight 16-bit lanes; the Rice coding and the bit writer are scalar on
+  both. This encoder's bytes a block are the same on both machines to a
+  tenth of a byte on every made sound and every recording, so a frame does
+  not depend on the machine; libFLAC's differ on the 24-bit tone, 2321
+  against 2315 at level 5 and 2302 against 2502 at level 8, its arm64 build
+  taking another arithmetic path through the ill-conditioned fit.
 
 ## The made sounds, against libFLAC at level 5 as v0.0.4 ran it
 
@@ -366,4 +403,74 @@ least over the passes, so a pass the machine disturbed does not set them;
 | Train station, field recording | 141 | 3528 | 1272 | $\color{red}{1273}$ | 1.000 | 36.1% |
 | Pink noise | 600 | 5760 | 4901 | $\color{green}{4900}$ | 1.000 | 85.1% |
 | White noise | 600 | 5760 | 5387 | 5387 | 1.000 | 93.5% |
+
+## On arm64
+
+The same run on an arm64 machine, beside the x86 run above: this encoder's
+time a block over libFLAC's on each. A ratio under 1.00 is less of a core
+than libFLAC on that machine, and a block's µs are that machine's.
+
+### Time a block on arm64, this encoder over libFLAC at level 5
+
+Under 1.00 is less of a core than libFLAC at its default level, on arm64.
+
+| Sound | 48 kHz stereo 16-bit | 44.1 kHz stereo 16-bit | 96 kHz stereo 16-bit | 48 kHz mono 16-bit | 48 kHz stereo 8-bit | 48 kHz stereo 24-bit |
+|---|---:|---:|---:|---:|---:|---:|
+| music | $\color{green}{0.57}$ | $\color{green}{0.53}$ | $\color{green}{0.61}$ | $\color{green}{0.53}$ | $\color{green}{0.60}$ | $\color{green}{0.58}$ |
+| speech | $\color{green}{0.40}$ | $\color{green}{0.37}$ | $\color{green}{0.43}$ | $\color{green}{0.52}$ | $\color{green}{0.41}$ | $\color{green}{0.42}$ |
+| tone | $\color{green}{0.60}$ | $\color{green}{0.56}$ | $\color{green}{0.66}$ | $\color{green}{0.53}$ | $\color{green}{0.60}$ | $\color{green}{0.57}$ |
+| noise | $\color{green}{0.34}$ | $\color{green}{0.31}$ | $\color{green}{0.37}$ | $\color{green}{0.29}$ | $\color{green}{0.33}$ | $\color{green}{0.37}$ |
+| silence | $\color{green}{0.16}$ | $\color{green}{0.16}$ | $\color{green}{0.17}$ | $\color{green}{0.14}$ | $\color{green}{0.16}$ | $\color{green}{0.15}$ |
+
+### Time a block on arm64, this encoder over libFLAC at level 0
+
+Under 1.00 is less of a core than libFLAC's fastest level, on arm64.
+
+| Sound | 48 kHz stereo 16-bit | 44.1 kHz stereo 16-bit | 96 kHz stereo 16-bit | 48 kHz mono 16-bit | 48 kHz stereo 8-bit | 48 kHz stereo 24-bit |
+|---|---:|---:|---:|---:|---:|---:|
+| music | $\color{red}{1.75}$ | $\color{red}{1.53}$ | $\color{red}{2.00}$ | $\color{red}{1.20}$ | $\color{red}{1.87}$ | $\color{red}{1.62}$ |
+| speech | 1.00 | $\color{green}{0.88}$ | $\color{red}{1.10}$ | $\color{red}{1.17}$ | $\color{red}{1.08}$ | $\color{green}{0.94}$ |
+| tone | $\color{red}{1.85}$ | $\color{red}{1.61}$ | $\color{red}{2.13}$ | $\color{red}{1.25}$ | $\color{red}{1.86}$ | $\color{red}{1.62}$ |
+| noise | $\color{green}{0.92}$ | $\color{green}{0.80}$ | $\color{red}{1.02}$ | $\color{green}{0.62}$ | $\color{green}{0.97}$ | $\color{green}{0.95}$ |
+| silence | $\color{green}{0.37}$ | $\color{green}{0.36}$ | $\color{green}{0.42}$ | $\color{green}{0.29}$ | $\color{green}{0.36}$ | $\color{green}{0.32}$ |
+
+### The made sounds at 48 kHz stereo 16-bit, machine by machine
+
+libFLAC is at level 5; the time is one block's, the least of five passes.
+
+| Sound | libFLAC, x86 µs | libFLAC, arm64 µs | This encoder, x86 µs | This encoder, arm64 µs | Ratio, x86 | Ratio, arm64 |
+|---|---:|---:|---:|---:|---:|---:|
+| music | 43.2 | 47.1 | 25.7 | 26.8 | $\color{green}{0.59}$ | $\color{green}{0.57}$ |
+| speech | 37.1 | 39.1 | 15.4 | 15.8 | $\color{green}{0.42}$ | $\color{green}{0.40}$ |
+| tone | 41.0 | 45.0 | 25.1 | 27.0 | $\color{green}{0.61}$ | $\color{green}{0.60}$ |
+| noise | 40.9 | 43.4 | 16.5 | 14.8 | $\color{green}{0.40}$ | $\color{green}{0.34}$ |
+| silence | 24.9 | 23.5 | 3.1 | 3.9 | $\color{green}{0.12}$ | $\color{green}{0.16}$ |
+
+### The recordings, machine by machine
+
+libFLAC is at level 5 but in the last two columns; the time is the mean
+block, and the 99th-percentile block is this encoder's, the least over the passes.
+
+| Recording | libFLAC, x86 µs | libFLAC, arm64 µs | This encoder, x86 µs | This encoder, arm64 µs | Ratio, x86 | Ratio, arm64 | 99th, x86 | 99th, arm64 | Time vs 0, x86 | Time vs 0, arm64 |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Bach, Goldberg Aria, piano | 78.8 | 93.5 | 56.7 | 56.4 | $\color{green}{0.72}$ | $\color{green}{0.60}$ | 93.4 | 76.5 | $\color{red}{1.73}$ | $\color{red}{1.71}$ |
+| Chopin, Fantasy Op. 49, piano | 71.0 | 86.0 | 51.4 | 52.3 | $\color{green}{0.72}$ | $\color{green}{0.61}$ | 102 | 71.0 | $\color{red}{1.77}$ | $\color{red}{1.93}$ |
+| Shostakovich 5, orchestra, live | 41.7 | 46.4 | 26.8 | 27.4 | $\color{green}{0.64}$ | $\color{green}{0.59}$ | 45.6 | 38.8 | $\color{red}{1.46}$ | $\color{red}{1.69}$ |
+| Indie rock, 2022, mastered | 51.0 | 53.6 | 33.0 | 32.1 | $\color{green}{0.65}$ | $\color{green}{0.60}$ | 64.9 | 45.9 | $\color{red}{1.46}$ | $\color{red}{1.57}$ |
+| Limehouse Blues, 1924 78 rpm | 82.2 | 97.2 | 63.6 | 63.1 | $\color{green}{0.77}$ | $\color{green}{0.65}$ | 103 | 82.0 | $\color{red}{1.79}$ | $\color{red}{1.70}$ |
+| Prison work song, 1947 field recording | 38.9 | 41.1 | 22.3 | 22.2 | $\color{green}{0.57}$ | $\color{green}{0.54}$ | 43.9 | 31.5 | $\color{red}{1.24}$ | $\color{red}{1.51}$ |
+| The Raven, read, produced | 36.9 | 41.5 | 22.1 | 22.7 | $\color{green}{0.60}$ | $\color{green}{0.55}$ | 40.2 | 31.2 | $\color{red}{1.23}$ | $\color{red}{1.50}$ |
+| Leviticus 13, read | 22.1 | 19.6 | 9.8 | 9.7 | $\color{green}{0.44}$ | $\color{green}{0.50}$ | 27.7 | 10.5 | $\color{green}{0.83}$ | $\color{red}{1.04}$ |
+| JFK at Rice, 1962 | 40.2 | 43.3 | 18.1 | 17.8 | $\color{green}{0.45}$ | $\color{green}{0.41}$ | 34.8 | 26.8 | $\color{green}{0.89}$ | $\color{green}{0.91}$ |
+| Train station, field recording | 36.5 | 40.8 | 21.1 | 22.3 | $\color{green}{0.58}$ | $\color{green}{0.55}$ | 38.2 | 30.7 | $\color{red}{1.22}$ | $\color{red}{1.53}$ |
+| Pink noise | 46.2 | 50.4 | 31.9 | 30.7 | $\color{green}{0.69}$ | $\color{green}{0.61}$ | 58.7 | 43.7 | $\color{red}{1.46}$ | $\color{red}{1.50}$ |
+| White noise | 44.8 | 49.9 | 21.1 | 19.0 | $\color{green}{0.47}$ | $\color{green}{0.38}$ | 45.7 | 34.2 | $\color{red}{1.01}$ | $\color{green}{0.93}$ |
+
+The bytes a block of this encoder are the same on both machines, to a tenth of a byte, on every made sound and every recording.
+
+The bytes a block of libFLAC at level 5 differ between the two machines on tone at 48 kHz stereo 24-bit (2321 against 2315).
+
+The bytes a block of libFLAC at level 0 are the same on both machines, to a tenth of a byte, on every made sound and every recording.
+
+The bytes a block of libFLAC at level 8 differ between the two machines on tone at 48 kHz stereo 24-bit (2302 against 2502).
 

@@ -1,7 +1,7 @@
 """The tables of docs/benchmarks.md, from the log of tools/bench:
 
     cargo run --release --manifest-path tools/bench/Cargo.toml > bench.log
-    python3 -I tools/tables.py bench.log
+    python3 -I tools/tables.py bench.log [bench-arm64.log]
 
 First, over every shape and made sound, this encoder's time a block and bytes
 a block over libFLAC's at level 5 as v0.0.4 ran it, a table each; then the
@@ -10,8 +10,12 @@ shape apart, with what each coder takes in microseconds and bytes, the share
 of one core a block of 20 ms is, and the share of the PCM it comes to. Then
 the recordings of tools/samples.txt: every ratio against the three levels in
 one table, the block times apart with the 99th-percentile and worst blocks,
-and the bytes apart. A ratio is this encoder over libFLAC; green is this
-encoder's side of the line, and a ratio of 1.00 is left plain.
+and the bytes apart. Then, given a second log, the same run on an arm64
+machine beside the first: this encoder's time over libFLAC's on each, the
+made sounds in grids and the desktop's shape and the recordings machine by
+machine, and whether the bytes are the same on both. A ratio is this encoder
+over libFLAC; green is this encoder's side of the line, and a ratio of 1.00
+is left plain.
 """
 import collections
 import re
@@ -156,6 +160,50 @@ def recordings(files):
     print()
 
 
+def arm64(data, files, data2, files2, order):
+    """The second log's run beside the first's, machine by machine."""
+    print("## On arm64\n")
+    print("The same run on an arm64 machine, beside the x86 run above: this encoder's\ntime a block over libFLAC's on each. A ratio under 1.00 is less of a core\nthan libFLAC on that machine, and a block's µs are that machine's.\n")
+    grid("Time a block on arm64, this encoder over libFLAC at level 5", "Under 1.00 is less of a core than libFLAC at its default level, on arm64.", data2, order, "us", "libflac-5")
+    grid("Time a block on arm64, this encoder over libFLAC at level 0", "Under 1.00 is less of a core than libFLAC's fastest level, on arm64.", data2, order, "us", "libflac-0")
+    desktop = "48k-stereo-16"
+    if desktop in order:
+        print(f"### The made sounds at {shape_name(desktop)}, machine by machine\n")
+        print("libFLAC is at level 5; the time is one block's, the least of five passes.\n")
+        print("| Sound | libFLAC, x86 µs | libFLAC, arm64 µs | This encoder, x86 µs | This encoder, arm64 µs | Ratio, x86 | Ratio, arm64 |")
+        print("|---|---:|---:|---:|---:|---:|---:|")
+        for kind in KINDS:
+            a, b = data.get((desktop, kind), {}), data2.get((desktop, kind), {})
+            if not all(k in c for c in (a, b) for k in ("sound-flac", "libflac-5")):
+                continue
+            print(f"| {kind} | {us(a['libflac-5']['us'])} | {us(b['libflac-5']['us'])} | {us(a['sound-flac']['us'])} | {us(b['sound-flac']['us'])} | {ratio(a['sound-flac']['us'], a['libflac-5']['us'])} | {ratio(b['sound-flac']['us'], b['libflac-5']['us'])} |")
+        print()
+    theirs = {name: c for name, _, _, _, c in files2}
+    both = [(name, c, theirs[name]) for name, _, _, _, c in files if name in theirs]
+    both = [(name, a, b) for name, a, b in both if all(k in c for c in (a, b) for k in ("sound-flac", "libflac-5", "libflac-0"))]
+    if both:
+        print("### The recordings, machine by machine\n")
+        print("libFLAC is at level 5 but in the last two columns; the time is the mean\nblock, and the 99th-percentile block is this encoder's, the least over the passes.\n")
+        print("| Recording | libFLAC, x86 µs | libFLAC, arm64 µs | This encoder, x86 µs | This encoder, arm64 µs | Ratio, x86 | Ratio, arm64 | 99th, x86 | 99th, arm64 | Time vs 0, x86 | Time vs 0, arm64 |")
+        print("|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|")
+        for name, a, b in both:
+            cells = [us(a["libflac-5"]["us"]), us(b["libflac-5"]["us"]), us(a["sound-flac"]["us"]), us(b["sound-flac"]["us"]),
+                     ratio(a["sound-flac"]["us"], a["libflac-5"]["us"]), ratio(b["sound-flac"]["us"], b["libflac-5"]["us"]),
+                     us(a["sound-flac"]["p99"]), us(b["sound-flac"]["p99"]),
+                     ratio(a["sound-flac"]["us"], a["libflac-0"]["us"]), ratio(b["sound-flac"]["us"], b["libflac-0"]["us"])]
+            print(f"| {recording_name(name)} | " + " | ".join(cells) + " |")
+        print()
+    coders = {"sound-flac": "this encoder", "libflac-5": "libFLAC at level 5", "libflac-0": "libFLAC at level 0", "libflac-8": "libFLAC at level 8"}
+    cells = [(f"{kind} at {shape_name(shape)}", c, data2[(shape, kind)]) for (shape, kind), c in data.items() if (shape, kind) in data2]
+    cells += [(recording_name(name), a, b) for name, a, b in both]
+    for coder, who in coders.items():
+        differ = [f"{what} ({a[coder]['bytes']:.0f} against {b[coder]['bytes']:.0f})" for what, a, b in cells if coder in a and coder in b and abs(a[coder]["bytes"] - b[coder]["bytes"]) >= 0.05]
+        if differ:
+            print(f"The bytes a block of {who} differ between the two machines on " + ", ".join(differ) + ".\n")
+        else:
+            print(f"The bytes a block of {who} are the same on both machines, to a tenth of a byte, on every made sound and every recording.\n")
+
+
 def main():
     data, shapes, files = read(sys.argv[1])
     order = [s for s in SHAPES if s in shapes] + sorted(s for s in shapes if s not in SHAPES)
@@ -170,6 +218,9 @@ def main():
     for s in order:
         apart(s, *shapes[s], data)
     recordings(files)
+    if len(sys.argv) > 2:
+        data2, _, files2 = read(sys.argv[2])
+        arm64(data, files, data2, files2, order)
 
 
 main()

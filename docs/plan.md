@@ -89,7 +89,11 @@ and the fits from them 1.2, the four channels' fixed orders and sums 4.5 and
 their partitions 3.7, the two fits' residuals 3.3 and partitions 2, the
 range check and the stereo split 1.6, the bits out 4.1, the CRC 1. The day
 took the autocorrelations to two on three blocks in four, the bits out to
-3.6 and the finest sums to half: 27 µs.
+3.6 and the finest sums to half: 27 µs. On arm64, a two-core Ampere Altra
+the same day, the recordings are 0.38 to 0.65 of libFLAC's time for the
+same bytes to a tenth of a byte, and against level 0 1.50 to 1.93 on the
+stereo recordings where x86 is 1.22 to 1.79: the level-0 column is further
+off there.
 
 ## Open items, in order
 
