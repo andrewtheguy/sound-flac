@@ -239,6 +239,16 @@ fn fixed_error(autoc: &[f64; MAX_ORDER + 1], order: usize) -> f64 {
     taps[0] * autoc[0] + 2.0 * taps[1..].iter().zip(&autoc[1..]).map(|(&t, &r)| t * r).sum::<f64>()
 }
 
+/// `a * b + c`, fused where the machine has the instruction: on aarch64,
+/// where every core has it, and on x86-64 built with `fma`. At the x86-64
+/// baseline a fused multiply-add is a library call, and the product and the
+/// sum are two instructions; the two roundings differ from the one in the
+/// last bit of the autocorrelation, under what any fit is decided by.
+#[inline(always)]
+fn mul_add(a: f64, b: f64, c: f64) -> f64 {
+    if cfg!(any(target_arch = "aarch64", target_feature = "fma")) { a.mul_add(b, c) } else { a * b + c }
+}
+
 /// The sum of `x[i] * x[i + lag]` over the block for every lag to the
 /// highest order, in double precision: the predictor of a quiet, resonant
 /// block is as sensitive to the sum's rounding as to its own quantization,
@@ -266,7 +276,7 @@ fn lags(x: &[f64]) -> Autocorrelation {
     for w in x[..whole + MAX_ORDER.min(n)].windows(W + MAX_ORDER).step_by(W) {
         for (lag, lanes) in lanes.iter_mut().enumerate() {
             for j in 0..W {
-                lanes[j] += w[j] * w[j + lag];
+                lanes[j] = mul_add(w[j], w[j + lag], lanes[j]);
             }
         }
     }
