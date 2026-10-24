@@ -414,8 +414,9 @@ for what they sound like, and the repository nothing else of them.
 - **Under Windows, natively, this encoder's times are the WSL run's within
   5% on the recordings and 6% on the made sounds but one silence, and its
   bytes the same; libFLAC's levels 5 and 0 within a tenth either way but
-  five cells, and its level 8 a tenth to a quarter over on a fifth of its:
-  WSL2 costs this encoder nothing a block.** The run of the same
+  five cells, and its level 8 slower under Windows, by a tenth to a
+  quarter on half of its 44 cells: WSL2 costs this encoder nothing a
+  block.** The run of the same
   evening on the same i5 under Windows 11, in the last section, from the
   tree of this commit, the same encoder as this run's WSL columns: this
   encoder's mean block is 0.95 to 1.05 of the WSL run's on the recordings,
@@ -424,9 +425,13 @@ for what they sound like, and the repository nothing else of them.
   and its bytes the same to a tenth of a byte on every line. libFLAC's
   level 5 is 0.92 to 1.12 of the WSL run's on the recordings, the 1924
   record the 1.12, and 0.88 to 1.01 on the made sounds, its level 0 0.98
-  to 1.18 and 0.95 to 1.04, its level 8 0.92 to 1.25 and 0.89 to 1.18, in
-  neither direction as a rule: the two systems time alike, and a level
-  moves by a tenth from run to run under either, as the day's earlier
+  to 1.18 and 0.95 to 1.04, the two in neither direction as a rule, with
+  a median of 0.95 and 1.00; its level 8 is 0.92 to 1.25 and 0.89 to 1.18
+  with a median of 1.07, over 1.00 on 30 of its 44 cells and past 1.10 on
+  21, so in this run level 8 is the slower under Windows, as a rule, where
+  this encoder and the two other levels are not. The two systems time this
+  encoder alike, and a libFLAC level moves by a tenth from run to run
+  under either, as the day's earlier
   runs had found with the encoder of v0.0.5, when levels 0 and 5 and this
   encoder were run again under each system in turn, Windows then WSL:
   level 0 under Windows came to 0.90 to 1.08 of the WSL rerun's with a

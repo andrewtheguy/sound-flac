@@ -129,8 +129,8 @@ recordings where x86 is 0.79 to 1.17. Under Windows, natively on the same
 i5, run on demand the same evening, the encoder's blocks are the WSL
 run's within 5% on the recordings for the same bytes, and libFLAC's
 levels 5 and 0 within a tenth of theirs either way but five cells, three
-silences and the 1924 record, where its level 8 is a tenth to a quarter
-over on a fifth of its cells.
+silences and the 1924 record, where its level 8 is slower under Windows,
+by a tenth to a quarter on half of its 44 cells.
 
 ## Against libFLAC's level 0
 
