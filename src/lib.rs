@@ -76,7 +76,7 @@
 //! default level, which this replaced, took 34, 31, 32, 33 and 21 µs for the
 //! same bytes within a tenth of a per cent, and 1% more on the tone. Mono at
 //! 48 kHz is 5 µs against libFLAC's 20, and 44.1 kHz stereo 9 against 30. On
-//! recordings, 0.24 to 0.47 of its time a block for its bytes within 0.2%,
+//! recordings, 0.23 to 0.46 of its time a block for its bytes within 0.2%,
 //! the block that chooses the pair afresh, every fourth, a quarter to a
 //! third as long again as a carried one. On the i5-8500T of the runs before
 //! every block of this encoder's was half as long again, libFLAC's a quarter.

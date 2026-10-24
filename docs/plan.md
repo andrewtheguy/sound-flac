@@ -95,14 +95,20 @@ costs. For the recordings the 99th-percentile and worst blocks are read
 beside the mean, since they are the latency. A change is taken where it
 buys bytes for little time or time for no bytes, and the tables and this
 plan are brought to the run. From the afternoon of 2026-10-24 a round of
-changes is measured on the EPYC alone, run by run, and the arm64 run is
-made once at the round's end, when the user calls it ready, so that the
-arm64 box, which builds other things, is not slowed by a run a change;
-its section of the tables is of that run.
+changes is measured on the EPYC alone: each change taken gets the full
+x86 run and the tables brought to it, and the arm64 run is made once at
+the round's end, when the user calls it ready, so that the arm64 box,
+which builds other things, is not slowed by a run a change; until then
+the tables' arm64 section is of the run before the round.
 
 ## Where it stands
 
-From the tables of the morning of 2026-10-24, the encoder of v0.0.8
+The tables are of the afternoon of 2026-10-24 on the EPYC, the Rice
+parameter's estimate corrected (under *Measured and taken*), within a
+twentieth of the morning's run on every time and the same bytes but the
+8-bit noise's and the 96 kHz tone's, the recordings 0.23 to 0.46 of
+libFLAC's time; the arm64 section is the morning's, held while the round
+is measured on x86. From the tables of that morning, the encoder of v0.0.8
 unchanged, the x86 run moved from the desktop i5 under WSL2, which was
 never quiet, to an idle KVM machine on an AMD EPYC Rome, and a
 fifteenth recording added, one voice talking over soft music: 0.24 to
@@ -240,11 +246,13 @@ and what is left of it is the Altra's, where the run is unchanged.
 ## Open items, in order
 
 Planned again on the afternoon of 2026-10-24 from the EPYC's own profile,
-under *Where it stands*: the cells still over libFLAC first, then the parts
-of a block the profile puts at a fifth and the late block; the one cell in
-bytes, the 8-bit noise's, was the first item and is taken, below. Each is measured on the EPYC alone, bytes on every made
-sound and recording and time a block against the run before; the arm64 run
-is made once, when the round is called ready.
+under *Where it stands*: the cells still over libFLAC first, then the
+parts of a block the profile puts at a fifth and the late block; the one
+cell in bytes, the 8-bit noise's, was the first item and is taken, below.
+Each is measured on the EPYC alone, bytes on every made sound and
+recording and time a block against the run before, and taken with the full
+x86 run and the tables; the arm64 run is made once, when the round is
+called ready.
 
 1. **The partitions' machinery, a fifth of a 48 or 96 kHz block**: the
    fold 4%, the finest sums 5% to 6% and the search over the orders and

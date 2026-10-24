@@ -26,7 +26,7 @@ wasted bits shifted out. On 20 ms blocks of 16-bit stereo at 48 kHz a block
 of music takes about 11 µs of one core and is 48% of its PCM, speech 7 µs
 and 30%, silence a microsecond and sixteen bytes: the bytes libFLAC's
 default level makes, in a third of its time on music and less than a
-quarter on speech, and on recordings 0.24 to 0.47 of its time for its
+quarter on speech, and on recordings 0.23 to 0.46 of its time for its
 bytes within 0.2%, all from the x86 run kept as `docs/bench/x86.jsonl`,
 the one the crate's own documentation cites, made on an idle AMD EPYC
 Rome virtual machine; on an Ampere Altra the recordings are 0.25 to 0.42.
