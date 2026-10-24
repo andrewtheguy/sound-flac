@@ -370,33 +370,39 @@ repository nothing else of them.
   of losses; skipping on any loss cost the prison song 0.7% of its bytes,
   and on two losses past an eighth it and every recording are within
   0.01%.
-- **Where the time goes at 16-bit stereo**, on the orchestra, by the parts
-  measured apart with timers in a copy of the tree on the i5 of the runs
-  before, whose whole carried block was 16.9 µs where this machine's is
-  10.9 and its fourth block 14.3 where the i5's was 22, every part about
-  two thirds of what is written here: a carried block, three
-  in four, is the two autocorrelations with their windowing 3.6 µs, the
-  fits from them 0.7, the pair's two residuals 2.3 and their partitions
-  1.9, the folds and the two bounds 1.2, the stereo split 0.7, the bits
-  out 4.4 and the CRC 0.7, about 16 in all where the fit is clear on both
-  channels, and a fixed coding of 1.7 for each channel whose fit is not,
-  which on the orchestra is two carried channels in three, so about 18 on
-  the mean carried block and 19 where neither is clear, the timers' own
-  cost in these where the run's blocks, timed whole, put the carried
-  block at 16.9; the range check's own pass, 0.9, is gone into the folds.
-  The fourth block, about 22 µs, has three autocorrelations, four fits and,
-  where the estimates do not settle the pair, which on the orchestra is
-  every block but one in a hundred, the two other channels' residuals and
-  folds, 1.35 µs each, and the fixed predictor's one-partition count on
-  each channel whose fit is not clear, in place of the two
-  autocorrelations, two fits and two bounds. At 24 bits the residual of a fit runs in two 16-bit passes
-  at twice the 16-bit pass's time, 10 µs of the Aria's 39 µs block, and
-  the writer, three codes to a word at the parameters a 24-bit residual
-  takes, about 6 µs of pink noise's 24 and 11 of the 1924 record's 42,
-  where four to a word, falling to pairs, took 14. A 17-bit side channel
-  whose samples fit 16 bits takes the 16-bit pass. A block of noise, where
-  order 0 wins, takes one difference pass in the order search where it
-  took four.
+- **Where the time goes**, by perf's cpu-clock over this encoder alone on
+  this machine, the afternoon after the run, the bench built with line
+  tables and the blocks 15% longer under the sampler, each part as a share
+  of the encoder's own samples: on the orchestra at 16-bit stereo the two
+  autocorrelations with their windowing are 19%, the fits from them 6%,
+  the pair's residuals 14%, the partitions, the fold, the finest sums and
+  the search over the orders, 20%, the fixed order search and the two
+  bounds 9%, the Rice codes out 17%, the frame's CRC 5%, the stereo split
+  with the header 4% and the four channels' preparing 4%. At 44.1 kHz, on
+  the Raven and the talk, the partitions are 6% to 7%, since a block of
+  882 frames has one factor of two and two partitionings to try where 960
+  has six, and the autocorrelation is 22%, the residuals 16% to 18%, the
+  writer 19% to 20%. On the Fantasy at 96 kHz the residuals are 18% and
+  the partitions 17%; on the Aria at 24 bits the residual, which runs as
+  two 16-bit passes, 27%, the writer 16% and the CRC 7%; on the 1924
+  record the residual 22%, the writer 21% and the CRC 10%; on pink noise
+  the writer 23%, the partitions 17% and the CRC 14%; on 24-bit noise the
+  writer 29% and the CRC 20%; on the 48 kHz tone the fixed path 15.5%,
+  mostly the order search run on the side channel every block beside a
+  fit that wins within the margin. The i5's timers, in a copy of the tree
+  on the runs before, put the writer at a quarter of a 16-bit block, 4.4
+  µs of 16.9, the two autocorrelations at 3.6, the fits 0.7, the residuals
+  2.3, the partitions 1.9, the folds and bounds 1.2, the split 0.7 and the
+  CRC 0.7, with a fixed coding of 1.7 for each channel whose fit is not
+  clear; on this machine the writer is a sixth to a fifth, Zen 2 shifting
+  by a variable count in one µop where the i5 takes three, and the
+  partitions and the CRC are larger shares. At 24 bits the writer takes
+  three codes to a word at the parameters a 24-bit residual takes, where
+  four to a word, falling to pairs, took 14 µs of the 1924 record's 42 on
+  the i5 against 11. A 17-bit side channel whose samples fit 16 bits
+  takes the 16-bit pass. A block of noise, where order 0 wins, takes one
+  difference pass in the order search where it took four. What each part
+  has left to give is in [plan.md](plan.md), under the open items.
 - **Against libFLAC's fastest level, 0, which fits no predictor and codes
   stereo as it comes**, this encoder takes less time on every recording
   on this machine: 0.58 to 0.87 of its time on the 16-bit stereo
