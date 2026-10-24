@@ -124,7 +124,9 @@ block was the same length on the two, 16.6 µs against 16.8 on 48 kHz
 music, and level 0's is 15.3 µs on the Altra against 19.9 on the i5; the
 two changes came of looking into them, and in this run the cells read
 0.97 on 48 kHz music and 1.10 on its tone, 0.82 and 1.12 on 8-bit, 1.11
-and 1.27 at 96 kHz. On the i5 the interleaving puts about 1 µs on every
+and 1.27 at 96 kHz, which the control, made once more after them with
+the coder that goes first moving on by one every block and each coder
+timed as long as it is alone, read within 0.03 as well. On the i5 the interleaving puts about 1 µs on every
 coder's block, the four sharing the cache, and leaves the ratios within
 0.03 but silence, whose 1.3 µs block grows by half.
 

@@ -194,8 +194,11 @@ impl Coder for Own {
 /// `passes` passes' mean block in microseconds, and the least of their
 /// 99th-percentile and worst blocks, each pass timed block by block after
 /// one pass to warm up; and the bytes a block. Given more than one coder
-/// a pass visits each block with every coder in turn, so that the coders
-/// compared share the machine's state block by block.
+/// a pass visits each block with every coder in turn, the coder that goes
+/// first moving on by one every block so that none of them always meets
+/// the block cold or always finds it warmed by another, and the passes
+/// run for `least_ms` a coder, so that each is timed as long as it would
+/// be alone: the coders compared share the machine's state block by block.
 fn measure(shape: Shape, samples: &[i32], coders: &mut [(&'static str, Box<dyn Coder>)], passes: usize, least_ms: u128, label: &str) -> Vec<(&'static str, Measured)> {
     let blocks = samples.len() / shape.samples();
     let n = coders.len();
@@ -217,13 +220,14 @@ fn measure(shape: Shape, samples: &[i32], coders: &mut [(&'static str, Box<dyn C
             coder.restart();
         }
         for (i, block) in samples.chunks_exact(shape.samples()).enumerate() {
-            for ((_, coder), times) in coders.iter_mut().zip(times.iter_mut()) {
+            for j in 0..n {
+                let k = (i + j) % n;
                 // Each block into an empty buffer, as the warm-up coded it: no
                 // frame's time holds the growth of a buffer of every frame before.
                 out.clear();
                 let start = Instant::now();
-                coder.encode(block, out);
-                times[i] = start.elapsed().as_secs_f64() * 1e6;
+                coders[k].1.encode(block, out);
+                times[k][i] = start.elapsed().as_secs_f64() * 1e6;
             }
         }
     };
@@ -233,8 +237,9 @@ fn measure(shape: Shape, samples: &[i32], coders: &mut [(&'static str, Box<dyn C
         let start = Instant::now();
         let mut done = 0;
         let (mut sum, mut p, mut w) = (vec![0.0; n], vec![f64::INFINITY; n], vec![f64::INFINITY; n]);
-        // At least `least_ms` of passes, so a short signal is timed long enough.
-        while done == 0 || start.elapsed().as_millis() < least_ms {
+        // At least `least_ms` of passes a coder, so a short signal is timed
+        // long enough, and as long with the coders together as apart.
+        while done == 0 || start.elapsed().as_millis() < least_ms * n as u128 {
             pass(&mut out, &mut times);
             for k in 0..n {
                 sum[k] += times[k].iter().sum::<f64>();
