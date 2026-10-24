@@ -28,7 +28,8 @@
 //! `INTERLEAVE=1` times the chosen coders together, every block by each
 //! coder in turn, so that a ratio between them is read with the machine
 //! in the same state for both; the tables are of the coders timed one
-//! after another, and the interleaving is a control on them.
+//! after another, and the interleaving is a control on them (unset, empty,
+//! `0` or `false` is off).
 use std::ffi::c_void;
 use std::path::{Path, PathBuf};
 use std::ptr;
@@ -399,8 +400,9 @@ fn main() {
     let coder_only: Option<Vec<String>> = std::env::args().find_map(|a| a.strip_prefix("coder=").map(|c| c.split(',').map(str::to_owned).collect()));
     let chosen = |name: &str| coder_only.as_deref().is_none_or(|cs| cs.iter().any(|c| name.contains(c.as_str())));
     // `INTERLEAVE=1` times the chosen coders together, every block by each
-    // in turn; else each coder on its own, one after another.
-    let interleave = std::env::var_os("INTERLEAVE").is_some_and(|v| !v.is_empty());
+    // in turn; unset, empty, `0` or `false`, each coder on its own, one
+    // after another.
+    let interleave = std::env::var("INTERLEAVE").is_ok_and(|v| !matches!(v.trim(), "" | "0" | "false"));
     let run = |shape: Shape, samples: &[i32], passes: usize, least_ms: u128, label: &str| -> Vec<(&'static str, Measured)> {
         let mut chosen: Vec<(&'static str, Box<dyn Coder>)> = coders(shape).into_iter().filter(|(n, _)| chosen(n)).collect();
         let step = if interleave { chosen.len().max(1) } else { 1 };

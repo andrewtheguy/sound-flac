@@ -183,7 +183,8 @@ pub struct Channel {
     /// Whether the last fit weighed was not worth trying.
     fit_declined: bool,
     /// The blocks in a row the fit, coded beside the fixed coding, has
-    /// lost to it on real bits.
+    /// lost to it on real bits; a block with no such comparison, a constant,
+    /// ends the row, unless the fit is being skipped on the row's account.
     lost: u8,
     /// The blocks in a row the fit has been skipped on.
     skipped: u8,
@@ -317,6 +318,12 @@ impl Channel {
             self.best.bits = header + u64::from(self.bps);
             self.coded = true;
             self.analysed = true;
+            // No fit is compared on a constant block, so the fit's losses
+            // on either side of it are not in a row; a skip under way,
+            // which the losses earned, is kept.
+            if self.skipped == 0 {
+                self.lost = 0;
+            }
         } else {
             self.best.kind = Kind::Verbatim;
             self.best.bits = self.verbatim();
