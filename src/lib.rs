@@ -49,8 +49,8 @@
 //! best fixed predictor by an eighth of a bit a sample, after a correction the
 //! channel learned the last time both were coded, the fit alone is coded, and
 //! otherwise both are and compared; each channel of the pair has both coded
-//! once a cycle whatever the estimate, on the two blocks after the choice, so
-//! that its correction is of this second; the two other channels are not looked
+//! once in two cycles whatever the estimate, on the two blocks after every
+//! other choice, so that its correction is of this second; the two other channels are not looked
 //! at past a constant check and a bound, and another pair is taken only where
 //! it is certainly cheaper. A channel on its own, mono or more than two, is
 //! coded the fit first on every block. The fit is skipped where the block is
@@ -62,7 +62,7 @@
 //! the same way where the fit, coded beside it, has won by a sixteenth of a
 //! bit a sample two blocks running, as on the side channel of a pure tone,
 //! where the fit wins every block by just under the margin, but for the two
-//! scheduled blocks a cycle. A residual is Rice-coded in
+//! blocks in eight the schedule has both coded on. A residual is Rice-coded in
 //! the partitions that cost least. Bits every sample of a channel has zero at the bottom, as
 //! 8-bit content in a 16-bit stream does, are shifted out as FLAC's wasted
 //! bits. A channel that is one value is a constant, and one nothing shortens
@@ -75,12 +75,12 @@
 //!
 //! Measured on 20 ms blocks of 16-bit stereo at 48 kHz, one core of an AMD
 //! EPYC Rome at the x86-64 baseline: a block of music takes about 11 µs and
-//! is 48% of its PCM, speech 7 µs and 30%, a pure tone 12 µs and 26%, noise
+//! is 48% of its PCM, speech 7 µs and 30%, a pure tone 11 µs and 26%, noise
 //! 7 µs and 76%, silence a microsecond and sixteen bytes. libFLAC at its
-//! default level, which this replaced, took 34, 31, 32, 33 and 21 µs for the
+//! default level, which this replaced, took 34, 29, 36, 36 and 21 µs for the
 //! same bytes within a tenth of a per cent, and 1% more on the tone. Mono at
-//! 48 kHz is 5 µs against libFLAC's 20, and 44.1 kHz stereo 9 against 30. On
-//! recordings, 0.23 to 0.46 of its time a block for its bytes within 0.2%,
+//! 48 kHz is 5 µs against libFLAC's 20, and 44.1 kHz stereo 9 against 31. On
+//! recordings, 0.22 to 0.44 of its time a block for its bytes within 0.2%,
 //! the block that chooses the pair afresh, every fourth, a quarter to a
 //! third as long again as a carried one. On the i5-8500T of the runs before
 //! every block of this encoder's was half as long again, libFLAC's a quarter.
@@ -232,15 +232,25 @@ pub struct Encoder {
     /// The pairing the last block was coded with, the one fitted on a block
     /// that is not every channel's.
     pairing: usize,
-    /// The blocks since every channel was fitted and the pair chosen afresh,
-    /// that block not counted.
-    since_choice: u8,
+    /// The block's place in the schedules, counted from the stream's first
+    /// block and wrapping where [`RECHOOSE`] and [`REFRESH`] both do.
+    tick: u8,
 }
 
-/// Every so many blocks all four channels of a pair are fitted and the pair
-/// chosen afresh; between, only the pair being carried is coded. Zero or one
-/// chooses afresh on every block.
+/// Every so many blocks all four channels of a pair are counted and the
+/// pair chosen afresh; between, only the pair being carried is coded.
 const RECHOOSE: u8 = 4;
+/// Every so many blocks each channel of the pair has both codings made and
+/// compared whatever the fit is estimated at, the first channel on the
+/// block after the boundary and the second on the next, which brings its
+/// correction up to date; a multiple or a divisor of [`RECHOOSE`], so that
+/// those blocks are carried ones. Measured on the EPYC against once a
+/// cycle: once in two, 1.3% to 2.8% fewer instructions on every stereo
+/// recording for at most 0.013% more bytes, the orchestra's 0.2 of a byte
+/// a block; the pair chosen every eighth block as well took 4.8% to 6.5%
+/// off and the late block came half as often, but for 0.07% to 0.11% of
+/// the bytes on the pianos, the mixes and the talk, and was not taken.
+const REFRESH: u8 = 8;
 
 /// The frame header's channel assignments for a stereo pair, in the order
 /// they are weighed.
@@ -261,7 +271,7 @@ impl Encoder {
         let block = usize::from(stream.block);
         let precision = lpc::precision(u32::from(stream.bits), block);
         let channels = (0..candidates).map(|_| Channel::new(block, precision)).collect();
-        Ok(Self { stream, head, channels, window: Window::new(block), pairing: 0, since_choice: RECHOOSE })
+        Ok(Self { stream, head, channels, window: Window::new(block), pairing: 0, tick: 0 })
     }
 
     /// The stream this encoder was made for.
@@ -299,8 +309,8 @@ impl Encoder {
             }
             mid.prepare(bps);
             side.prepare(bps + 1);
-            // The fresh block counts as one of the `RECHOOSE`.
-            let fresh = self.since_choice + 1 >= RECHOOSE;
+            let tick = self.tick;
+            let fresh = tick.is_multiple_of(RECHOOSE);
             let mut channels = [left, right, mid, side];
             // Every fourth block all four channels are weighed from their
             // autocorrelations and the pair chosen on that; on the blocks
@@ -315,13 +325,14 @@ impl Encoder {
             // and the pair moves to it where the bound says it is cheaper.
             let mut best = if !fresh {
                 let mut best = self.pairing;
-                // Each channel's correction is brought up to date once a
-                // cycle, both codings made and compared whatever the fit is
-                // estimated at, the first channel on the first carried block
-                // and the second on the next, so that the cost falls on
-                // blocks that are not the fresh one.
+                // Each channel's correction is brought up to date every
+                // `REFRESH` blocks, both codings made and compared whatever
+                // the fit is estimated at, the first channel on the first
+                // carried block after the boundary and the second on the
+                // next, so that the cost falls on blocks that are not the
+                // fresh one.
                 for (k, i) in [PAIRS[best].0, PAIRS[best].1].into_iter().enumerate() {
-                    channels[i].code_alone(window, self.since_choice == k as u8);
+                    channels[i].code_alone(window, tick % REFRESH == k as u8 + 1);
                 }
                 // Another pair is taken where it is certainly cheaper: where
                 // the most its channels can cost, from one pass over each
@@ -413,7 +424,7 @@ impl Encoder {
                 }
                 best = 0;
             }
-            self.since_choice = if fresh { 0 } else { self.since_choice + 1 };
+            self.tick = (tick + 1) % RECHOOSE.max(REFRESH);
             self.pairing = best;
             best
         } else {
