@@ -5,13 +5,15 @@
 //! ([`Channel::prepare`]); otherwise it is as it is until it is coded with
 //! the predictor that leaves the smallest residual. Where a stereo pair is
 //! being chosen, each channel is weighed before any is coded
-//! ([`Channel::weigh_alone`]): the fixed polynomial of the order its
-//! autocorrelation chooses has its residual taken and counted in one Rice
-//! partition, a true count of its bits within a partitioning's gain, and
-//! the bits a linear predictor fitted from the same autocorrelation is
-//! estimated to save come off that; the pair is chosen on those, and its
-//! two channels are coded from the estimates kept aside
-//! ([`Channel::code_weighed`]). A channel coded is coded the fit first
+//! ([`Channel::weigh`]): the bits its fit or its best fixed predictor is
+//! estimated to take, from its autocorrelation. Where the estimates do not
+//! settle the pair, each channel is counted ([`Channel::count`]): the fit's
+//! residual is taken and counted in one Rice partition, a true count of
+//! its bits within a partitioning's gain, and the fixed polynomial of the
+//! order the autocorrelation chooses is counted the same way beside it
+//! where the fit is not clear; the pair is chosen on those, and its two
+//! channels are finished from what was counted or weighed
+//! ([`Channel::finish`]). A channel coded is coded the fit first
 //! ([`Channel::code_alone`], [`Channel::code_fit_first`]): the fit's and
 //! the best fixed predictor's estimates are taken from the one
 //! autocorrelation, and where the fit is estimated to win by [`ALONE`] a
@@ -30,7 +32,9 @@
 //! 0.8, its autocorrelation 1.4 and the fit from it 0.3, the fit's residual
 //! 1.1 through 16-bit lanes, which a side channel takes too where its
 //! samples fit 16 bits, and 1.6 split where they do not, and its partitions
-//! 0.8; the bound 0.3; the weighing's one-partition count 0.3 at order 0,
+//! 0.8, of which the fold and the finest sums that count it in one
+//! partition are 0.25; the bound 0.3; the fixed predictor's one-partition
+//! count 0.3 at order 0,
 //! 0.22, 0.27 and 0.33 at orders 1 to 3 and 0.54 at order 4, taken as
 //! order 2 twice where one pass of five taps took 0.77; writing a block's
 //! two channels is about 3.4 µs at 16 bits and 6 at 24, the Rice codes
@@ -62,6 +66,13 @@ const MAX_PARAM_5: u32 = 30;
 /// predictor, after the channel's correction, for a channel coded on its
 /// own to be coded with the fit alone, its fixed path not run.
 const ALONE: f64 = 1.0 / 8.0;
+/// The bits a sample a stereo pair must be estimated to cost under every
+/// other, over the block, for it to be taken without the four channels
+/// counted. The estimates of the four channels are off against each other
+/// by up to an eighth of a bit a sample on 8-bit music, where every block's
+/// estimated pair is wrong, and by less than a tenth on every recording
+/// measured; past a quarter no count changed a choice.
+pub(crate) const PAIR: f64 = 1.0 / 4.0;
 /// The bits a sample a fit coded alone may cost over what its estimate and
 /// the channel's last fit said before the fixed path is run after all,
 /// since what the estimate does not see, a pure tone's coefficients'
@@ -151,12 +162,14 @@ pub struct Channel {
     precision: u32,
     /// The fixed predictor order that left the smallest residual.
     fixed_order: usize,
-    /// The bits the channel is estimated to take, for weighing it against
-    /// another before either is coded.
-    estimate: f64,
-    /// The estimate the channel was weighed on, kept for coding it where it
-    /// is chosen.
+    /// The bits the channel costs in one Rice partition, for choosing a
+    /// pair before either channel is finished.
+    coarse: u64,
+    /// The estimate the channel was weighed on, until it is counted or
+    /// finished from it.
     weighed: Option<Estimate>,
+    /// What finishing the channel counted needs, until it is.
+    counted: Option<Counted>,
     /// Whether `best` is the coding to write, or only the start of one.
     coded: bool,
     /// Whether the fixed path has run on this block.
@@ -186,6 +199,14 @@ pub struct Channel {
 /// The blocks in a row a fit is skipped on before it is tried again.
 const SKIPS: u8 = 7;
 
+/// A channel counted in one partition and not yet finished: the fit whose
+/// residual is in the trial, and whether it was estimated to win clearly,
+/// the fixed predictor counted beside it where it was not.
+struct Counted {
+    fit: Candidate,
+    clear: bool,
+}
+
 impl Channel {
     /// A channel of `block` samples, coefficients at `precision` bits.
     pub fn new(block: usize, precision: u32) -> Self {
@@ -203,8 +224,9 @@ impl Channel {
             width: 0,
             precision,
             fixed_order: 0,
-            estimate: 0.0,
+            coarse: 0,
             weighed: None,
+            counted: None,
             coded: false,
             analysed: false,
             bound: None,
@@ -228,10 +250,10 @@ impl Channel {
         self.header() + self.signal.len() as u64 * u64::from(self.bps)
     }
 
-    /// The bits the subframe is estimated to take once coded, for choosing
-    /// between channels before coding them.
-    pub fn estimate(&self) -> f64 {
-        self.estimate
+    /// The bits the subframe costs in one Rice partition, as
+    /// [`Self::count`] counted it, or its bits where it is coded.
+    pub fn coarse(&self) -> u64 {
+        self.coarse
     }
 
     /// Take `signal` in, of `bps` bits a sample: shift the wasted bits out,
@@ -267,6 +289,7 @@ impl Channel {
         self.width = 33 - (magnitude >> self.wasted).leading_zeros();
         let header = self.header();
         self.weighed = None;
+        self.counted = None;
         self.coded = false;
         self.analysed = false;
         self.bound = None;
@@ -281,7 +304,7 @@ impl Channel {
             self.best.bits = self.verbatim();
             self.predictable = lpc::MAX_ORDER.min(n / 8) > 0;
         }
-        self.estimate = self.best.bits as f64;
+        self.coarse = self.best.bits;
         true
     }
 
@@ -302,7 +325,6 @@ impl Channel {
         }
         self.fixed_order = best_order(&self.signal, &mut self.scratch);
         self.fixed();
-        self.estimate = self.best.bits as f64;
     }
 
     /// The autocorrelation of the channel analysed, through `window`, for
@@ -311,62 +333,101 @@ impl Channel {
         self.predictable.then(|| lpc::autocorrelation(&self.signal, window, &mut self.windowed))
     }
 
-    /// Weigh the channel prepared for the choice of a pair, before it is
-    /// coded, from `autoc`, its autocorrelation or one derived for it, where
-    /// it has one: the fixed order the autocorrelation chooses has its
-    /// residual taken and counted in one Rice partition, which is what the
-    /// channel costs coded so within a partitioning's gain and knows the
-    /// width and the Rice codes the estimates do not, and the bits the fit
-    /// is estimated to save come off that. The fit and the fixed estimate
-    /// are kept for coding the channel where it is chosen
-    /// ([`Self::code_weighed`]). A channel with no autocorrelation, noise
-    /// by the skip rule, is counted at its fixed order, 0 by that rule; a
-    /// block too short for a fit is coded outright.
-    pub fn weigh_alone(&mut self, autoc: Option<&Autocorrelation>) {
+    /// Weigh the channel prepared for the choice of a pair, from `autoc`,
+    /// its autocorrelation or one derived for it, where it has one: the
+    /// bits the fit or the fixed predictor, whichever is estimated cheaper,
+    /// is estimated to take, with the header. The estimate is kept for
+    /// counting or coding the channel ([`Self::count`], [`Self::finish`]).
+    /// A channel with no autocorrelation, noise by the skip rule, is counted
+    /// at its fixed order, 0 by that rule, and a block too short for a fit is
+    /// coded outright: their bits are returned.
+    pub fn weigh(&mut self, autoc: Option<&Autocorrelation>) -> f64 {
         if self.coded {
-            return;
+            return self.coarse as f64;
         }
         if !self.predictable {
             self.analyse_fixed();
-            self.estimate = self.best.bits as f64;
-            return;
+            self.code();
+            return self.coarse as f64;
         }
-        let saving = match autoc {
-            Some(autoc) => {
-                let estimate = self.estimate_from(autoc);
-                // The saving as estimated, not corrected: the correction
-                // taken off it was measured to choose worse, 0.05% to 0.09%
-                // of the Raven's and the Aria's bytes.
-                let saving = estimate.fit.as_ref().map_or(0.0, |fit| (estimate.fixed - fit.bits()).max(0.0));
-                self.weighed = Some(estimate);
-                saving
-            }
-            None => 0.0,
+        let Some(autoc) = autoc else {
+            self.coarse = self.measure(self.fixed_order).min(self.best.bits);
+            return self.coarse as f64;
         };
-        self.estimate = self.measure(self.fixed_order) as f64 - saving;
+        let estimate = self.estimate_from(autoc);
+        let bits = self.header() as f64 + estimate.fit.as_ref().map_or(estimate.fixed, |fit| fit.bits().min(estimate.fixed));
+        self.weighed = Some(estimate);
+        bits
     }
 
-    /// Code the channel weighed, where it was chosen: from the estimate kept
-    /// aside, the fit first as [`Self::code_fit_first`] codes it, and the
-    /// fixed path where none was. Once a block.
-    pub fn code_weighed(&mut self) {
+    /// Count the channel weighed in one Rice partition: the fit first, as
+    /// [`Self::code_fit_first`] codes it, but for the search over the
+    /// partitions, which is left to [`Self::finish`] for the channels
+    /// chosen. The fit's residual is taken and its folded sums with it, so
+    /// the count is the residual's true bits in one partition, within what
+    /// the partitioning gains, where the estimate is off by a bit a sample
+    /// either way; where the fit is not clear, the fixed predictor of the
+    /// order the autocorrelation chooses is counted the same way beside it.
+    pub fn count(&mut self) {
+        let Some(estimate) = self.weighed.take() else {
+            return;
+        };
+        let samples = self.signal.len() as f64;
+        let Some(fit) = estimate.fit else {
+            self.coarse = self.measure(self.fixed_order).min(self.best.bits);
+            return;
+        };
+        let clear = self.correction.is_some_and(|c| fit.bits() + (c + ALONE) * samples < estimate.fixed);
+        let Some(bits) = self.count_fit(&fit) else {
+            self.coarse = self.measure(self.fixed_order).min(self.best.bits);
+            return;
+        };
+        self.coarse = bits.min(self.best.bits);
+        if !clear {
+            self.coarse = self.coarse.min(self.measure(self.fixed_order));
+        }
+        self.counted = Some(Counted { fit, clear });
+    }
+
+    /// Code the channel weighed or counted, where it was chosen: a
+    /// channel counted has the fit's residual in the trial, whose
+    /// partitions are searched, and the fixed path runs where the fit was
+    /// not clear or came out past [`SLACK`] over its estimate, as
+    /// [`Self::code_fit_first`] runs it, so that the channel's correction
+    /// learns what it would have; a channel only weighed is coded from its
+    /// estimate as that codes it, and one neither takes the fixed path.
+    /// Once a block.
+    pub fn finish(&mut self) {
         if self.coded {
             return;
         }
-        match self.weighed.take() {
-            Some(estimate) => self.code_estimated(estimate, false),
-            None => {
-                self.analyse_fixed();
-                self.code();
+        if let Some(estimate) = self.weighed.take() {
+            self.code_estimated(estimate, false);
+            return;
+        }
+        self.coded = true;
+        let Some(Counted { fit, clear }) = self.counted.take() else {
+            self.analyse_fixed();
+            return;
+        };
+        let bits = self.search_fit(&fit);
+        let over = (bits as f64 - fit.bits()) / self.signal.len() as f64;
+        if clear && over <= self.fit_over + SLACK {
+            self.fit_over = over;
+            if bits < self.best.bits {
+                std::mem::swap(&mut self.best, &mut self.trial);
             }
+        } else {
+            self.analyse_fixed();
+            self.settle(bits);
         }
     }
 
     /// The bits the channel takes coded with the fixed predictor of `order`
     /// in one Rice partition, its residual taken into the scratch of that
     /// order in one pass with the folded sum: a true count, over what the
-    /// partitions chosen gain, where the estimates are off by a bit a
-    /// sample and more.
+    /// partitions chosen gain, where the estimate is off by a bit a sample
+    /// and more.
     fn measure(&mut self, order: usize) -> u64 {
         let n = self.signal.len();
         let sum = match order {
@@ -470,7 +531,6 @@ impl Channel {
         self.coded = true;
         let Some(fit) = estimate.fit else {
             self.analyse_fixed();
-            self.estimate = self.best.bits as f64;
             return;
         };
         let clear = !both && self.correction.is_some_and(|c| fit.bits() + (c + ALONE) * samples < estimate.fixed);
@@ -489,7 +549,6 @@ impl Channel {
             self.analyse_fixed();
             self.try_fit(&fit);
         }
-        self.estimate = self.best.bits as f64;
     }
 
     /// The fit coded as the trial, at `bits`, against the fixed coding in
@@ -529,11 +588,10 @@ impl Channel {
     }
 
 
-    /// The channel analysed is coded as it stands: from then on its
-    /// estimate is its bits.
+    /// The channel analysed is coded as it stands.
     pub fn code(&mut self) {
         self.coded = true;
-        self.estimate = self.best.bits as f64;
+        self.coarse = self.best.bits;
     }
 
     /// Try `fit` on the samples and keep it where it writes fewer bits than
@@ -547,20 +605,40 @@ impl Channel {
     /// `fit` coded on the samples as the trial coding, and its bits; none
     /// where its residual would not fit a sample.
     fn fit_into_trial(&mut self, fit: &Candidate) -> Option<u64> {
+        self.count_fit(fit)?;
+        Some(self.search_fit(fit))
+    }
+
+    /// `fit`'s residual into the trial, folded and summed over the finest
+    /// partitions, and the bits it takes in one partition; none where the
+    /// residual would not fit a sample. [`Self::search_fit`] finishes it.
+    fn count_fit(&mut self, fit: &Candidate) -> Option<u64> {
         let predictor = fit.predictor();
         if !lpc::residual(&self.signal, &predictor, self.width, &mut self.halves, &mut self.trial.residual) {
             return None;
         }
+        let total = fold(&mut self.trial, self.signal.len(), &mut self.sums);
         let order = predictor.order as u64;
-        let bits = self.header()
-            + order * u64::from(self.bps)
-            + 4
-            + 5
-            + order * u64::from(predictor.precision)
-            + partition(&mut self.trial, self.signal.len(), &mut self.sums, &mut self.params);
+        let (k, rice) = best_param(total, self.signal.len() as u64 - order);
+        let param = if k > MAX_PARAM_4 { 5 } else { 4 };
+        Some(self.fit_header(&predictor) + 2 + 4 + param + rice)
+    }
+
+    /// The trial's residual, as [`Self::count_fit`] left it, in the
+    /// partitions that cost least: the trial is `fit` coded, and its bits.
+    fn search_fit(&mut self, fit: &Candidate) -> u64 {
+        let predictor = fit.predictor();
+        let bits = self.fit_header(&predictor) + search(&mut self.trial, self.signal.len(), &mut self.sums, &mut self.params);
         self.trial.kind = Kind::Lpc(predictor);
         self.trial.bits = bits;
-        Some(bits)
+        bits
+    }
+
+    /// The bits of an LPC subframe before its residual: the header, the
+    /// warm-up samples, the precision, the shift and the coefficients.
+    fn fit_header(&self, predictor: &Predictor) -> u64 {
+        let order = predictor.order as u64;
+        self.header() + order * u64::from(self.bps) + 4 + 5 + order * u64::from(predictor.precision)
     }
 
     /// The fixed predictor of the order found, its residual as the order
@@ -648,6 +726,21 @@ impl Channel {
 /// Choose the partitioning and the Rice parameters of `coding`'s residual
 /// over a block of `n`, and return the bits the residual coding takes.
 fn partition(coding: &mut Coding, n: usize, sums: &mut [u64], params: &mut [u8]) -> u64 {
+    fold(coding, n, sums);
+    search(coding, n, sums, params)
+}
+
+/// The finest partitioning of a residual over a block of `n` with `order`
+/// warm-up samples: as many partitions as the block's factors of two and
+/// [`MIN_PARTITION`] allow, to [`MAX_PARTITION_ORDER`].
+fn finest(n: usize, order: usize) -> u32 {
+    MAX_PARTITION_ORDER.min(n.trailing_zeros()).min((n / (order + 1).max(MIN_PARTITION)).ilog2())
+}
+
+/// Fold `coding`'s residual to unsigned as Rice codes it and sum it over
+/// the finest partitions into `sums`, for [`search`]; returns the sum over
+/// the whole, which is the one partition's.
+fn fold(coding: &mut Coding, n: usize, sums: &mut [u64]) -> u64 {
     let order = n - coding.residual.len();
     // Sized first and written through a slice, which the compiler
     // vectorises where it leaves `extend` scalar.
@@ -657,7 +750,7 @@ fn partition(coding: &mut Coding, n: usize, sums: &mut [u64], params: &mut [u8])
         *f = zigzag(r);
         all |= *f;
     }
-    let finest = MAX_PARTITION_ORDER.min(n.trailing_zeros()).min((n / (order + 1).max(MIN_PARTITION)).ilog2());
+    let finest = finest(n, order);
     let parts = 1usize << finest;
     let size = n >> finest;
     // The finest sums in 32-bit lanes where the largest value times the
@@ -669,6 +762,15 @@ fn partition(coding: &mut Coding, n: usize, sums: &mut [u64], params: &mut [u8])
         let start = if i == 0 { 0 } else { i * size - order };
         *s = sum(&coding.folded[start..(i + 1) * size - order]);
     }
+    sums[..parts].iter().sum()
+}
+
+/// Choose the partitioning and the Rice parameters of `coding`'s residual,
+/// folded and summed over the finest partitions by [`fold`], and return
+/// the bits the residual coding takes.
+fn search(coding: &mut Coding, n: usize, sums: &mut [u64], params: &mut [u8]) -> u64 {
+    let order = n - coding.residual.len();
+    let finest = finest(n, order);
     let mut best = (u64::MAX, 0, false);
     for p in (0..=finest).rev() {
         let parts = 1usize << p;
@@ -1011,9 +1113,10 @@ mod tests {
                 *s = (12000.0 * (i as f64 * 0.35).sin() + 6000.0 * (i as f64 * 0.9).sin()).round() as i32;
             }
         };
-        let weigh = |ch: &mut Channel| {
+        let count = |ch: &mut Channel| {
             let autoc = ch.autocorrelation(&window).expect("long enough to fit");
-            ch.weigh_alone(Some(&autoc));
+            ch.weigh(Some(&autoc));
+            ch.count();
         };
         // Coded without the fit, for the fixed bits.
         let mut ch = Channel::new(n, 10);
@@ -1029,12 +1132,13 @@ mod tests {
         let mut ch = Channel::new(n, 10);
         two_tones(&mut ch);
         ch.prepare(16);
-        weigh(&mut ch);
-        assert!(ch.weighed.as_ref().is_some_and(|e| e.fit.is_some()));
-        assert!(ch.estimate() < fixed as f64, "estimated {} against fixed {fixed}", ch.estimate());
-        ch.code_weighed();
+        count(&mut ch);
+        assert!(ch.counted.is_some());
+        assert!(ch.coarse() < fixed, "counted {} against fixed {fixed}", ch.coarse());
+        ch.finish();
         assert!(matches!(ch.best.kind, Kind::Lpc(_)), "{:?}", ch.best.kind);
         assert!(ch.best.bits * 5 < fixed * 4, "fitted {} against fixed {fixed}", ch.best.bits);
+        assert!(ch.best.bits <= ch.coarse() && ch.coarse() * 10 <= ch.best.bits * 11, "counted {} against fitted {}", ch.coarse(), ch.best.bits);
         assert_eq!(ch.best.residual.len() + ch.best.kind.order(), n);
 
         let mut ch = Channel::new(n, 10);
@@ -1046,8 +1150,8 @@ mod tests {
             *s = (state >> 21) as i32 - 1024;
         }
         ch.prepare(16);
-        weigh(&mut ch);
-        ch.code_weighed();
+        count(&mut ch);
+        ch.finish();
         assert!(matches!(ch.best.kind, Kind::Fixed { order: 0 }), "{:?}", ch.best.kind);
         let measured = ch.measure(0);
         assert!(measured >= ch.best.bits && measured * 10 <= ch.best.bits * 11, "measured {measured} against fixed {}", ch.best.bits);
