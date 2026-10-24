@@ -34,12 +34,15 @@ block where two channels are one signal, was taken another way, the block
 carried where the side is one value, and the two ways refused before were
 measured again and not taken; and to the hour after that, when the residual of
 a fit was measured apart, the pair layout not taken and the loops run at the
-orders the compiler lays out well. The days before that are the count the
-sessions kept, which ran ahead of the machine's clock: by the commits, which
-that clock stamps in Pacific time, all of it ran from the evening of
-2026-10-22 to the afternoon of 2026-10-23, the night of 2026-10-23 here being
-noon of that day and 2026-10-24 its afternoon; the evening of 2026-10-23 is
-the clock's, and follows them.
+orders the compiler lays out well; and to the hour after that, when the
+frame's CRC was taken inside the writer's pass, measured apart and in the
+encoder, and not taken. The days before that are the count the sessions kept,
+which ran ahead of the machine's clock: by the commits, which that clock
+stamps in Pacific time, all of it ran from the evening of 2026-10-22 to the
+afternoon of 2026-10-23, the night of 2026-10-23 here being noon of that day
+and 2026-10-24 its afternoon; the evening of 2026-10-23 is the clock's, and
+follows them.
+
 
 ## What it is for
 
@@ -283,24 +286,15 @@ one signal, was taken another way in the small hours after, the block carried
 where the side is one value, under *Measured and taken*; and the residual of a
 fit, the first item after those, was measured apart the hour after, the pair
 layout not taken and the loops run at the orders the compiler lays out well,
-under *Measured and taken*. Each is measured on the EPYC alone, bytes on every
-made sound and recording and time a block against the run before, and taken
-with the full x86 run and the tables; the arm64 run is made once, when the
-round is called ready.
+under *Measured and taken*; and the CRC inside the writer's pass, the item
+after that, was measured the hour after, apart and in the encoder, and not
+taken, under *Measured and not taken*. Each is measured on the EPYC alone,
+bytes on every made sound and recording and time a block against the run
+before, and taken with the full x86 run and the tables; the arm64 run is made
+once, when the round is called ready.
 
-1. **The CRC inside the writer's pass** (the frame's CRC 4% to 7% at 16
-   bits, 7% to 14% on the 24-bit recordings and noise, 20% of 24-bit
-   noise's block): the two chains of table lookups are their loads'
-   latency, and they run after the writer, whose own work is a dependent
-   chain of shifts through the accumulator. Taking each word's eight bytes
-   through the tables as the writer stores it would run the loads under
-   the shifts, one pass over the frame instead of two; the header's bytes
-   before the first word and the alignment after the last go through the
-   table as now. What it can buy is the CRC's share where the writer's
-   chain leaves the load ports idle, which is a measurement, apart on
-   frames of 1500 to 8700 bytes and then in the encoder on pink noise and
-   the 1924 record.
-2. **The stereo split and the four channels' preparing in one pass**, 8%
+
+1. **The stereo split and the four channels' preparing in one pass**, 8%
    to 9% of a stereo block: the split writes left, right, mid and side in
    one pass and each channel's `prepare` reads its signal back for the
    wasted bits, the constant check and the width, four passes over what
@@ -311,7 +305,7 @@ round is called ready.
    header are 13.6% of a 5 µs block, the strided copy being a copy of one
    channel: there the samples can be prepared straight from the block.
    About 3% of a stereo block to measure, the same bytes.
-3. **The autocorrelation**, the largest part at 16 bits, 19% to 23%, is at
+2. **The autocorrelation**, the largest part at 16 bits, 19% to 23%, is at
    the floor the x86-64 baseline sets: 18 floating-point operations on
    every two samples on two ports, with no fused multiply-add at the
    baseline, where the EPYC has one and the Altra uses it. Nothing to take
@@ -939,6 +933,37 @@ round is called ready.
 
 ## Measured and not taken
 
+- **The frame's CRC inside the writer's pass** (the hour after the
+  residual's loops, 2026-10-24, item 1 of the plan as it stood, the
+  frame's CRC at 4% to 7% of a 16-bit block, 7% to 14% on the 24-bit
+  recordings and noise and 20% of 24-bit noise's): the writer kept the
+  CRC, each word of eight bytes taken through the eight tables as it was
+  stored, the header's bytes before its first word and the held bytes
+  after its last through the one table, so that the frame was read once
+  and the lookups ran under the writer's chain of shifts; the two halves
+  and the carry past the second went. Measured apart first, as the item
+  asked, on frames of 955 to 11 086 bytes of Rice codes at parameters 2
+  to 21 at 16 and 24 bits: the writer with the CRC inside took 0.96 to
+  0.98 of the writer and then the CRC as two halves, and that CRC's 0.33
+  to 3.4 µs, 0.32 ns a byte, was its lookups' µops, not their latency,
+  nine loads a word at two a cycle and the extraction of every byte, and
+  the writer's pass hid none of it but the frame's second read. In the
+  encoder on the EPYC against the run before, the same bytes on every
+  line: the made sounds 0.955 to 1.006 of their time, 0.96 to 0.99 on
+  most, the 16-bit noises 0.97 and 0.99, the 24-bit noise 0.99; the
+  recordings by their block times over three rounds 0.97 to 1.04 and by
+  their cycles 0.97 to 1.03, the 1924 record 1.00 by both, pink noise
+  0.99 and 1.01, the Aria 0.97 and 1.00, the Raven 1.01 and 0.97, the
+  private wide mix 0.99 and 1.03, the private loud master 1.03 and 0.98
+  and the private talk 0.98 and 1.01, which is no change; and the
+  instructions rose 1.4% to 3.5% on every recording and 8.4% on white
+  noise, the bytes of a word in a register costing a shift and a move
+  each where the second pass had loaded them. A change that reads as a
+  gain only on the made sounds, by less than their run-to-run spread,
+  and as nothing on the recordings, at more instructions on every one,
+  is not taken; the microbench stays on the EPYC as `~/crcbench`. What
+  the CRC would take is fewer lookups a byte, which is the carry-less
+  multiply, outside plain Rust without `unsafe`.
 - **The fourth block's counts spread over the cycle** (the evening of
   2026-10-24, item 1 of the plan as it stood, the late block): in place
   of the block that counts all four channels and chooses the pair on the
