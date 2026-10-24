@@ -33,68 +33,69 @@ git show HEAD:docs/bench/x86.jsonl > before.jsonl       # the run before, from t
 python3 -I tools/tables.py docs/bench/x86.jsonl arm64=docs/bench/arm64.jsonl --before before.jsonl
 ```
 
-In the recordings tables below, *the run before* is the run of the morning
-of 2026-10-24 on this machine, the encoder of v0.0.8 unchanged, whose log
-the commit before this one carries as `docs/bench/x86.jsonl`; this run, the
-afternoon's, is the same machine with one change in the encoder, the Rice
-parameter and the partitioning chosen on the estimate less the fractions it
-drops ([plan.md](plan.md), the first item taken of the afternoon's plan),
-so the *run before* columns compare the two encoders like for like, on one
-machine. The x86 run moved to this machine with the run before: every run
-before that one was made on the desktop, a six-core Intel i5-8500T under
-WSL2, which was never quiet, the session that started the run and the
-system under it taking a tenth of a time from one run to the next, and
-libFLAC's own times with it, so that a ratio's last hundredths were the
-machine's; from the morning's run on it is made on a host that does nothing
-else, over ssh, and the morning's *run before* columns, kept in the commit
-before, set the two machines side by side. The fifteenth recording, the
-third of the user's own, one voice talking over soft music, was added with
-the morning's run. The days named in this document and in
-[plan.md](plan.md) before the evening of 2026-10-23 are the count the
-sessions that made the earlier runs kept, which ran ahead of the machine's
-clock: by the commits, which that clock stamps in Pacific time, the run of
-v0.0.5 was made at noon on 2026-10-23, the run of v0.0.6 that afternoon,
-the run of v0.0.7 later that evening and the run of v0.0.8 later still, the
-morning's run on 2026-10-24, which is the clock's own day and is named by
-it from there on, and this run that afternoon.
+In the recordings tables below, *the run before* is the afternoon's run of
+2026-10-24 on this machine, the Rice parameter's estimate corrected, whose log
+the commit before this one carries as `docs/bench/x86.jsonl`; this run, later
+the same afternoon, is the same machine with one change in the encoder, the
+residual's fold and the finest partition sums made one pass
+([plan.md](plan.md), the second item taken of the afternoon's plan), so the
+*run before* columns compare the two encoders like for like, on one machine.
+The x86 run moved to this machine with the morning's run: every run before
+that one was made on the desktop, a six-core Intel i5-8500T under WSL2, which
+was never quiet, the session that started the run and the system under it
+taking a tenth of a time from one run to the next, and libFLAC's own times
+with it, so that a ratio's last hundredths were the machine's; from the
+morning's run on it is made on a host that does nothing else, over ssh, and
+the morning's *run before* columns, kept two commits before, set the two
+machines side by side. The fifteenth recording, the third of the user's own,
+one voice talking over soft music, was added with the morning's run. The days
+named in this document and in [plan.md](plan.md) before the evening of
+2026-10-23 are the count the sessions that made the earlier runs kept, which
+ran ahead of the machine's clock: by the commits, which that clock stamps in
+Pacific time, the run of v0.0.5 was made at noon on 2026-10-23, the run of
+v0.0.6 that afternoon, the run of v0.0.7 later that evening and the run of
+v0.0.8 later still, the morning's run on 2026-10-24, which is the clock's own
+day and is named by it from there on, the afternoon's run with the Rice
+parameter, and this run after it.
 
-They were run on 2026-10-24 by the machine's clock, in the afternoon, on a
-KVM virtual machine with four virtual processors of QEMU's EPYC-Rome model
-at 2.8 GHz, two cores with two threads each, the host's own chip not shown
-to it, under Debian 13, one thread, nothing else running on it, with rustc
-1.98.1 at the x86-64 baseline (SSE2, no `target-cpu`; the machine has AVX2
-and the fused multiply-add and the build asks for neither), from the tree
-of this commit copied over, the recordings in place from the morning: the
-encoder of v0.0.8 with the Rice parameter's estimate corrected. Against the
-morning's run this encoder's block is 0.97 to 1.06 of its on the made
-sounds and 0.96 to 1.03 on the recordings, libFLAC's level 5 0.96 to 1.05,
-its level 0 0.96 to 1.04 and its level 8 0.94 to 1.03, which is the
-machine's noise from one run to the next, a twentieth, as the morning's two
-runs had it; the bytes are the morning's on every line of the three libFLAC
-coders and on every line of this encoder but those the change moved: the
-8-bit noise 4.5 bytes a block fewer, 1.0001 of libFLAC's where it was
-1.0046, the 96 kHz tone 35 fewer, 0.876 of libFLAC's where it was 0.90,
-8-bit speech 0.2 of a byte more, and the recordings within half a byte a
-block either way, the wide mix the half, the Raven and the train station a
-tenth fewer. By the machine's own counters, which the virtual machine shows,
-the change is 0.7% of the orchestra's instructions and 0.9% of the
-Fantasy's, under what a run moves by. A time ratio within a twentieth of
-1.00 is on the line; a bytes ratio is exact. A worst block is one block of
-thousands and the machine's as much as the encoder's, even as the least
-over passes, so it is read as an order of magnitude; on this machine it is
-111 to 154 µs on every recording but the train station's, 58, for this
-encoder, the mono reading's 26 times its mean block, which is the virtual
-machine's tick and not the sound, where libFLAC's is 130 to 229. The bench
-also logs `worst_at`, the block that was slowest at its least over the
-passes, and dumps every block's least time and bytes when asked
-(`BLOCKS=dir`), which is how the late blocks below were read, in the
-morning's run; every pass starts from an encoder that has seen no block, so
-that what the encoder carries from block to block, the fourth-block choice,
-falls on the same blocks in every pass and the least over the passes is the
-block's own.
+They were run on 2026-10-24 by the machine's clock, late in the afternoon, on
+a KVM virtual machine with four virtual processors of QEMU's EPYC-Rome model
+at 2.8 GHz, two cores with two threads each, the host's own chip not shown to
+it, under Debian 13, one thread, nothing else running on it, with rustc 1.98.1
+at the x86-64 baseline (SSE2, no `target-cpu`; the machine has AVX2 and the
+fused multiply-add and the build asks for neither), from the tree of this
+commit copied over, the recordings in place from the morning: the encoder of
+v0.0.8 with the Rice parameter's estimate corrected and the residual's fold
+and finest sums made one pass. Against the afternoon's run this encoder's
+block is 0.95 to 1.02 of its on the recordings, 0.96 to 0.99 on ten of the
+fifteen, and 0.94 to 1.02 on the made sounds but two, the 24-bit music at 1.12
+and the mono silence at 1.10, which are the machine's: run again six times
+each build after the run, the 24-bit music's block was 13.7 to 13.8 µs on
+both. libFLAC's level 5 is 0.97 to 1.06 of the afternoon's, its level 0 0.98
+to 1.05 and its level 8 0.94 to 1.07, which is the machine's noise from one
+run to the next, a twentieth, as the day's runs before it had it; the bytes
+are the afternoon's on every line of every coder, as a change to how the
+residual is folded and summed, and not to what is chosen, must leave them. By
+the machine's own counters, which the virtual machine shows, the change is
+1.6% to 2.6% fewer instructions on the recordings, 2.4% on the orchestra, 2.6%
+on the talk, 1.8% on the Fantasy and 1.6% on the Aria, which the run reads as
+a hundredth or two of a block under its noise. A time ratio within a twentieth
+of 1.00 is on the line; a bytes ratio is exact. A worst block is one block of
+thousands and the machine's as much as the encoder's, even as the least over
+passes, so it is read as an order of magnitude; on this machine it is 114 to
+140 µs on every recording but the train station's, 77, and the Fantasy's, 237,
+where the tick fell twice on one block, for this encoder, the mono reading's
+27 times its mean block, which is the virtual machine's tick and not the
+sound, where libFLAC's is 139 to 266. The bench also logs `worst_at`, the
+block that was slowest at its least over the passes, and dumps every block's
+least time and bytes when asked (`BLOCKS=dir`), which is how the late blocks
+below were read, in the morning's run; every pass starts from an encoder that
+has seen no block, so that what the encoder carries from block to block, the
+fourth-block choice, falls on the same blocks in every pass and the least over
+the passes is the block's own.
 
 The arm64 run of the section after the recordings is the morning's, made
-from the tree of the run before, the encoder of v0.0.8 unchanged, on a
+from the tree of two commits before, the encoder of v0.0.8 unchanged, on a
 two-core Ampere Altra (Neoverse N1) in a Debian 13 LXC container, one
 thread, the machine idle, with rustc 1.98.1 at the aarch64 baseline, whose
 NEON the compiler uses on its own and whose fused multiply-add the
@@ -106,10 +107,11 @@ while that compression is still going reads two to three times slow on the
 made sounds, so the wait is part of the run. The run is held there at the
 user's ask while a round of changes is measured on the x86 machine alone,
 so that box, which builds other things, is not slowed by a run a change:
-its section is of the encoder before this change, and the note at the end
-of the tables, which sets the two runs' bytes side by side, reads the
-change on this run's side, the 8-bit noise and the 96 kHz tone by whole
-bytes and the other lines it names by fractions of one; it will be made
+its section is of the encoder before the round's two changes, and the note
+at the end of the tables, which sets the two runs' bytes side by side,
+reads the first of them on this run's side, the 8-bit noise and the 96 kHz
+tone by whole bytes and the other lines it names by fractions of one, the
+second having left every byte where it was; it will be made
 again, and the section with it, when the round is called ready. Against
 its run before, the same encoder on the same machine the evening before,
 every line of every coder is within 2%: this encoder 1.00 to 1.01 of it on
@@ -205,15 +207,17 @@ repository nothing else of them.
 - **Every recording and every made sound takes less than half of what
   libFLAC at its default level takes of a core, most of them about a
   third or less.** The recordings are 0.23 to 0.46 of its time a block:
-  16-bit stereo 0.31 to 0.39, mono 0.23, 24-bit 0.24 to 0.46, the two at
-  96 kHz and 24 bits 0.45 and 0.46. A block of a recording is 0.02% to
-  0.14% of one core. The made sounds are 0.05 to 0.42: music 0.24 to
-  0.39, speech 0.17 to 0.27, the tone 0.19 to 0.42, noise 0.18 to 0.27,
-  silence 0.05 to 0.06. The run before, the morning's on this machine,
-  the same encoder but for the Rice parameter, had them at 0.24 to 0.47
-  and 0.05 to 0.44, within a twentieth of this run on every line, which
-  is what the machine moves by; the run before it, the same encoder on
-  the desktop i5 late the evening of 2026-10-23, at 0.29 to 0.55 and
+  16-bit stereo 0.31 to 0.40, mono 0.23, 24-bit 0.23 to 0.46, the two at
+  96 kHz and 24 bits 0.44 and 0.46. A block of a recording is 0.02% to
+  0.15% of one core. The made sounds are 0.05 to 0.42: music 0.25 to
+  0.42, speech 0.17 to 0.27, the tone 0.18 to 0.42, noise 0.17 to 0.26,
+  silence 0.05 to 0.06. The run before, the afternoon's on this machine,
+  the same encoder but for the fold, had them at 0.23 to 0.46 and 0.05
+  to 0.42, within a twentieth of this run on every line but the 24-bit
+  music's, the machine's, which is what the machine moves by; the run
+  before it, the morning's, the same encoder but for the Rice parameter,
+  at 0.24 to 0.47 and 0.05 to 0.44; the run before it, the same encoder
+  on the desktop i5 late the evening of 2026-10-23, at 0.29 to 0.55 and
   0.05 to 0.50, the run of v0.0.7 before it that evening at 0.28 to 0.54
   and 0.23 to 0.50, the run before it, the same encoder as v0.0.7's, at
   0.30 to 0.57 and 0.25 to 0.53, the run of v0.0.6 before it, that
@@ -238,22 +242,25 @@ repository nothing else of them.
   measurements are in [plan.md](plan.md)); before the pair was chosen on
   the fit the train station was 1.006 and the Fantasy 1.004, and before
   it was chosen on the four channels' counts the Fantasy was 1.002 and
-  the Aria 1.001. Against the run before every line comes to the same
-  bytes within half a byte a block but two: the 8-bit noise, 4.5 bytes a
-  block fewer, 1.0001 of libFLAC's where it was 1.0046, and the 96 kHz
-  tone, 35 fewer, 0.876 where it was 0.90, the Rice parameter and the
+  the Aria 1.001. Against the run before every line of every coder comes
+  to the same bytes, the change being to how the residual is folded and
+  summed and not to what is chosen. The run before's encoder, against
+  the one before it, had brought every line to the same bytes within
+  half a byte a block but two: the 8-bit noise, 4.5 bytes a block fewer,
+  1.0001 of libFLAC's where it was 1.0046, and the 96 kHz tone, 35
+  fewer, 0.876 where it was 0.90, the Rice parameter and the
   partitioning now chosen on the estimate less the fractions it drops,
   which on a quiet residual had favoured the smaller parameter and the
   finer partitioning by a bias and not by bits, the 8-bit noise's mid
   channel at a parameter under libFLAC's and its side in two to eight
-  partitions where libFLAC had one; 8-bit speech is 0.2 of a byte a
-  block over and the recordings within 0.02%, the wide mix the 0.02%.
-  The run before's encoder, against the one before it, had brought the
-  Raven, the train station and the orchestra a tenth of a byte a block
-  over, 0.01%, and the made 8-bit speech 0.3 of a byte, 0.12%: blocks
-  where the fit, skipped after two losses by an eighth of a bit, would
-  have won. The encoder before that, against the afternoon's, had
-  brought every recording to the same bytes or fewer, the Fantasy
+  partitions where libFLAC had one; 8-bit speech 0.2 of a byte a block
+  over and the recordings within 0.02%, the wide mix the 0.02%. The
+  encoder before that, against the one before it, had brought the Raven,
+  the train station and the orchestra a tenth of a byte a block over,
+  0.01%, and the made 8-bit speech 0.3 of a byte, 0.12%: blocks where
+  the fit, skipped after two losses by an eighth of a bit, would have
+  won. The encoder before that, against the afternoon of 2026-10-23's,
+  had brought every recording to the same bytes or fewer, the Fantasy
   0.9983, the Aria 0.9989, the train station 0.9996, the Raven and the
   prison song 0.9999, which is the pair chosen on the counts where the
   estimates could not tell left and right from mid and side, and every
@@ -278,41 +285,42 @@ repository nothing else of them.
   least time over the passes, each pass from an encoder that has seen no
   block, read by the block's place in the cycle of four, in a run on
   this machine after the morning's tables, of that run's encoder, with
-  every block dumped (`BLOCKS=dir`), which this run's change, 0.7% of
-  the instructions, does not move: the fourth block is 14.3 µs against
-  10.9 for a carried block on the orchestra, where the run before had
-  21.4 against 16.5 on the i5; 31.3 against 23.4 on the Aria, from 48.6
-  against 36.6; 24.4 against 19.3 on the Fantasy, from 36.7 against
-  29.6; 12.2 against 9.2 on the Raven, from 18.4 against 14.2; 11.5
-  against 9.4 on the wide mix, from 17.3 against 14.3; on the made tone
-  15.1 against 9.7, from 22.1 against 14.7, the fit skipped on the
-  channel where it loses, and on the made music, where the estimates
-  settle the pair and the two other channels are not counted, 11.3
-  against 10.2, from 16.8 against 15.4; every pair of them the i5's at
-  0.64 to 0.68, the fourth block and the carried one moved alike by the
-  machine. Where the estimates do not settle it, the fourth block has
-  the two other channels' residuals and folds over what it had, which is
-  the Aria's and the Fantasy's rise, and against that the run before's
-  choice coded 1.9 pairs on the orchestra's mean fourth block, which is
-  why that block did not move there. The two blocks after the choice,
-  where each channel of the pair has both codings made once to bring its
-  correction up to date, are about half a microsecond over a plain
-  carried block at 16 bits, 11.4 and 10.6 against 10.6 on the orchestra,
-  and 2.4 on the Aria. This encoder's own 99th-percentile block is set
-  by the loud blocks as much as by the fourth, 1.5 to 2.2 times its mean
-  on the stereo recordings and 1.4 on the mono reading, and its worst
-  block on this machine is the virtual machine's tick: 111 to 154 µs on
-  every recording but the train station's, 58, as the least over the
+  every block dumped (`BLOCKS=dir`), which the two changes since, 0.7%
+  and 2% of the instructions spread over every block alike, do not move:
+  the fourth block is 14.3 µs against 10.9 for a carried block on the
+  orchestra, where the run before had 21.4 against 16.5 on the i5; 31.3
+  against 23.4 on the Aria, from 48.6 against 36.6; 24.4 against 19.3 on
+  the Fantasy, from 36.7 against 29.6; 12.2 against 9.2 on the Raven,
+  from 18.4 against 14.2; 11.5 against 9.4 on the wide mix, from 17.3
+  against 14.3; on the made tone 15.1 against 9.7, from 22.1 against
+  14.7, the fit skipped on the channel where it loses, and on the made
+  music, where the estimates settle the pair and the two other channels
+  are not counted, 11.3 against 10.2, from 16.8 against 15.4; every pair
+  of them the i5's at 0.64 to 0.68, the fourth block and the carried one
+  moved alike by the machine. Where the estimates do not settle it, the
+  fourth block has the two other channels' residuals and folds over what
+  it had, which is the Aria's and the Fantasy's rise, and against that
+  the run before's choice coded 1.9 pairs on the orchestra's mean fourth
+  block, which is why that block did not move there. The two blocks
+  after the choice, where each channel of the pair has both codings made
+  once to bring its correction up to date, are about half a microsecond
+  over a plain carried block at 16 bits, 11.4 and 10.6 against 10.6 on
+  the orchestra, and 2.4 on the Aria. This encoder's own 99th-percentile
+  block is set by the loud blocks as much as by the fourth, 1.5 to 2.2
+  times its mean on the stereo recordings and 1.6 on the mono reading,
+  and its worst block on this machine is the virtual machine's tick: 114
+  to 140 µs on every recording but the train station's, 77, and the
+  Fantasy's, 237, the tick twice on one block, as the least over the
   passes of each pass's worst, where no one block is slow in every pass,
   the slowest block of the orchestra at its least over the passes being
   29 µs, the Aria's 43 and the Fantasy's 34, so the tick falls on
   another block each pass and a worst block past a hundred µs is the
   machine's. A single pass's 99th percentile is higher still for both
   encoders, which is scheduling and cache, not the sound. On the
-  recordings this encoder's 99th-percentile block is 0.21 to 0.62 of
-  libFLAC's, 7 to 42 µs against 32 to 80, and its worst block 58 to 154
-  µs, at most 0.8% of the 20 ms the block is, where libFLAC's worst is
-  130 to 229. Where two channels are one signal, the 1962 speech and the
+  recordings this encoder's 99th-percentile block is 0.26 to 0.57 of
+  libFLAC's, 7 to 47 µs against 28 to 81, and its worst block 77 to 237
+  µs, at most 1.2% of the 20 ms the block is, where libFLAC's worst is
+  139 to 266. Where two channels are one signal, the 1962 speech and the
   made speech, the fourth block counts the three equivalent channels,
   each the same bits within the estimates' margin: 12.8 µs against 7.5
   on that recording and 7.8 against 5.8 on the made speech, the blocks
@@ -376,59 +384,64 @@ repository nothing else of them.
   of losses; skipping on any loss cost the prison song 0.7% of its bytes,
   and on two losses past an eighth it and every recording are within
   0.01%.
-- **Where the time goes**, by perf's cpu-clock over this encoder alone on
-  this machine, the afternoon after the run, the bench built with line
-  tables and the blocks 15% longer under the sampler, each part as a share
-  of the encoder's own samples: on the orchestra at 16-bit stereo the two
-  autocorrelations with their windowing are 19%, the fits from them 6%,
-  the pair's residuals 14%, the partitions, the fold, the finest sums and
-  the search over the orders, 20%, the fixed order search and the two
-  bounds 9%, the Rice codes out 17%, the frame's CRC 5%, the stereo split
-  with the header 4% and the four channels' preparing 4%. At 44.1 kHz, on
-  the Raven and the talk, the partitions are 6% to 7%, since a block of
-  882 frames has one factor of two and two partitionings to try where 960
-  has six, and the autocorrelation is 22%, the residuals 16% to 18%, the
-  writer 19% to 20%. On the Fantasy at 96 kHz the residuals are 18% and
-  the partitions 17%; on the Aria at 24 bits the residual, which runs as
-  two 16-bit passes, 27%, the writer 16% and the CRC 7%; on the 1924
-  record the residual 22%, the writer 21% and the CRC 10%; on pink noise
-  the writer 23%, the partitions 17% and the CRC 14%; on 24-bit noise the
-  writer 29% and the CRC 20%; on the 48 kHz tone the fixed path 15.5%,
-  mostly the order search run on the side channel every block beside a
-  fit that wins within the margin. The i5's timers, in a copy of the tree
-  on the runs before, put the writer at a quarter of a 16-bit block, 4.4
-  µs of 16.9, the two autocorrelations at 3.6, the fits 0.7, the residuals
-  2.3, the partitions 1.9, the folds and bounds 1.2, the split 0.7 and the
-  CRC 0.7, with a fixed coding of 1.7 for each channel whose fit is not
-  clear; on this machine the writer is a sixth to a fifth, Zen 2 shifting
-  by a variable count in one µop where the i5 takes three, and the
-  partitions and the CRC are larger shares. At 24 bits the writer takes
-  three codes to a word at the parameters a 24-bit residual takes, where
-  four to a word, falling to pairs, took 14 µs of the 1924 record's 42 on
-  the i5 against 11. A 17-bit side channel whose samples fit 16 bits
-  takes the 16-bit pass. A block of noise, where order 0 wins, takes one
-  difference pass in the order search where it took four. What each part
-  has left to give is in [plan.md](plan.md), under the open items.
+- **Where the time goes**, by perf's cpu-clock over this encoder alone
+  on this machine, the afternoon after the morning's run and before the
+  round's two changes, the bench built with line tables and the blocks
+  15% longer under the sampler, each part as a share of the encoder's
+  own samples (the fold and the finest sums, a tenth of the partitions'
+  share and a half, are one pass since, 2% of the instructions fewer):
+  on the orchestra at 16-bit stereo the two autocorrelations with their
+  windowing are 19%, the fits from them 6%, the pair's residuals 14%,
+  the partitions, the fold, the finest sums and the search over the
+  orders, 20%, the fixed order search and the two bounds 9%, the Rice
+  codes out 17%, the frame's CRC 5%, the stereo split with the header 4%
+  and the four channels' preparing 4%. At 44.1 kHz, on the Raven and the
+  talk, the partitions are 6% to 7%, since a block of 882 frames has one
+  factor of two and two partitionings to try where 960 has six, and the
+  autocorrelation is 22%, the residuals 16% to 18%, the writer 19% to
+  20%. On the Fantasy at 96 kHz the residuals are 18% and the partitions
+  17%; on the Aria at 24 bits the residual, which runs as two 16-bit
+  passes, 27%, the writer 16% and the CRC 7%; on the 1924 record the
+  residual 22%, the writer 21% and the CRC 10%; on pink noise the writer
+  23%, the partitions 17% and the CRC 14%; on 24-bit noise the writer
+  29% and the CRC 20%; on the 48 kHz tone the fixed path 15.5%, mostly
+  the order search run on the side channel every block beside a fit that
+  wins within the margin. The i5's timers, in a copy of the tree on the
+  runs before, put the writer at a quarter of a 16-bit block, 4.4 µs of
+  16.9, the two autocorrelations at 3.6, the fits 0.7, the residuals
+  2.3, the partitions 1.9, the folds and bounds 1.2, the split 0.7 and
+  the CRC 0.7, with a fixed coding of 1.7 for each channel whose fit is
+  not clear; on this machine the writer is a sixth to a fifth, Zen 2
+  shifting by a variable count in one µop where the i5 takes three, and
+  the partitions and the CRC are larger shares. At 24 bits the writer
+  takes three codes to a word at the parameters a 24-bit residual takes,
+  where four to a word, falling to pairs, took 14 µs of the 1924
+  record's 42 on the i5 against 11. A 17-bit side channel whose samples
+  fit 16 bits takes the 16-bit pass. A block of noise, where order 0
+  wins, takes one difference pass in the order search where it took
+  four. What each part has left to give is in [plan.md](plan.md), under
+  the open items.
 - **Against libFLAC's fastest level, 0, which fits no predictor and
   codes stereo as it comes**, this encoder takes less time on every
-  recording on this machine: 0.58 to 0.86 of its time on the 16-bit
-  stereo recordings, the Fantasy at 96 kHz the 0.86, the orchestra 0.70
-  and the six at 44.1 kHz 0.58 to 0.61, 0.49 on the 1962 speech, 0.44 on
-  white noise, 0.35 on the mono reading, and 0.81 to 0.98 on the four at
-  24 bits with sound in them, the Aria the 0.98, for 0.49 to 0.99 of its
-  bytes: the three speeches 0.49, 0.78 and 0.87, the music 0.78 to 0.96,
-  noise 0.99. On the made sounds it is 0.51 to 0.91 on stereo music,
-  8-bit music the 0.51 and 96 kHz the 0.91, 0.62 to 0.98 on the tone, 48
-  kHz 0.74 and 96 kHz the 0.98, which the morning's run had at 1.01, the
-  one cell over 1.00 then and on the line either way, 0.30 to 0.48 on
-  speech, 0.27 to 0.56 on noise, 0.07 to 0.39 on mono and 0.07 to 0.11
-  on silence. The morning's run had the same cells within a twentieth;
-  the run before it, on the i5, had the 16-bit stereo recordings at 0.85
-  to 1.09, the 1962 speech 0.69, white noise 0.61, the mono reading 0.59
-  and the 24-bit four at 1.10 to 1.24, the made stereo music and tone at
-  0.76 to 1.11 and 0.90 to 1.29: the column moved by a quarter with the
-  machine, all of it the machine's, this encoder's block being 0.64 to
-  0.68 of its i5 block and level 0's 0.80 to 0.96 of its on the stereo
+  recording on this machine: 0.56 to 0.88 of its time on the 16-bit
+  stereo recordings, the Fantasy at 96 kHz the 0.88, the orchestra 0.71
+  and the six at 44.1 kHz 0.56 to 0.59, 0.49 on the 1962 speech, 0.42 on
+  white noise, 0.34 on the mono reading, and 0.79 to 0.95 on the four at
+  24 bits with sound in them, the 1924 record the 0.95 and the Aria
+  0.94, for 0.49 to 0.99 of its bytes: the three speeches 0.49, 0.78 and
+  0.87, the music 0.78 to 0.96, noise 0.99. On the made sounds it is
+  0.49 to 0.89 on stereo music, 8-bit music the 0.49 and 96 kHz the
+  0.89, 0.60 to 0.98 on the tone, 48 kHz 0.72 and 96 kHz the 0.98, which
+  the morning's run had at 1.01, the one cell over 1.00 then and on the
+  line either way, 0.30 to 0.50 on speech, 0.26 to 0.53 on noise, 0.08
+  to 0.39 on mono and 0.07 to 0.11 on silence. The afternoon's run and
+  the morning's had the same cells within a twentieth; the run before
+  it, on the i5, had the 16-bit stereo recordings at 0.85 to 1.09, the
+  1962 speech 0.69, white noise 0.61, the mono reading 0.59 and the
+  24-bit four at 1.10 to 1.24, the made stereo music and tone at 0.76 to
+  1.11 and 0.90 to 1.29: the column moved by a quarter with the machine,
+  all of it the machine's, this encoder's block being 0.64 to 0.68 of
+  its i5 block and level 0's 0.80 to 0.96 of its on the stereo
   recordings, 1.14 on the mono reading, and 0.82 to 1.22 on the made
   sounds, the mono shape the over, so the EPYC runs this encoder half as
   fast again as the i5 and level 0's fixed path about as fast. On arm64,
@@ -441,9 +454,10 @@ repository nothing else of them.
   1.15. What is over 1.00 on the Altra is 96 kHz, the long block, the
   24-bit four, the tone past 44.1 kHz, where the side channel's fit wins
   by an eighth of a bit and both codings are still made, and the
-  orchestra and the Fantasy; on the EPYC nothing in this run and the 96
-  kHz tone in the morning's, the fixed path being cheaper on the Altra
-  against this encoder's work than on either x86 machine.
+  orchestra and the Fantasy; on the EPYC nothing in this run or the
+  afternoon's and the 96 kHz tone in the morning's, the fixed path being
+  cheaper on the Altra against this encoder's work than on either x86
+  machine.
 - **On arm64 the encoder stands where it does on x86 against libFLAC's
   default level, and further from level 0.** The morning's run on the
   two-core Ampere Altra, held there while the round is measured on x86
@@ -456,10 +470,10 @@ repository nothing else of them.
   of its EPYC time on the stereo recordings and 1.01 on the mono
   reading, and its level 0 0.84 to 1.20 on the recordings and 0.68 on
   the mono reading; this encoder's 99th-percentile block is 8 to 52 µs
-  there against 7 to 42, and its worst 65 to 163 against 58 to 154, the
+  there against 7 to 47, and its worst 65 to 163 against 77 to 237, the
   EPYC's being its tick. Against level 0 it is 0.90 to 1.12 of its time
   on the 16-bit stereo recordings but the 1962 speech and white noise,
-  0.64 and 0.63, where the EPYC is 0.44 to 0.98, and 0.69 on the mono
+  0.64 and 0.63, where the EPYC is 0.42 to 0.95, and 0.69 on the mono
   reading where the EPYC is 0.34: level 0's fixed path is cheap on the
   Altra, 0.78 to 0.99 of its i5 time and 0.84 to 1.20 of its EPYC time,
   and this encoder's block, 0.83 to 0.94 of its i5 block on the Altra
@@ -487,7 +501,9 @@ repository nothing else of them.
   machine's; libFLAC's differ on the 24-bit tone, 2321 against 2315 at
   level 5 and 2302 against 2502 at level 8, its arm64 build taking
   another arithmetic path through the ill-conditioned fit.
+
 ## The made sounds, against libFLAC at level 5 as v0.0.4 ran it
+
 
 ### Time a block, this encoder over libFLAC
 
@@ -495,11 +511,11 @@ Under 1.00 is less of a core than libFLAC at its default level.
 
 | Sound | 48 kHz stereo 16-bit | 44.1 kHz stereo 16-bit | 96 kHz stereo 16-bit | 48 kHz mono 16-bit | 48 kHz stereo 8-bit | 48 kHz stereo 24-bit |
 |---|---:|---:|---:|---:|---:|---:|
-| music | $\color{green}{0.32}$ | $\color{green}{0.30}$ | $\color{green}{0.39}$ | $\color{green}{0.24}$ | $\color{green}{0.25}$ | $\color{green}{0.38}$ |
-| speech | $\color{green}{0.23}$ | $\color{green}{0.21}$ | $\color{green}{0.27}$ | $\color{green}{0.25}$ | $\color{green}{0.17}$ | $\color{green}{0.26}$ |
-| tone | $\color{green}{0.36}$ | $\color{green}{0.33}$ | $\color{green}{0.42}$ | $\color{green}{0.19}$ | $\color{green}{0.34}$ | $\color{green}{0.40}$ |
-| noise | $\color{green}{0.22}$ | $\color{green}{0.20}$ | $\color{green}{0.27}$ | $\color{green}{0.18}$ | $\color{green}{0.21}$ | $\color{green}{0.24}$ |
-| silence | $\color{green}{0.05}$ | $\color{green}{0.05}$ | $\color{green}{0.06}$ | $\color{green}{0.05}$ | $\color{green}{0.05}$ | $\color{green}{0.05}$ |
+| music | $\color{green}{0.33}$ | $\color{green}{0.30}$ | $\color{green}{0.39}$ | $\color{green}{0.25}$ | $\color{green}{0.25}$ | $\color{green}{0.42}$ |
+| speech | $\color{green}{0.23}$ | $\color{green}{0.21}$ | $\color{green}{0.27}$ | $\color{green}{0.26}$ | $\color{green}{0.17}$ | $\color{green}{0.25}$ |
+| tone | $\color{green}{0.35}$ | $\color{green}{0.31}$ | $\color{green}{0.42}$ | $\color{green}{0.18}$ | $\color{green}{0.34}$ | $\color{green}{0.40}$ |
+| noise | $\color{green}{0.22}$ | $\color{green}{0.19}$ | $\color{green}{0.26}$ | $\color{green}{0.17}$ | $\color{green}{0.20}$ | $\color{green}{0.23}$ |
+| silence | $\color{green}{0.05}$ | $\color{green}{0.05}$ | $\color{green}{0.06}$ | $\color{green}{0.06}$ | $\color{green}{0.05}$ | $\color{green}{0.05}$ |
 
 ### Bytes a block, this encoder over libFLAC
 
@@ -521,11 +537,11 @@ Under 1.00 is less of a core than libFLAC's fastest level, which fits no linear 
 
 | Sound | 48 kHz stereo 16-bit | 44.1 kHz stereo 16-bit | 96 kHz stereo 16-bit | 48 kHz mono 16-bit | 48 kHz stereo 8-bit | 48 kHz stereo 24-bit |
 |---|---:|---:|---:|---:|---:|---:|
-| music | $\color{green}{0.64}$ | $\color{green}{0.56}$ | $\color{green}{0.91}$ | $\color{green}{0.37}$ | $\color{green}{0.51}$ | $\color{green}{0.74}$ |
-| speech | $\color{green}{0.39}$ | $\color{green}{0.34}$ | $\color{green}{0.48}$ | $\color{green}{0.39}$ | $\color{green}{0.30}$ | $\color{green}{0.42}$ |
-| tone | $\color{green}{0.74}$ | $\color{green}{0.62}$ | $\color{green}{0.98}$ | $\color{green}{0.30}$ | $\color{green}{0.70}$ | $\color{green}{0.80}$ |
-| noise | $\color{green}{0.42}$ | $\color{green}{0.36}$ | $\color{green}{0.56}$ | $\color{green}{0.27}$ | $\color{green}{0.40}$ | $\color{green}{0.44}$ |
-| silence | $\color{green}{0.08}$ | $\color{green}{0.08}$ | $\color{green}{0.11}$ | $\color{green}{0.07}$ | $\color{green}{0.08}$ | $\color{green}{0.07}$ |
+| music | $\color{green}{0.64}$ | $\color{green}{0.55}$ | $\color{green}{0.89}$ | $\color{green}{0.38}$ | $\color{green}{0.49}$ | $\color{green}{0.82}$ |
+| speech | $\color{green}{0.38}$ | $\color{green}{0.33}$ | $\color{green}{0.50}$ | $\color{green}{0.39}$ | $\color{green}{0.30}$ | $\color{green}{0.42}$ |
+| tone | $\color{green}{0.72}$ | $\color{green}{0.60}$ | $\color{green}{0.98}$ | $\color{green}{0.28}$ | $\color{green}{0.68}$ | $\color{green}{0.81}$ |
+| noise | $\color{green}{0.42}$ | $\color{green}{0.32}$ | $\color{green}{0.53}$ | $\color{green}{0.26}$ | $\color{green}{0.38}$ | $\color{green}{0.43}$ |
+| silence | $\color{green}{0.08}$ | $\color{green}{0.08}$ | $\color{green}{0.11}$ | $\color{green}{0.08}$ | $\color{green}{0.08}$ | $\color{green}{0.07}$ |
 
 ### Bytes a block, this encoder over libFLAC at level 8
 
@@ -548,61 +564,61 @@ a block is 20 ms of sound, so a share of one core is that time over 20 ms.
 
 | Sound | libFLAC 5, µs | This encoder, µs | Time ratio | Of one core | libFLAC 5, bytes | This encoder, bytes | Bytes ratio | Of the PCM |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| music | 35.0 | $\color{green}{11.1}$ | $\color{green}{0.32}$ | 0.06% | 1838 | 1838 | 1.00 | 47.9% |
-| speech | 29.4 | $\color{green}{6.8}$ | $\color{green}{0.23}$ | 0.03% | 1151 | 1151 | 1.00 | 30.0% |
-| tone | 33.3 | $\color{green}{12.1}$ | $\color{green}{0.36}$ | 0.06% | 1008 | $\color{green}{997}$ | $\color{green}{0.99}$ | 26.0% |
-| noise | 33.8 | $\color{green}{7.6}$ | $\color{green}{0.22}$ | 0.04% | 2922 | 2922 | 1.00 | 76.1% |
-| silence | 20.7 | $\color{green}{1.0}$ | $\color{green}{0.05}$ | 0.01% | 16 | 16 | 1.00 | 0.4% |
+| music | 34.2 | $\color{green}{11.2}$ | $\color{green}{0.33}$ | 0.06% | 1838 | 1838 | 1.00 | 47.9% |
+| speech | 29.8 | $\color{green}{6.8}$ | $\color{green}{0.23}$ | 0.03% | 1151 | 1151 | 1.00 | 30.0% |
+| tone | 33.8 | $\color{green}{11.8}$ | $\color{green}{0.35}$ | 0.06% | 1008 | $\color{green}{997}$ | $\color{green}{0.99}$ | 26.0% |
+| noise | 34.4 | $\color{green}{7.4}$ | $\color{green}{0.22}$ | 0.04% | 2922 | 2922 | 1.00 | 76.1% |
+| silence | 20.8 | $\color{green}{1.0}$ | $\color{green}{0.05}$ | 0.01% | 16 | 16 | 1.00 | 0.4% |
 
 ### 44.1 kHz stereo 16-bit, 882 frames a block, 3528 bytes of PCM
 
 | Sound | libFLAC 5, µs | This encoder, µs | Time ratio | Of one core | libFLAC 5, bytes | This encoder, bytes | Bytes ratio | Of the PCM |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| music | 30.9 | $\color{green}{9.3}$ | $\color{green}{0.30}$ | 0.05% | 1702 | 1702 | 1.00 | 48.2% |
-| speech | 26.8 | $\color{green}{5.7}$ | $\color{green}{0.21}$ | 0.03% | 1063 | $\color{red}{1064}$ | 1.00 | 30.1% |
-| tone | 29.6 | $\color{green}{9.6}$ | $\color{green}{0.33}$ | 0.05% | 920 | 920 | 1.00 | 26.1% |
-| noise | 29.9 | $\color{green}{6.0}$ | $\color{green}{0.20}$ | 0.03% | 2686 | 2686 | 1.00 | 76.1% |
-| silence | 19.9 | $\color{green}{0.9}$ | $\color{green}{0.05}$ | 0.00% | 16 | 16 | 1.00 | 0.5% |
+| music | 30.5 | $\color{green}{9.1}$ | $\color{green}{0.30}$ | 0.05% | 1702 | 1702 | 1.00 | 48.2% |
+| speech | 26.7 | $\color{green}{5.5}$ | $\color{green}{0.21}$ | 0.03% | 1063 | $\color{red}{1064}$ | 1.00 | 30.1% |
+| tone | 29.6 | $\color{green}{9.3}$ | $\color{green}{0.31}$ | 0.05% | 920 | 920 | 1.00 | 26.1% |
+| noise | 29.8 | $\color{green}{5.7}$ | $\color{green}{0.19}$ | 0.03% | 2686 | 2686 | 1.00 | 76.1% |
+| silence | 19.4 | $\color{green}{0.9}$ | $\color{green}{0.05}$ | 0.00% | 16 | 16 | 1.00 | 0.5% |
 
 ### 96 kHz stereo 16-bit, 1920 frames a block, 7680 bytes of PCM
 
 | Sound | libFLAC 5, µs | This encoder, µs | Time ratio | Of one core | libFLAC 5, bytes | This encoder, bytes | Bytes ratio | Of the PCM |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| music | 55.2 | $\color{green}{21.6}$ | $\color{green}{0.39}$ | 0.11% | 3454 | 3454 | 1.00 | 45.0% |
-| speech | 45.6 | $\color{green}{12.4}$ | $\color{green}{0.27}$ | 0.06% | 2226 | $\color{red}{2228}$ | 1.00 | 29.0% |
-| tone | 51.1 | $\color{green}{21.6}$ | $\color{green}{0.42}$ | 0.11% | 1651 | $\color{green}{1447}$ | $\color{green}{0.88}$ | 18.8% |
-| noise | 52.7 | $\color{green}{14.2}$ | $\color{green}{0.27}$ | 0.07% | 5830 | 5830 | 1.00 | 75.9% |
+| music | 54.8 | $\color{green}{21.3}$ | $\color{green}{0.39}$ | 0.11% | 3454 | 3454 | 1.00 | 45.0% |
+| speech | 46.3 | $\color{green}{12.5}$ | $\color{green}{0.27}$ | 0.06% | 2226 | $\color{red}{2228}$ | 1.00 | 29.0% |
+| tone | 51.4 | $\color{green}{21.8}$ | $\color{green}{0.42}$ | 0.11% | 1651 | $\color{green}{1447}$ | $\color{green}{0.88}$ | 18.8% |
+| noise | 53.0 | $\color{green}{13.5}$ | $\color{green}{0.26}$ | 0.07% | 5830 | 5830 | 1.00 | 75.9% |
 | silence | 30.9 | $\color{green}{1.8}$ | $\color{green}{0.06}$ | 0.01% | 16 | 16 | 1.00 | 0.2% |
 
 ### 48 kHz mono 16-bit, 960 frames a block, 1920 bytes of PCM
 
 | Sound | libFLAC 5, µs | This encoder, µs | Time ratio | Of one core | libFLAC 5, bytes | This encoder, bytes | Bytes ratio | Of the PCM |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| music | 20.5 | $\color{green}{5.0}$ | $\color{green}{0.24}$ | 0.03% | 950 | 950 | 1.00 | 49.5% |
-| speech | 20.9 | $\color{green}{5.3}$ | $\color{green}{0.25}$ | 0.03% | 1148 | 1148 | 1.00 | 59.8% |
-| tone | 20.1 | $\color{green}{3.9}$ | $\color{green}{0.19}$ | 0.02% | 512 | 512 | 1.00 | 26.7% |
-| noise | 21.0 | $\color{green}{3.7}$ | $\color{green}{0.18}$ | 0.02% | 1468 | 1468 | 1.00 | 76.4% |
-| silence | 16.0 | $\color{green}{0.8}$ | $\color{green}{0.05}$ | 0.00% | 13 | 13 | 1.00 | 0.7% |
+| music | 20.2 | $\color{green}{5.1}$ | $\color{green}{0.25}$ | 0.03% | 950 | 950 | 1.00 | 49.5% |
+| speech | 20.7 | $\color{green}{5.3}$ | $\color{green}{0.26}$ | 0.03% | 1148 | 1148 | 1.00 | 59.8% |
+| tone | 20.1 | $\color{green}{3.6}$ | $\color{green}{0.18}$ | 0.02% | 512 | 512 | 1.00 | 26.7% |
+| noise | 20.7 | $\color{green}{3.5}$ | $\color{green}{0.17}$ | 0.02% | 1468 | 1468 | 1.00 | 76.4% |
+| silence | 15.7 | $\color{green}{0.9}$ | $\color{green}{0.06}$ | 0.00% | 13 | 13 | 1.00 | 0.7% |
 
 ### 48 kHz stereo 8-bit, 960 frames a block, 1920 bytes of PCM
 
 | Sound | libFLAC 5, µs | This encoder, µs | Time ratio | Of one core | libFLAC 5, bytes | This encoder, bytes | Bytes ratio | Of the PCM |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| music | 32.0 | $\color{green}{8.1}$ | $\color{green}{0.25}$ | 0.04% | 456 | 456 | 1.00 | 23.7% |
-| speech | 28.5 | $\color{green}{4.8}$ | $\color{green}{0.17}$ | 0.02% | 250 | $\color{red}{251}$ | 1.00 | 13.1% |
-| tone | 31.6 | $\color{green}{10.9}$ | $\color{green}{0.34}$ | 0.05% | 476 | $\color{green}{470}$ | $\color{green}{0.99}$ | 24.5% |
-| noise | 31.9 | $\color{green}{6.6}$ | $\color{green}{0.21}$ | 0.03% | 1002 | 1002 | 1.00 | 52.2% |
-| silence | 20.4 | $\color{green}{1.0}$ | $\color{green}{0.05}$ | 0.00% | 14 | 14 | 1.00 | 0.7% |
+| music | 31.9 | $\color{green}{7.8}$ | $\color{green}{0.25}$ | 0.04% | 456 | 456 | 1.00 | 23.7% |
+| speech | 28.1 | $\color{green}{4.8}$ | $\color{green}{0.17}$ | 0.02% | 250 | $\color{red}{251}$ | 1.00 | 13.1% |
+| tone | 31.5 | $\color{green}{10.7}$ | $\color{green}{0.34}$ | 0.05% | 476 | $\color{green}{470}$ | $\color{green}{0.99}$ | 24.5% |
+| noise | 32.0 | $\color{green}{6.3}$ | $\color{green}{0.20}$ | 0.03% | 1002 | 1002 | 1.00 | 52.2% |
+| silence | 20.6 | $\color{green}{1.0}$ | $\color{green}{0.05}$ | 0.01% | 14 | 14 | 1.00 | 0.7% |
 
 ### 48 kHz stereo 24-bit, 960 frames a block, 5760 bytes of PCM
 
 | Sound | libFLAC 5, µs | This encoder, µs | Time ratio | Of one core | libFLAC 5, bytes | This encoder, bytes | Bytes ratio | Of the PCM |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| music | 36.5 | $\color{green}{13.8}$ | $\color{green}{0.38}$ | 0.07% | 3763 | $\color{green}{3762}$ | 1.00 | 65.3% |
-| speech | 31.5 | $\color{green}{8.2}$ | $\color{green}{0.26}$ | 0.04% | 2114 | 2114 | 1.00 | 36.7% |
-| tone | 35.6 | $\color{green}{14.2}$ | $\color{green}{0.40}$ | 0.07% | 2321 | $\color{green}{2283}$ | $\color{green}{0.98}$ | 39.6% |
-| noise | 36.0 | $\color{green}{8.5}$ | $\color{green}{0.24}$ | 0.04% | 4842 | 4842 | 1.00 | 84.1% |
-| silence | 21.0 | $\color{green}{1.0}$ | $\color{green}{0.05}$ | 0.00% | 18 | 18 | 1.00 | 0.3% |
+| music | 37.1 | $\color{green}{15.4}$ | $\color{green}{0.42}$ | 0.08% | 3763 | $\color{green}{3762}$ | 1.00 | 65.3% |
+| speech | 33.3 | $\color{green}{8.3}$ | $\color{green}{0.25}$ | 0.04% | 2114 | 2114 | 1.00 | 36.7% |
+| tone | 36.1 | $\color{green}{14.5}$ | $\color{green}{0.40}$ | 0.07% | 2321 | $\color{green}{2283}$ | $\color{green}{0.98}$ | 39.6% |
+| noise | 36.1 | $\color{green}{8.3}$ | $\color{green}{0.23}$ | 0.04% | 4842 | 4842 | 1.00 | 84.1% |
+| silence | 21.2 | $\color{green}{1.0}$ | $\color{green}{0.05}$ | 0.00% | 18 | 18 | 1.00 | 0.3% |
 
 ## The recordings
 
@@ -616,21 +632,21 @@ the three levels.
 
 | Recording | Shape | Time, 5 | Bytes, 5 | Time, 0 | Bytes, 0 | Time, 8 | Bytes, 8 |
 |---|---|---:|---:|---:|---:|---:|---:|
-| Bach, Goldberg Aria, piano | 96 kHz stereo 24-bit | $\color{green}{0.45}$ | 1.00 | $\color{green}{0.98}$ | $\color{green}{0.95}$ | $\color{green}{0.15}$ | 1.00 |
-| Chopin, Fantasy Op. 49, piano | 96 kHz stereo 16-bit | $\color{green}{0.39}$ | 1.00 | $\color{green}{0.86}$ | $\color{green}{0.87}$ | $\color{green}{0.13}$ | $\color{red}{1.01}$ |
-| Shostakovich 5, orchestra, live | 48 kHz stereo 16-bit | $\color{green}{0.36}$ | 1.00 | $\color{green}{0.70}$ | $\color{green}{0.78}$ | $\color{green}{0.12}$ | $\color{red}{1.01}$ |
-| Indie rock, 2022, mastered | 48 kHz stereo 24-bit | $\color{green}{0.42}$ | 1.00 | $\color{green}{0.81}$ | $\color{green}{0.96}$ | $\color{green}{0.14}$ | 1.00 |
-| Mix at −13 LUFS, wide stereo | 44.1 kHz stereo 16-bit | $\color{green}{0.33}$ | 1.00 | $\color{green}{0.59}$ | $\color{green}{0.94}$ | $\color{green}{0.13}$ | 1.00 |
-| Mix at −9 LUFS, loud master | 44.1 kHz stereo 16-bit | $\color{green}{0.33}$ | 1.00 | $\color{green}{0.58}$ | $\color{green}{0.94}$ | $\color{green}{0.14}$ | 1.00 |
-| Limehouse Blues, 1924 78 rpm | 96 kHz stereo 24-bit | $\color{green}{0.46}$ | 1.00 | $\color{green}{0.92}$ | $\color{green}{0.96}$ | $\color{green}{0.16}$ | 1.00 |
-| Prison work song, 1947 field recording | 44.1 kHz stereo 16-bit | $\color{green}{0.32}$ | 1.00 | $\color{green}{0.59}$ | $\color{green}{0.88}$ | $\color{green}{0.13}$ | 1.00 |
-| The Raven, read, produced | 44.1 kHz stereo 16-bit | $\color{green}{0.33}$ | 1.00 | $\color{green}{0.60}$ | $\color{green}{0.78}$ | $\color{green}{0.13}$ | 1.00 |
-| Talk over soft music | 44.1 kHz stereo 16-bit | $\color{green}{0.33}$ | 1.00 | $\color{green}{0.61}$ | $\color{green}{0.87}$ | $\color{green}{0.14}$ | 1.00 |
-| Leviticus 13, read | 44.1 kHz mono 16-bit | $\color{green}{0.23}$ | 1.00 | $\color{green}{0.35}$ | $\color{green}{0.97}$ | $\color{green}{0.16}$ | 1.00 |
-| JFK at Rice, 1962 | 48 kHz stereo 24-bit | $\color{green}{0.30}$ | 1.00 | $\color{green}{0.49}$ | $\color{green}{0.49}$ | $\color{green}{0.11}$ | 1.00 |
-| Train station, field recording | 44.1 kHz stereo 16-bit | $\color{green}{0.31}$ | 1.00 | $\color{green}{0.58}$ | $\color{green}{0.94}$ | $\color{green}{0.13}$ | 1.00 |
-| Pink noise | 48 kHz stereo 24-bit | $\color{green}{0.46}$ | 1.00 | $\color{green}{0.85}$ | $\color{green}{0.99}$ | $\color{green}{0.16}$ | 1.00 |
-| White noise | 48 kHz stereo 24-bit | $\color{green}{0.24}$ | 1.00 | $\color{green}{0.44}$ | $\color{green}{0.99}$ | $\color{green}{0.09}$ | 1.00 |
+| Bach, Goldberg Aria, piano | 96 kHz stereo 24-bit | $\color{green}{0.44}$ | 1.00 | $\color{green}{0.94}$ | $\color{green}{0.95}$ | $\color{green}{0.15}$ | 1.00 |
+| Chopin, Fantasy Op. 49, piano | 96 kHz stereo 16-bit | $\color{green}{0.40}$ | 1.00 | $\color{green}{0.88}$ | $\color{green}{0.87}$ | $\color{green}{0.13}$ | $\color{red}{1.01}$ |
+| Shostakovich 5, orchestra, live | 48 kHz stereo 16-bit | $\color{green}{0.36}$ | 1.00 | $\color{green}{0.71}$ | $\color{green}{0.78}$ | $\color{green}{0.12}$ | $\color{red}{1.01}$ |
+| Indie rock, 2022, mastered | 48 kHz stereo 24-bit | $\color{green}{0.41}$ | 1.00 | $\color{green}{0.79}$ | $\color{green}{0.96}$ | $\color{green}{0.14}$ | 1.00 |
+| Mix at −13 LUFS, wide stereo | 44.1 kHz stereo 16-bit | $\color{green}{0.32}$ | 1.00 | $\color{green}{0.58}$ | $\color{green}{0.94}$ | $\color{green}{0.13}$ | 1.00 |
+| Mix at −9 LUFS, loud master | 44.1 kHz stereo 16-bit | $\color{green}{0.31}$ | 1.00 | $\color{green}{0.56}$ | $\color{green}{0.94}$ | $\color{green}{0.13}$ | 1.00 |
+| Limehouse Blues, 1924 78 rpm | 96 kHz stereo 24-bit | $\color{green}{0.46}$ | 1.00 | $\color{green}{0.95}$ | $\color{green}{0.96}$ | $\color{green}{0.16}$ | 1.00 |
+| Prison work song, 1947 field recording | 44.1 kHz stereo 16-bit | $\color{green}{0.31}$ | 1.00 | $\color{green}{0.58}$ | $\color{green}{0.88}$ | $\color{green}{0.13}$ | 1.00 |
+| The Raven, read, produced | 44.1 kHz stereo 16-bit | $\color{green}{0.32}$ | 1.00 | $\color{green}{0.58}$ | $\color{green}{0.78}$ | $\color{green}{0.13}$ | 1.00 |
+| Talk over soft music | 44.1 kHz stereo 16-bit | $\color{green}{0.32}$ | 1.00 | $\color{green}{0.59}$ | $\color{green}{0.87}$ | $\color{green}{0.13}$ | 1.00 |
+| Leviticus 13, read | 44.1 kHz mono 16-bit | $\color{green}{0.23}$ | 1.00 | $\color{green}{0.34}$ | $\color{green}{0.97}$ | $\color{green}{0.16}$ | 1.00 |
+| JFK at Rice, 1962 | 48 kHz stereo 24-bit | $\color{green}{0.29}$ | 1.00 | $\color{green}{0.49}$ | $\color{green}{0.49}$ | $\color{green}{0.11}$ | 1.00 |
+| Train station, field recording | 44.1 kHz stereo 16-bit | $\color{green}{0.31}$ | 1.00 | $\color{green}{0.57}$ | $\color{green}{0.94}$ | $\color{green}{0.13}$ | 1.00 |
+| Pink noise | 48 kHz stereo 24-bit | $\color{green}{0.44}$ | 1.00 | $\color{green}{0.83}$ | $\color{green}{0.99}$ | $\color{green}{0.16}$ | 1.00 |
+| White noise | 48 kHz stereo 24-bit | $\color{green}{0.23}$ | 1.00 | $\color{green}{0.42}$ | $\color{green}{0.99}$ | $\color{green}{0.09}$ | 1.00 |
 
 ### The block times, libFLAC at level 5
 
@@ -642,21 +658,21 @@ this run's over that.
 
 | Recording | libFLAC, mean µs | This encoder, mean µs | Ratio | The run before, mean µs | Over it | libFLAC, 99th | This encoder, 99th | libFLAC, worst | This encoder, worst | Of one core |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| Bach, Goldberg Aria, piano | 59.6 | $\color{green}{26.9}$ | $\color{green}{0.45}$ | 27.2 | $\color{green}{0.99}$ | 76.7 | $\color{green}{41.0}$ | 172 | $\color{green}{137}$ | 0.13% |
-| Chopin, Fantasy Op. 49, piano | 54.2 | $\color{green}{21.4}$ | $\color{green}{0.39}$ | 20.8 | $\color{red}{1.03}$ | 78.3 | $\color{green}{33.2}$ | 229 | $\color{green}{141}$ | 0.11% |
-| Shostakovich 5, orchestra, live | 34.0 | $\color{green}{12.3}$ | $\color{green}{0.36}$ | 12.3 | 1.00 | 47.7 | $\color{green}{21.4}$ | 145 | $\color{green}{128}$ | 0.06% |
-| Indie rock, 2022, mastered | 38.2 | $\color{green}{16.1}$ | $\color{green}{0.42}$ | 15.7 | $\color{red}{1.03}$ | 50.1 | $\color{green}{31.0}$ | 150 | $\color{green}{123}$ | 0.08% |
-| Mix at −13 LUFS, wide stereo | 31.2 | $\color{green}{10.2}$ | $\color{green}{0.33}$ | 10.4 | $\color{green}{0.98}$ | 42.3 | $\color{green}{18.9}$ | 144 | $\color{green}{111}$ | 0.05% |
-| Mix at −9 LUFS, loud master | 31.4 | $\color{green}{10.2}$ | $\color{green}{0.33}$ | 10.2 | 1.00 | 43.5 | $\color{green}{17.7}$ | 138 | $\color{green}{117}$ | 0.05% |
-| Limehouse Blues, 1924 78 rpm | 62.6 | $\color{green}{28.8}$ | $\color{green}{0.46}$ | 29.9 | $\color{green}{0.97}$ | 80.0 | $\color{green}{41.8}$ | 202 | $\color{green}{137}$ | 0.14% |
-| Prison work song, 1947 field recording | 31.5 | $\color{green}{10.1}$ | $\color{green}{0.32}$ | 10.1 | 1.00 | 49.2 | $\color{green}{17.0}$ | 151 | $\color{green}{114}$ | 0.05% |
-| The Raven, read, produced | 30.6 | $\color{green}{10.2}$ | $\color{green}{0.33}$ | 10.7 | $\color{green}{0.96}$ | 43.7 | $\color{green}{18.0}$ | 145 | $\color{green}{119}$ | 0.05% |
-| Talk over soft music | 31.4 | $\color{green}{10.4}$ | $\color{green}{0.33}$ | 10.2 | $\color{red}{1.02}$ | 45.4 | $\color{green}{18.1}$ | 140 | $\color{green}{114}$ | 0.05% |
-| Leviticus 13, read | 20.0 | $\color{green}{4.6}$ | $\color{green}{0.23}$ | 4.6 | $\color{green}{0.99}$ | 31.5 | $\color{green}{6.7}$ | 130 | $\color{green}{119}$ | 0.02% |
-| JFK at Rice, 1962 | 31.6 | $\color{green}{9.4}$ | $\color{green}{0.30}$ | 9.2 | $\color{red}{1.02}$ | 45.1 | $\color{green}{19.2}$ | 200 | $\color{green}{126}$ | 0.05% |
-| Train station, field recording | 30.6 | $\color{green}{9.6}$ | $\color{green}{0.31}$ | 9.9 | $\color{green}{0.97}$ | 44.1 | $\color{green}{17.2}$ | 153 | $\color{green}{58.0}$ | 0.05% |
-| Pink noise | 37.0 | $\color{green}{17.0}$ | $\color{green}{0.46}$ | 17.0 | 1.00 | 51.9 | $\color{green}{27.8}$ | 173 | $\color{green}{154}$ | 0.08% |
-| White noise | 36.6 | $\color{green}{9.0}$ | $\color{green}{0.24}$ | 8.7 | $\color{red}{1.03}$ | 50.4 | $\color{green}{19.5}$ | 182 | $\color{green}{125}$ | 0.04% |
+| Bach, Goldberg Aria, piano | 59.4 | $\color{green}{26.3}$ | $\color{green}{0.44}$ | 26.9 | $\color{green}{0.98}$ | 76.5 | $\color{green}{40.2}$ | 186 | $\color{green}{137}$ | 0.13% |
+| Chopin, Fantasy Op. 49, piano | 53.9 | $\color{green}{21.4}$ | $\color{green}{0.40}$ | 21.4 | 1.00 | 71.3 | $\color{green}{34.3}$ | 257 | $\color{green}{237}$ | 0.11% |
+| Shostakovich 5, orchestra, live | 34.7 | $\color{green}{12.5}$ | $\color{green}{0.36}$ | 12.3 | $\color{red}{1.02}$ | 53.9 | $\color{green}{23.8}$ | 156 | $\color{green}{123}$ | 0.06% |
+| Indie rock, 2022, mastered | 38.1 | $\color{green}{15.8}$ | $\color{green}{0.41}$ | 16.1 | $\color{green}{0.98}$ | 50.7 | $\color{green}{26.3}$ | 149 | $\color{green}{114}$ | 0.08% |
+| Mix at −13 LUFS, wide stereo | 31.2 | $\color{green}{10.1}$ | $\color{green}{0.32}$ | 10.2 | $\color{green}{0.98}$ | 44.8 | $\color{green}{18.3}$ | 149 | $\color{green}{114}$ | 0.05% |
+| Mix at −9 LUFS, loud master | 31.5 | $\color{green}{9.8}$ | $\color{green}{0.31}$ | 10.2 | $\color{green}{0.96}$ | 47.4 | $\color{green}{17.7}$ | 141 | $\color{green}{119}$ | 0.05% |
+| Limehouse Blues, 1924 78 rpm | 63.4 | $\color{green}{29.3}$ | $\color{green}{0.46}$ | 28.8 | $\color{red}{1.02}$ | 81.0 | $\color{green}{46.5}$ | 195 | $\color{green}{140}$ | 0.15% |
+| Prison work song, 1947 field recording | 31.0 | $\color{green}{9.7}$ | $\color{green}{0.31}$ | 10.1 | $\color{green}{0.96}$ | 44.5 | $\color{green}{17.7}$ | 139 | $\color{green}{121}$ | 0.05% |
+| The Raven, read, produced | 31.0 | $\color{green}{9.8}$ | $\color{green}{0.32}$ | 10.2 | $\color{green}{0.96}$ | 43.8 | $\color{green}{17.3}$ | 188 | $\color{green}{132}$ | 0.05% |
+| Talk over soft music | 30.6 | $\color{green}{9.9}$ | $\color{green}{0.32}$ | 10.4 | $\color{green}{0.96}$ | 43.4 | $\color{green}{18.2}$ | 145 | $\color{green}{118}$ | 0.05% |
+| Leviticus 13, read | 19.5 | $\color{green}{4.5}$ | $\color{green}{0.23}$ | 4.6 | $\color{green}{0.98}$ | 28.3 | $\color{green}{7.2}$ | 144 | $\color{green}{119}$ | 0.02% |
+| JFK at Rice, 1962 | 31.5 | $\color{green}{9.3}$ | $\color{green}{0.29}$ | 9.4 | $\color{green}{0.99}$ | 43.0 | $\color{green}{19.8}$ | 246 | $\color{green}{128}$ | 0.05% |
+| Train station, field recording | 30.3 | $\color{green}{9.4}$ | $\color{green}{0.31}$ | 9.6 | $\color{green}{0.99}$ | 43.1 | $\color{green}{20.7}$ | 140 | $\color{green}{77.3}$ | 0.05% |
+| Pink noise | 37.6 | $\color{green}{16.6}$ | $\color{green}{0.44}$ | 17.0 | $\color{green}{0.98}$ | 54.3 | $\color{green}{27.6}$ | 241 | $\color{green}{136}$ | 0.08% |
+| White noise | 37.1 | $\color{green}{8.5}$ | $\color{green}{0.23}$ | 9.0 | $\color{green}{0.95}$ | 52.8 | $\color{green}{18.5}$ | 266 | $\color{green}{125}$ | 0.04% |
 
 ### The bytes, libFLAC at level 5
 
@@ -666,18 +682,18 @@ before this one, and *over it* this run's over that, to a ten-thousandth.
 | Recording | Seconds | PCM a block | libFLAC, bytes | This encoder, bytes | Ratio | The run before, bytes | Over it | Of the PCM |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
 | Bach, Goldberg Aria, piano | 299 | 11520 | 5312 | $\color{red}{5313}$ | 1.000 | 5313 | 1.0000 | 46.1% |
-| Chopin, Fantasy Op. 49, piano | 738 | 7680 | 2476 | $\color{red}{2478}$ | $\color{red}{1.001}$ | 2478 | $\color{red}{1.0001}$ | 32.3% |
+| Chopin, Fantasy Op. 49, piano | 738 | 7680 | 2476 | $\color{red}{2478}$ | $\color{red}{1.001}$ | 2478 | 1.0000 | 32.3% |
 | Shostakovich 5, orchestra, live | 324 | 3840 | 1498 | $\color{red}{1499}$ | $\color{red}{1.001}$ | 1499 | 1.0000 | 39.0% |
-| Indie rock, 2022, mastered | 223 | 5760 | 4555 | $\color{red}{4557}$ | 1.000 | 4556 | $\color{red}{1.0001}$ | 79.1% |
-| Mix at −13 LUFS, wide stereo | 250 | 3528 | 2325 | $\color{red}{2327}$ | $\color{red}{1.001}$ | 2327 | $\color{red}{1.0002}$ | 66.0% |
-| Mix at −9 LUFS, loud master | 225 | 3528 | 2543 | $\color{red}{2547}$ | $\color{red}{1.001}$ | 2547 | $\color{red}{1.0001}$ | 72.2% |
+| Indie rock, 2022, mastered | 223 | 5760 | 4555 | $\color{red}{4557}$ | 1.000 | 4557 | 1.0000 | 79.1% |
+| Mix at −13 LUFS, wide stereo | 250 | 3528 | 2325 | $\color{red}{2327}$ | $\color{red}{1.001}$ | 2327 | 1.0000 | 66.0% |
+| Mix at −9 LUFS, loud master | 225 | 3528 | 2543 | $\color{red}{2547}$ | $\color{red}{1.001}$ | 2547 | 1.0000 | 72.2% |
 | Limehouse Blues, 1924 78 rpm | 197 | 11520 | 8660 | $\color{green}{8657}$ | 1.000 | 8657 | 1.0000 | 75.1% |
-| Prison work song, 1947 field recording | 252 | 3528 | 1420 | $\color{red}{1421}$ | $\color{red}{1.001}$ | 1421 | $\color{red}{1.0001}$ | 40.3% |
-| The Raven, read, produced | 559 | 3528 | 1362 | $\color{red}{1363}$ | 1.000 | 1363 | $\color{green}{0.9999}$ | 38.6% |
-| Talk over soft music | 181 | 3528 | 1618 | $\color{red}{1620}$ | $\color{red}{1.001}$ | 1620 | $\color{red}{1.0001}$ | 45.9% |
+| Prison work song, 1947 field recording | 252 | 3528 | 1420 | $\color{red}{1421}$ | $\color{red}{1.001}$ | 1421 | 1.0000 | 40.3% |
+| The Raven, read, produced | 559 | 3528 | 1362 | $\color{red}{1363}$ | 1.000 | 1363 | 1.0000 | 38.6% |
+| Talk over soft music | 181 | 3528 | 1618 | $\color{red}{1620}$ | $\color{red}{1.001}$ | 1620 | 1.0000 | 45.9% |
 | Leviticus 13, read | 725 | 1764 | 986 | $\color{red}{987}$ | 1.000 | 987 | 1.0000 | 55.9% |
-| JFK at Rice, 1962 | 836 | 5760 | 1798 | $\color{green}{1797}$ | 1.000 | 1797 | $\color{red}{1.0001}$ | 31.2% |
-| Train station, field recording | 141 | 3528 | 1272 | 1272 | 1.000 | 1272 | $\color{green}{0.9999}$ | 36.1% |
+| JFK at Rice, 1962 | 836 | 5760 | 1798 | $\color{green}{1797}$ | 1.000 | 1797 | 1.0000 | 31.2% |
+| Train station, field recording | 141 | 3528 | 1272 | 1272 | 1.000 | 1272 | 1.0000 | 36.1% |
 | Pink noise | 600 | 5760 | 4901 | $\color{green}{4900}$ | 1.000 | 4900 | 1.0000 | 85.1% |
 | White noise | 600 | 5760 | 5387 | 5387 | 1.000 | 5387 | 1.0000 | 93.5% |
 
@@ -717,11 +733,11 @@ libFLAC is at level 5; the time is one block's, the least of five passes.
 
 | Sound | libFLAC, x86 µs | libFLAC, arm64 µs | This encoder, x86 µs | This encoder, arm64 µs | Ratio, x86 | Ratio, arm64 |
 |---|---:|---:|---:|---:|---:|---:|
-| music | 35.0 | 47.0 | 11.1 | 15.0 | $\color{green}{0.32}$ | $\color{green}{0.32}$ |
-| speech | 29.4 | 39.1 | 6.8 | 9.3 | $\color{green}{0.23}$ | $\color{green}{0.24}$ |
-| tone | 33.3 | 44.8 | 12.1 | 16.2 | $\color{green}{0.36}$ | $\color{green}{0.36}$ |
-| noise | 33.8 | 43.2 | 7.6 | 10.1 | $\color{green}{0.22}$ | $\color{green}{0.23}$ |
-| silence | 20.7 | 23.7 | 1.0 | 1.7 | $\color{green}{0.05}$ | $\color{green}{0.07}$ |
+| music | 34.2 | 47.0 | 11.2 | 15.0 | $\color{green}{0.33}$ | $\color{green}{0.32}$ |
+| speech | 29.8 | 39.1 | 6.8 | 9.3 | $\color{green}{0.23}$ | $\color{green}{0.24}$ |
+| tone | 33.8 | 44.8 | 11.8 | 16.2 | $\color{green}{0.35}$ | $\color{green}{0.36}$ |
+| noise | 34.4 | 43.2 | 7.4 | 10.1 | $\color{green}{0.22}$ | $\color{green}{0.23}$ |
+| silence | 20.8 | 23.7 | 1.0 | 1.7 | $\color{green}{0.05}$ | $\color{green}{0.07}$ |
 
 ### The recordings, run by run
 
@@ -730,21 +746,21 @@ block, and the 99th-percentile block is this encoder's, the least over the passe
 
 | Recording | libFLAC, x86 µs | libFLAC, arm64 µs | This encoder, x86 µs | This encoder, arm64 µs | Ratio, x86 | Ratio, arm64 | 99th, x86 | 99th, arm64 | Time vs 0, x86 | Time vs 0, arm64 |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| Bach, Goldberg Aria, piano | 59.6 | 93.6 | 26.9 | 34.7 | $\color{green}{0.45}$ | $\color{green}{0.37}$ | 41.0 | 51.3 | $\color{green}{0.98}$ | $\color{red}{1.06}$ |
-| Chopin, Fantasy Op. 49, piano | 54.2 | 85.6 | 21.4 | 29.8 | $\color{green}{0.39}$ | $\color{green}{0.35}$ | 33.2 | 44.1 | $\color{green}{0.86}$ | $\color{red}{1.12}$ |
-| Shostakovich 5, orchestra, live | 34.0 | 46.2 | 12.3 | 16.9 | $\color{green}{0.36}$ | $\color{green}{0.37}$ | 21.4 | 24.5 | $\color{green}{0.70}$ | $\color{red}{1.07}$ |
-| Indie rock, 2022, mastered | 38.2 | 53.1 | 16.1 | 20.3 | $\color{green}{0.42}$ | $\color{green}{0.38}$ | 31.0 | 31.5 | $\color{green}{0.81}$ | $\color{red}{1.02}$ |
-| Mix at −13 LUFS, wide stereo | 31.2 | 42.2 | 10.2 | 14.2 | $\color{green}{0.33}$ | $\color{green}{0.34}$ | 18.9 | 21.5 | $\color{green}{0.59}$ | $\color{green}{0.93}$ |
-| Mix at −9 LUFS, loud master | 31.4 | 41.9 | 10.2 | 14.1 | $\color{green}{0.33}$ | $\color{green}{0.34}$ | 17.7 | 18.9 | $\color{green}{0.58}$ | $\color{green}{0.90}$ |
-| Limehouse Blues, 1924 78 rpm | 62.6 | 96.7 | 28.8 | 37.3 | $\color{green}{0.46}$ | $\color{green}{0.39}$ | 41.8 | 52.2 | $\color{green}{0.92}$ | $\color{red}{1.02}$ |
-| Prison work song, 1947 field recording | 31.5 | 41.0 | 10.1 | 13.8 | $\color{green}{0.32}$ | $\color{green}{0.34}$ | 17.0 | 18.8 | $\color{green}{0.59}$ | $\color{green}{0.96}$ |
-| The Raven, read, produced | 30.6 | 41.4 | 10.2 | 14.2 | $\color{green}{0.33}$ | $\color{green}{0.34}$ | 18.0 | 20.7 | $\color{green}{0.60}$ | $\color{green}{0.96}$ |
-| Talk over soft music | 31.4 | 41.1 | 10.4 | 14.2 | $\color{green}{0.33}$ | $\color{green}{0.35}$ | 18.1 | 20.3 | $\color{green}{0.61}$ | $\color{green}{0.96}$ |
-| Leviticus 13, read | 20.0 | 19.4 | 4.6 | 6.3 | $\color{green}{0.23}$ | $\color{green}{0.32}$ | 6.7 | 7.8 | $\color{green}{0.35}$ | $\color{green}{0.69}$ |
-| JFK at Rice, 1962 | 31.6 | 43.1 | 9.4 | 12.0 | $\color{green}{0.30}$ | $\color{green}{0.28}$ | 19.2 | 19.8 | $\color{green}{0.49}$ | $\color{green}{0.64}$ |
-| Train station, field recording | 30.6 | 40.7 | 9.6 | 13.1 | $\color{green}{0.31}$ | $\color{green}{0.32}$ | 17.2 | 17.7 | $\color{green}{0.58}$ | $\color{green}{0.92}$ |
-| Pink noise | 37.0 | 49.9 | 17.0 | 21.1 | $\color{green}{0.46}$ | $\color{green}{0.42}$ | 27.8 | 28.8 | $\color{green}{0.85}$ | $\color{red}{1.07}$ |
-| White noise | 36.6 | 49.4 | 9.0 | 12.4 | $\color{green}{0.24}$ | $\color{green}{0.25}$ | 19.5 | 23.4 | $\color{green}{0.44}$ | $\color{green}{0.63}$ |
+| Bach, Goldberg Aria, piano | 59.4 | 93.6 | 26.3 | 34.7 | $\color{green}{0.44}$ | $\color{green}{0.37}$ | 40.2 | 51.3 | $\color{green}{0.94}$ | $\color{red}{1.06}$ |
+| Chopin, Fantasy Op. 49, piano | 53.9 | 85.6 | 21.4 | 29.8 | $\color{green}{0.40}$ | $\color{green}{0.35}$ | 34.3 | 44.1 | $\color{green}{0.88}$ | $\color{red}{1.12}$ |
+| Shostakovich 5, orchestra, live | 34.7 | 46.2 | 12.5 | 16.9 | $\color{green}{0.36}$ | $\color{green}{0.37}$ | 23.8 | 24.5 | $\color{green}{0.71}$ | $\color{red}{1.07}$ |
+| Indie rock, 2022, mastered | 38.1 | 53.1 | 15.8 | 20.3 | $\color{green}{0.41}$ | $\color{green}{0.38}$ | 26.3 | 31.5 | $\color{green}{0.79}$ | $\color{red}{1.02}$ |
+| Mix at −13 LUFS, wide stereo | 31.2 | 42.2 | 10.1 | 14.2 | $\color{green}{0.32}$ | $\color{green}{0.34}$ | 18.3 | 21.5 | $\color{green}{0.58}$ | $\color{green}{0.93}$ |
+| Mix at −9 LUFS, loud master | 31.5 | 41.9 | 9.8 | 14.1 | $\color{green}{0.31}$ | $\color{green}{0.34}$ | 17.7 | 18.9 | $\color{green}{0.56}$ | $\color{green}{0.90}$ |
+| Limehouse Blues, 1924 78 rpm | 63.4 | 96.7 | 29.3 | 37.3 | $\color{green}{0.46}$ | $\color{green}{0.39}$ | 46.5 | 52.2 | $\color{green}{0.95}$ | $\color{red}{1.02}$ |
+| Prison work song, 1947 field recording | 31.0 | 41.0 | 9.7 | 13.8 | $\color{green}{0.31}$ | $\color{green}{0.34}$ | 17.7 | 18.8 | $\color{green}{0.58}$ | $\color{green}{0.96}$ |
+| The Raven, read, produced | 31.0 | 41.4 | 9.8 | 14.2 | $\color{green}{0.32}$ | $\color{green}{0.34}$ | 17.3 | 20.7 | $\color{green}{0.58}$ | $\color{green}{0.96}$ |
+| Talk over soft music | 30.6 | 41.1 | 9.9 | 14.2 | $\color{green}{0.32}$ | $\color{green}{0.35}$ | 18.2 | 20.3 | $\color{green}{0.59}$ | $\color{green}{0.96}$ |
+| Leviticus 13, read | 19.5 | 19.4 | 4.5 | 6.3 | $\color{green}{0.23}$ | $\color{green}{0.32}$ | 7.2 | 7.8 | $\color{green}{0.34}$ | $\color{green}{0.69}$ |
+| JFK at Rice, 1962 | 31.5 | 43.1 | 9.3 | 12.0 | $\color{green}{0.29}$ | $\color{green}{0.28}$ | 19.8 | 19.8 | $\color{green}{0.49}$ | $\color{green}{0.64}$ |
+| Train station, field recording | 30.3 | 40.7 | 9.4 | 13.1 | $\color{green}{0.31}$ | $\color{green}{0.32}$ | 20.7 | 17.7 | $\color{green}{0.57}$ | $\color{green}{0.92}$ |
+| Pink noise | 37.6 | 49.9 | 16.6 | 21.1 | $\color{green}{0.44}$ | $\color{green}{0.42}$ | 27.6 | 28.8 | $\color{green}{0.83}$ | $\color{red}{1.07}$ |
+| White noise | 37.1 | 49.4 | 8.5 | 12.4 | $\color{green}{0.23}$ | $\color{green}{0.25}$ | 18.5 | 23.4 | $\color{green}{0.42}$ | $\color{green}{0.63}$ |
 
 The bytes a block of this encoder differ between the two runs on speech at 48 kHz stereo 16-bit (1151 against 1151), music at 96 kHz stereo 16-bit (3454 against 3454), tone at 96 kHz stereo 16-bit (1447 against 1481), speech at 48 kHz mono 16-bit (1148 against 1148), speech at 48 kHz stereo 8-bit (251 against 251), noise at 48 kHz stereo 8-bit (1002 against 1006), Bach, Goldberg Aria, piano (5313 against 5313), Chopin, Fantasy Op. 49, piano (2478 against 2478), Indie rock, 2022, mastered (4557 against 4556), Mix at −13 LUFS, wide stereo (2327 against 2327), Mix at −9 LUFS, loud master (2547 against 2547), Prison work song, 1947 field recording (1421 against 1421), The Raven, read, produced (1363 against 1363), Talk over soft music (1620 against 1620), JFK at Rice, 1962 (1797 against 1797), Train station, field recording (1272 against 1272).
 

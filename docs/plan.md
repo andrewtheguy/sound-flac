@@ -21,7 +21,8 @@ desktop to an idle machine and a fifteenth recording was added; and to
 that afternoon, when the open items were planned again from the EPYC's
 own profile, the cells still over libFLAC first, with the arm64 run held
 until the round is called ready, and to that afternoon's end, when the
-first of them, the Rice parameter's estimate, was taken.
+first of them, the Rice parameter's estimate, was taken, and the second,
+the residual's fold and the finest partition sums in one pass.
 The days before that are the count the sessions kept, which ran ahead of
 the machine's clock: by the commits, which that clock stamps in Pacific
 time, all of it ran from the evening of 2026-10-22 to the afternoon of
@@ -103,12 +104,14 @@ the tables' arm64 section is of the run before the round.
 
 ## Where it stands
 
-The tables are of the afternoon of 2026-10-24 on the EPYC, the Rice
-parameter's estimate corrected (under *Measured and taken*), within a
-twentieth of the morning's run on every time and the same bytes but the
-8-bit noise's and the 96 kHz tone's, the recordings 0.23 to 0.46 of
-libFLAC's time; the arm64 section is the morning's, held while the round
-is measured on x86. From the tables of that morning, the encoder of v0.0.8
+The tables are of the afternoon of 2026-10-24 on the EPYC, late in it, the
+Rice parameter's estimate corrected and the residual's fold and finest sums
+made one pass (both under *Measured and taken*), within a twentieth of the
+afternoon's run before it on every time but two made lines the machine's,
+and within a twentieth of the morning's but for those, the same bytes as
+the morning's but the 8-bit noise's and the 96 kHz tone's, the recordings
+0.23 to 0.46 of libFLAC's time; the arm64 section is the morning's, held
+while the round is measured on x86. From the tables of that morning, the encoder of v0.0.8
 unchanged, the x86 run moved from the desktop i5 under WSL2, which was
 never quiet, to an idle KVM machine on an AMD EPYC Rome, and a
 fifteenth recording added, one voice talking over soft music: 0.24 to
@@ -248,33 +251,14 @@ and what is left of it is the Altra's, where the run is unchanged.
 Planned again on the afternoon of 2026-10-24 from the EPYC's own profile,
 under *Where it stands*: the cells still over libFLAC first, then the
 parts of a block the profile puts at a fifth and the late block; the one
-cell in bytes, the 8-bit noise's, was the first item and is taken, below.
+cell in bytes, the 8-bit noise's, was the first item and is taken, below,
+and the partitions' fold and finest sums, the second, after it.
 Each is measured on the EPYC alone, bytes on every made sound and
 recording and time a block against the run before, and taken with the full
 x86 run and the tables; the arm64 run is made once, when the round is
 called ready.
 
-1. **The partitions' machinery, a fifth of a 48 or 96 kHz block**: the
-   fold 4%, the finest sums 5% to 6% and the search over the orders and
-   the parameters 6% to 9%, 19.5% of the orchestra's block, 16% to 17% of
-   the Fantasy's, the made music's, the tone's and pink noise's, 14% of
-   the Aria's and 18% of 24-bit noise's. At 44.1 kHz it is 6% to 7%: a
-   block of 882 frames has one factor of two, so there are two
-   partitionings to try, where 960 has six and 1920 seven. Two levers. The
-   fold writes every folded value and reads them back a partition at a
-   time through a call for each, 32 calls of 30 values at 960; folding and
-   summing each finest partition in the one pass, the sums in 32-bit lanes
-   as now, saves the second read and the calls. The search weighs 63
-   partitions at 960, three costs each, a multiplication and a shift a
-   cost; the cost is convex in the parameter, and the three trials come to
-   one quotient q = sum >> near and two comparisons, the parameter
-   stepping up where count < (q + 1) >> 1 and down where (sum >> (near −
-   1)) − q > count, which is the trials' answer exactly and without a
-   branch, where the walk measured before lost. Measured apart first on
-   1920 residuals at the parameters of 16 and 24 bits, then in the
-   encoder; the same bytes on every line is the test, neither changing a
-   choice.
-2. **The fixed path left out where the fit keeps winning** (the tone's
+1. **The fixed path left out where the fit keeps winning** (the tone's
    time against level 0, 1.01 at 96 kHz on the EPYC and 1.11 to 1.27 past
    44.1 kHz on the Altra, and a part of every recording's block). On the
    side channel of the tone the fit wins by about an eighth of a bit a
@@ -296,7 +280,7 @@ called ready.
    the orchestra's. Bytes first, on every recording and made sound, the
    tones' watched, since the rounding of their coefficients is what the
    fixed path catches there.
-3. **The fourth block, the late block** (1.31 of a carried block on the
+2. **The fourth block, the late block** (1.31 of a carried block on the
    orchestra on the EPYC, 14.3 against 10.9 µs, 1.34 on the Aria, 1.26 on
    the Fantasy, 1.33 on the Raven): its excess over a carried block is the
    third autocorrelation, two more fits and, where the estimates do not
@@ -320,7 +304,7 @@ called ready.
    block, the pair can move mid-cycle on a count rather than only on the
    bound, which is where part of the recordings' 1.001 against libFLAC's
    bytes went.
-4. **The residual of a fit, 14% to 27% of the block**: 14% on the
+3. **The residual of a fit, 14% to 27% of the block**: 14% on the
    orchestra, 16% to 18% at 44.1 kHz and on the Fantasy, 22% on the 1924
    record and 27% on the Aria, where a 24-bit sample's residual runs as
    two 16-bit passes. The 16-bit loop widens each tap and multiplies it
@@ -335,7 +319,7 @@ called ready.
    a copy of the tree: how often a 16-bit stereo recording's side channel
    is 17 bits wide in its samples and takes the split pass, which is where
    the loud masters' time would go.
-5. **The CRC inside the writer's pass** (the frame's CRC 4% to 7% at 16
+4. **The CRC inside the writer's pass** (the frame's CRC 4% to 7% at 16
    bits, 7% to 14% on the 24-bit recordings and noise, 20% of 24-bit
    noise's block): the two chains of table lookups are their loads'
    latency, and they run after the writer, whose own work is a dependent
@@ -347,7 +331,7 @@ called ready.
    chain leaves the load ports idle, which is a measurement, apart on
    frames of 1500 to 8700 bytes and then in the encoder on pink noise and
    the 1924 record.
-6. **The stereo split and the four channels' preparing in one pass**, 8%
+5. **The stereo split and the four channels' preparing in one pass**, 8%
    to 9% of a stereo block: the split writes left, right, mid and side in
    one pass and each channel's `prepare` reads its signal back for the
    wasted bits, the constant check and the width, four passes over what
@@ -358,16 +342,44 @@ called ready.
    header are 13.6% of a 5 µs block, the strided copy being a copy of one
    channel: there the samples can be prepared straight from the block.
    About 3% of a stereo block to measure, the same bytes.
-7. **The autocorrelation**, the largest part at 16 bits, 19% to 23%, is at
+6. **The autocorrelation**, the largest part at 16 bits, 19% to 23%, is at
    the floor the x86-64 baseline sets: 18 floating-point operations on
    every two samples on two ports, with no fused multiply-add at the
    baseline, where the EPYC has one and the Altra uses it. Nothing to take
    short of the users building with `target-cpu`, which is theirs; the
-   third autocorrelation on the fresh block leaves with item 3, and
+   third autocorrelation on the fresh block leaves with item 2, and
    nothing else in the block asks for one.
 
 ## Measured and taken
 
+- **The residual's fold and the finest partition sums in one pass** (the
+  end of the afternoon of 2026-10-24, item 1 of the plan as it stood, the
+  partitions' machinery): the fold wrote every folded value in a pass and
+  the finest sums read them back a partition at a time through a call for
+  each, 32 calls of 30 values at 960; the fixed path copied the order
+  search's residual into the coding first, a pass more. Now each finest
+  partition is folded and summed as it is written, in four lanes of 32 bits
+  where a bound on a folded value, from the sample's width and the fixed
+  order's taps or the fit's coefficients over its shift, says a partition's
+  sum fits one, which a 16-bit stream's always does, and in lanes of 64
+  bits otherwise, and the fixed path folds straight from the scratch. The
+  or-fold that gave the lanes' bound before would have to run inside the
+  pass and cost a seventh of it, 0.25 µs against 0.21 at 960; the bound in
+  hand costs nothing. Apart on the EPYC: 0.21 µs against 0.31 over 960
+  samples, 0.41 against 0.61 over 1920 and 0.11 against 0.21 over the two
+  partitions of 882, the 64-bit lanes 0.26, 0.51 and 0.15. In the encoder,
+  by the machine's counters, 2.4% fewer instructions on the orchestra,
+  2.6% on the talk, 2.3% on pink noise, 1.8% on the Fantasy and 1.6% on
+  the Aria and the 1924 record, the same bytes on every made sound and
+  recording, as a fold must; in the full run 0.95 to 1.02 of the run
+  before's block on the recordings, 0.96 to 0.99 on ten of the fifteen,
+  and 0.94 to 1.02 on the made sounds but two the machine's, the 24-bit
+  music read again six times each build at 13.7 to 13.8 µs on both; the
+  24-bit sounds, whose bound puts some folds in the 64-bit lanes where the
+  or-fold had them in the 32-bit ones, are within the noise. Not taken
+  with it: the parameter's step from
+  the logarithms' difference, the item's second lever, which had been
+  measured slower the same afternoon (under *Measured and not taken*).
 - **The Rice parameter and the partitioning chosen on the estimate less
   the fractions it drops** (the afternoon of 2026-10-24, item 1 of the plan
   as it stood, the 8-bit noise's bytes): `best_param` weighed a parameter
@@ -779,8 +791,8 @@ called ready.
   chooses, the orchestra the 0.013%, the Aria and the Fantasy within
   0.001%; the three trials on the sum find it, and an exact count, a pass
   a trial, would buy nothing a pass could pay for. The 8-bit noise is the
-  one sound where the estimate's floor bias moves a choice, item 1 of the
-  open items.
+  one sound where the estimate's floor bias moves a choice, the item taken
+  on it under *Measured and taken*.
 - **The Rice parameter walked** (2026-10-24, item 1 as it stood): the
   cost of a partition, count times the parameter and one plus the
   quotients, is convex in the parameter, so from the logarithms'
