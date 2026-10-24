@@ -28,7 +28,7 @@ and 30%, silence a microsecond and sixteen bytes: the bytes libFLAC's
 default level makes, in two fifths of its time on music and less than a
 third on speech, and on recordings 0.30 to 0.57 of its time for its bytes
 within 0.2%, all
-from the x86 run kept as `docs/bench/x86.log`, the one the crate's own
+from the x86 run kept as `docs/bench/x86.jsonl`, the one the crate's own
 documentation cites.
 Every shape, made sound and
 recording measured against libFLAC is in

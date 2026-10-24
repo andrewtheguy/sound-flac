@@ -19,23 +19,26 @@ recording's is the least of three passes' mean block, each block timed on
 its own as well, and with it
 the least of the passes' 99th-percentile and worst blocks, the latency a
 stream sees; its bytes are the frames' over the recording, a block's share.
-`tools/tables.py` makes the tables below from the log, and the logs the
-tables are of are kept in `docs/bench/`, so that the next run's recordings
-tables can carry this run beside them as *the run before*:
+`tools/tables.py` makes the tables below from the log, a JSON object a
+line, and the logs the tables are of are kept in `docs/bench/`, so that the
+next run's recordings tables can carry this run beside them as *the run
+before*:
 
 ```sh
 tools/samples.sh copy      # the recordings into tmp/samples, from the store
-cargo run --release --manifest-path tools/bench/Cargo.toml > docs/bench/x86.log
-python3 -I tools/tables.py docs/bench/x86.log
-python3 -I tools/tables.py docs/bench/x86.log arm64=docs/bench/arm64.log   # with an arm64 run's log, its section too
-python3 -I tools/tables.py docs/bench/x86.log arm64=docs/bench/arm64.log windows=docs/bench/windows.log   # and the Windows run's, made on demand
-git show HEAD:docs/bench/x86.log > before.log           # the run before, from the commit before
-python3 -I tools/tables.py docs/bench/x86.log arm64=docs/bench/arm64.log windows=docs/bench/windows.log --before before.log
+cargo run --release --manifest-path tools/bench/Cargo.toml > docs/bench/x86.jsonl
+python3 -I tools/tables.py docs/bench/x86.jsonl
+python3 -I tools/tables.py docs/bench/x86.jsonl arm64=docs/bench/arm64.jsonl   # with an arm64 run's log, its section too
+python3 -I tools/tables.py docs/bench/x86.jsonl arm64=docs/bench/arm64.jsonl windows=docs/bench/windows.jsonl   # and the Windows run's, made on demand
+git show HEAD:docs/bench/x86.jsonl > before.jsonl       # the run before, from the commit before
+python3 -I tools/tables.py docs/bench/x86.jsonl arm64=docs/bench/arm64.jsonl windows=docs/bench/windows.jsonl --before before.jsonl
 ```
 
 In the recordings tables below, *the run before* is the run of the commit
 before this one, made the afternoon of 2026-10-23 with the encoder of
-v0.0.6, whose log that commit carries as `docs/bench/x86.log`. The days
+v0.0.6, whose log that commit carries as `docs/bench/x86.log`, a log of
+`key=value` fields a line as the logs were until they became JSON lines,
+`.jsonl`, which `tools/tables.py` reads alone. The days
 named in this document and in [plan.md](plan.md) before this run, the
 night of 2026-10-23 and 2026-10-24 among them, are the count the sessions
 that made the earlier runs kept, which ran ahead of the machine's clock:
