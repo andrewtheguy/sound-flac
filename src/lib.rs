@@ -55,24 +55,28 @@
 //! it is certainly cheaper. A channel on its own, mono or more than two, is
 //! coded the fit first on every block. The fit is skipped where the block is
 //! noise by the fixed predictors and the last fit was not estimated to win, as
-//! on noise and a quiet desktop. A residual is Rice-coded in the partitions
-//! that cost least. Bits every sample of a channel has zero at the bottom, as
+//! on noise and a quiet desktop, and where the fit, coded beside the fixed
+//! coding, has lost to it by an eighth of a bit a sample two blocks running,
+//! as on 8-bit music, where the fixed coding wins every block; either skip is
+//! for seven blocks and the fit is tried again. A residual is Rice-coded in
+//! the partitions that cost least. Bits every sample of a channel has zero at the bottom, as
 //! 8-bit content in a 16-bit stream does, are shifted out as FLAC's wasted
 //! bits. A channel that is one value is a constant, and one nothing shortens
 //! goes as it is. Every pass over the samples is a plain loop the compiler
 //! vectorises at a target's baseline, the autocorrelation in double precision
-//! in one pass of lanes that stay in registers, the residual of a sample wider
+//! in one pass of lanes that stay in registers, its multiply and add fused
+//! into one instruction where the machine has it, the residual of a sample wider
 //! than 16 bits in two 16-bit passes, and the Rice codes go out four, three or
 //! two to a word as the parameter lets them.
 //!
 //! Measured on 20 ms blocks of 16-bit stereo at 48 kHz, one core of an
 //! i5-8500T: a block of music takes about 17 µs and is 48% of its PCM, speech
-//! 10 µs and 30%, a pure tone 21 µs and 26%, noise 11 µs and 76%, silence
+//! 10 µs and 30%, a pure tone 18 µs and 26%, noise 12 µs and 76%, silence
 //! a microsecond and sixteen bytes. libFLAC at its default level, which this
-//! replaced, took 44, 37, 42, 42 and 25 µs for the same bytes within a tenth
+//! replaced, took 43, 36, 40, 41 and 25 µs for the same bytes within a tenth
 //! of a per cent, and 1% more on the tone. Mono at 48 kHz is 7 µs against
-//! libFLAC's 24, and 44.1 kHz stereo 14 against 39. On recordings, 0.28 to
-//! 0.54 of its time a block for its bytes within 0.2%, the block that
+//! libFLAC's 23, and 44.1 kHz stereo 14 against 37. On recordings, 0.29 to
+//! 0.55 of its time a block for its bytes within 0.2%, the block that
 //! chooses the pair afresh, every fourth, a fifth to a third as long again
 //! as a carried one.
 //!

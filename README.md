@@ -21,12 +21,12 @@ It is tuned for sound heard as it is made: the fixed predictor of the best
 order on every channel, a linear predictor of up to order 8 fitted to each
 and weighed, the cheapest stereo pairing chosen on the four channels' bits
 counted in one partition where the estimates are close, the fit skipped on
-noise, Rice partitions that cost least and
+noise and where it keeps losing, Rice partitions that cost least and
 wasted bits shifted out. On 20 ms blocks of 16-bit stereo at 48 kHz a block
 of music takes about 17 µs of one core and is 48% of its PCM, speech 10 µs
 and 30%, silence a microsecond and sixteen bytes: the bytes libFLAC's
 default level makes, in two fifths of its time on music and less than a
-third on speech, and on recordings 0.28 to 0.54 of its time for its bytes
+third on speech, and on recordings 0.29 to 0.55 of its time for its bytes
 within 0.2%, all
 from the x86 run kept as `docs/bench/x86.jsonl`, the one the crate's own
 documentation cites.

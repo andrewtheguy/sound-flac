@@ -261,7 +261,10 @@ fn mul_add(a: f64, b: f64, c: f64) -> f64 {
 /// lays the nine lags' sums out two to a register, a sample broadcast
 /// against the pairs of samples after it, 18 floating-point operations on
 /// two samples, which is the floor the x86-64 baseline's two ports set:
-/// 1.4 µs at 960 samples, where the two passes of five and four lags this
+/// 1.4 µs at 960 samples, and nine where the multiply and add are one
+/// instruction ([`mul_add`]), as on aarch64, where the Ampere Altra came
+/// from 2.3 µs to about 1.5 and every sounded block to 0.90 to 0.94 of
+/// its time; where the two passes of five and four lags this
 /// replaced, each pair indexed and checked, took 2.4 measured apart and
 /// 2.8 in the encoder. Four lanes a lag were measured no faster, the
 /// floating-point work being the same. Not inlined, so that the nine sums

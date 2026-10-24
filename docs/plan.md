@@ -93,21 +93,21 @@ plan are brought to the run.
 
 ## Where it stands
 
-From the tables of the evening of 2026-10-23, after the fresh block was
-taken up, made again later that evening with the same encoder when the
-logs became JSON lines: 0.28 to 0.54 of libFLAC's time a block on the
-recordings for its bytes within 0.2%, the Aria at its bytes and the
-Fantasy a tenth of a per cent over where they were 0.1% and 0.2%, the
-late blocks 0.21 to 0.58 of its; the made sounds 0.23 to 0.50 for the
-same bytes within two bytes, the pure tone under libFLAC's bytes, 0.90 to
-1.00, where it was 1.02 at 44.1 kHz and 1.05 at 24 bits. A block of a
-recording is 0.03% to 0.22% of one core. The evening's run's libFLAC was
-3% to 15% faster than the afternoon's and this encoder's block within 5%
-of it, so its ratios read about a tenth worse than the afternoon's for a
-change that cost 0% to 4% on arm64, where the controls held; the
-remake's libFLAC was 5% to 17% slower than the evening's in its turn and
-this encoder's block within 4% of it, for no change at all, so the ratios
-read about where the afternoon's did. Where the time goes
+From the tables of late the evening of 2026-10-23, after v0.0.7, with
+the fit skipped where it keeps losing and the autocorrelation's multiply
+and add fused where the machine has the instruction: 0.29 to 0.55 of
+libFLAC's time a block on the recordings for its bytes within 0.2%, the
+late blocks 0.25 to 0.60 of its; the made sounds 0.05 to 0.50 for the
+same bytes within two bytes, the pure tone under libFLAC's bytes, 0.90
+to 1.00. A block of a recording is 0.04% to 0.22% of one core. This
+run's libFLAC was 2% to 11% faster than v0.0.7's run on the recordings
+and this encoder's block within 2% of it there, the x86 build having only
+the skip, which the recordings seldom take, so the ratios read a few
+hundredths worse than v0.0.7's for nothing the encoder did; on the made
+sounds the skip took 8-bit music to 0.65 of its time, the 48 kHz tone to
+0.83 and the mono tone to 0.60. On arm64, where the fused multiply-add
+holds, every sounded block is 0.89 to 0.93 of v0.0.7's run and the
+recordings 0.25 to 0.42 of libFLAC's time. Where the time goes
 at 16-bit stereo, on the orchestra, by the
 parts measured apart: a carried block, three in four, is the two
 autocorrelations with their windowing 3.6 µs, their fits 0.7, the pair's
@@ -122,12 +122,12 @@ autocorrelations, four fits and, where the estimates do not settle the
 pair, the two other channels' residuals and folds in their place, and is
 the late block, by a fifth to a third of a carried one. At 24 bits the fit's residual
 runs as two 16-bit passes at twice the cost, 10 µs of the Aria's 39, and
-the writer takes 6 µs of pink noise's 24. On arm64, the same evening, the
-recordings are 0.25 to 0.45 of libFLAC's time for the same bytes to a
-tenth of a byte, and against level 0 0.98 to 1.22 on the stereo
-recordings where x86 is 0.79 to 1.17. Under Windows, natively on the same
-i5, run on demand the same evening, the encoder's blocks are the WSL
-run's within 5% on the recordings for the same bytes, and libFLAC's
+the writer takes 6 µs of pink noise's 24. On arm64 the recordings are 0.25
+to 0.42 of libFLAC's time for the same bytes to a tenth of a byte, and
+against level 0 0.90 to 1.11 on the stereo recordings where x86 is 0.85
+to 1.09. Under Windows, natively on the same i5, run on demand the same
+evening with the encoder of v0.0.7, that encoder's blocks were that run's
+WSL blocks within 5% on the recordings for the same bytes, and libFLAC's
 levels 5 and 0 within a tenth of theirs either way but five cells, three
 silences and the 1924 record, where its level 8 is slower under Windows,
 by a tenth to a quarter on half of its 44 cells.
@@ -172,7 +172,20 @@ stereo recordings read 0.98 to 1.19 from 0.98 to 1.23 and the made noise
 and speech 0.57 to 0.76. What is left over 1.00 is the wide sample at 96
 kHz, where the fit's two passes over a 24-bit residual are a quarter of
 the block, the long block of 16-bit music, and the tone and 8-bit music,
-where both codings are made on most blocks.
+where both codings were made on most blocks. Late that evening, after
+v0.0.7, the arm64 cells of that column were looked into, 1.08 on 48 kHz
+music and 1.43 on its tone, 1.45 and 1.51 at 8 bits, and found to be the
+machine's, level 0 a fifth faster on the Altra and this encoder the same
+length on both, and the two changes below came of it: the fit skipped on
+8-bit music and the tone's one channel, where it keeps losing, took 8-bit
+music to 0.76 of level 0's time on x86 and 0.82 on arm64 from 1.11 and
+1.45; the autocorrelation fused on aarch64 took every sounded block
+there a tenth down and 48 kHz music under level 0, 0.97 from 1.08. What
+is left over 1.00 is 96 kHz, the long block, 1.11 on its music on both
+machines, the 24-bit four at 1.10 to 1.24 on x86 and 1.02 to 1.07 on
+arm64, and the tone past 44.1 kHz, 1.00 to 1.29 on x86 and 1.01 to 1.27
+on arm64, where the side channel's fit wins by an eighth of a bit and
+both codings are still made.
 
 ## Open items, in order
 
@@ -189,16 +202,7 @@ where both codings are made on most blocks.
    each tap apart; the samples laid out in pairs once a block would let
    each pair of taps be one multiply-add, and would take the carried
    block's two residuals down with the fresh block's four.
-2. **The fixed path at 8 bits.** On 8-bit music the fit is coded alone on
-   almost no carried channel, where at 16 bits it is on half, so both
-   codings are made on nearly every block: 8-bit music is 19 µs a block
-   where 16-bit is 17, and 1.16 of level 0's time where 16-bit is 0.94.
-   The margin a fit must be estimated to win by, an eighth of a bit a
-   sample, is a sixteenth of what an 8-bit sample codes to, and the
-   channel's correction is noisy where the residual is a few values wide;
-   a margin relative to the channel's bits a sample is the item, to be
-   swept as the absolute one was.
-3. **The writer**, about 3.4 µs a block for two 16-bit channels and 6 for
+2. **The writer**, about 3.4 µs a block for two 16-bit channels and 6 for
    two 24-bit ones, the Rice codes grouped by the parameter (below).
    Measured apart on 1920 codes, the work is each code's arithmetic, two
    or three shifts by a variable count at three µops each on the x86-64
@@ -206,7 +210,7 @@ where both codings are made on most blocks.
    remainders and lengths of four codes as arrays, which the compiler
    shifts in one vector, gained nothing over the pairs joined as a tree;
    eight codes a word lost.
-4. **The partitions' search.** A coding's fold is 0.14 µs and its finest
+3. **The partitions' search.** A coding's fold is 0.14 µs and its finest
    sums 0.09 in 32-bit lanes, and the search over the partition orders
    0.4: 63 Rice parameters each tried at three values from the
    logarithms' difference. Dropping the lowest trial cost 1% to 4% of the
@@ -214,7 +218,7 @@ where both codings are made on most blocks.
    more time (below), and stopping the search at the first rise from the
    coarsest order 0.07% on the orchestra, two rises nothing in bytes and
    nothing in time. What is left is the search's own arithmetic.
-5. **The residual of a wide sample.** The fit's residual over 17 to 24 bits
+4. **The residual of a wide sample.** The fit's residual over 17 to 24 bits
    runs as two 16-bit passes at twice the 16-bit pass's time, 10 µs of a
    40 µs block on the Aria. The compiler's loop over four samples pairs
    only the first two taps into one multiply-add and spends three
@@ -224,6 +228,49 @@ where both codings are made on most blocks.
    is left is the instruction set.
 
 ## Measured and taken
+
+- **The fit skipped where it keeps losing** (late the evening of
+  2026-10-23 by the machine's clock, after the v0.0.7 release; item 2 as
+  it stood, the fixed path at 8 bits): the double coding on 8-bit music
+  was not the fixed path's but the fit's. Instrumented, the fixed coding
+  wins every block of 8-bit music and the fit never does, losing by a
+  quarter of a bit a sample while estimated to win by a tenth, the
+  channel's correction at 0.4 to 0.5 making it not clear; so on every
+  block the autocorrelation, the Levinson recursion, the fit's residual
+  and its partitions ran for nothing, 11 µs of a 20 µs block. On one
+  channel of the 48 kHz tone the same, by an eighth to a quarter of a bit.
+  A relative margin, the item as written, would not have touched it: the
+  fit was estimated to win. What was taken is the noise rule widened: a
+  channel whose fit, coded beside the fixed coding, has lost to it by an
+  eighth of a bit a sample two blocks running skips the fit for seven
+  blocks and tries it again. The margin matters: on the recordings the
+  fit loses on a tenth to a quarter of the blocks where both are coded,
+  but mostly within a sixteenth of a bit, and the next block's fit wins;
+  skipping on any loss cost the prison song 0.74% of its bytes and the
+  Raven 0.16%, on a loss past a sixteenth 0.01% to 0.03%, and on a loss
+  past an eighth twice running nothing past 0.01%, with the time the same
+  as on any loss; past a quarter the tone was not caught. Bytes the same
+  on every made sound but 8-bit speech, 0.12%, 0.3 of a byte a block. On
+  arm64, level 0 as the control within 2.6%, 8-bit music came to 0.61 of
+  its time, the mono tone 0.57, the 8-bit tone 0.81, the 48 kHz tone 0.83,
+  8-bit speech 0.71, and every other cell within 0.4%; the recordings
+  within 0.5%, the orchestra 0.97.
+- **The autocorrelation's multiply and add fused** (the same evening,
+  the second lever of the arm64 level 0 cells): the lag loop is `a * b +
+  c` nine times on every two samples, two instructions each at the x86-64
+  baseline, which has no fused multiply-add, and one `fmla` on aarch64,
+  where every core has it, if the code asks for it, which plain `a * b +
+  c` may not, the one rounding differing from the two in the last bit.
+  Through `f64::mul_add` where the target has the instruction, by
+  `cfg!`, and the two operations where it does not, since there the fused
+  form is a library call: on the Ampere Altra every sounded cell came to
+  0.90 to 0.94 of its time, the recordings 0.91 to 0.93, the 99th
+  percentile the same, with the bytes the same on every line, the fit's
+  autocorrelation being the largest part of a block there, 5.2 µs of the
+  48 kHz tone's 21 against 3.9 on the i5. The x86 build is the same code
+  as before. Measured first with the helper under the lag loop's
+  `#[inline(never)]` by mistake, a call a multiply-add, 1.8 times the
+  time: the attribute goes with the loop, not the helper.
 
 - **The four channels counted on the fresh block, the pair chosen on the
   counts** (the evening of 2026-10-23 by the machine's clock, the session

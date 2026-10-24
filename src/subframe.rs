@@ -21,7 +21,9 @@
 //! FLAC's fixed polynomial of the order that leaves the smallest residual,
 //! coded and counted ([`Channel::analyse_fixed`]), is not run; otherwise
 //! both are coded and the better kept, which is also what brings the
-//! correction up to date. A channel not coded on a block is bounded from
+//! correction up to date; a channel whose fit has lost that comparison by
+//! [`LOSS`] a sample [`LOSSES`] blocks running has the fit skipped for
+//! [`SKIPS`] blocks, as a channel of noise has. A channel not coded on a block is bounded from
 //! one pass over its differences ([`Channel::at_most`]). A residual is
 //! Rice-coded in the partitions that cost least.
 //!
