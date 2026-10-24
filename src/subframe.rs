@@ -180,6 +180,9 @@ pub struct Channel {
     predictable: bool,
     /// Whether the last fit weighed was not worth trying.
     fit_declined: bool,
+    /// The blocks in a row the fit, coded beside the fixed coding, has
+    /// lost to it on real bits.
+    lost: u8,
     /// The blocks in a row the fit has been skipped on.
     skipped: u8,
     /// The last fit's and fixed coding's estimated bits, for the corrections.
@@ -198,6 +201,18 @@ pub struct Channel {
 
 /// The blocks in a row a fit is skipped on before it is tried again.
 const SKIPS: u8 = 7;
+/// The blocks in a row a fit must lose to the fixed coding by [`LOSS`] a
+/// sample, both coded, for the fit to be skipped: on 8-bit music and on one
+/// channel of a pure tone the fixed coding wins every block while the fit
+/// is estimated to win by a tenth of a bit a sample, and the fit's whole
+/// path, the autocorrelation, the Levinson recursion, its residual and its
+/// partitions, was half the block.
+const LOSSES: u8 = 2;
+/// The bits a sample a fit must lose by to count as lost: on the recordings
+/// most of the fit's losses are within a sixteenth of a bit a sample and the
+/// next block's fit wins, where on 8-bit music the fit loses by a quarter
+/// of a bit on every block.
+const LOSS: f64 = 1.0 / 8.0;
 
 /// A channel counted in one partition and not yet finished: the fit whose
 /// residual is in the trial, and whether it was estimated to win clearly,
@@ -232,6 +247,7 @@ impl Channel {
             bound: None,
             predictable: false,
             fit_declined: false,
+            lost: 0,
             skipped: 0,
             est_fit: 0.0,
             est_fixed: 0.0,
@@ -414,6 +430,7 @@ impl Channel {
         let over = (bits as f64 - fit.bits()) / self.signal.len() as f64;
         if clear && over <= self.fit_over + SLACK {
             self.fit_over = over;
+            self.lost = 0;
             if bits < self.best.bits {
                 std::mem::swap(&mut self.best, &mut self.trial);
             }
@@ -538,6 +555,7 @@ impl Channel {
             let over = (bits as f64 - fit.bits()) / samples;
             if over <= self.fit_over + SLACK {
                 self.fit_over = over;
+                self.lost = 0;
                 if bits < self.best.bits {
                     std::mem::swap(&mut self.best, &mut self.trial);
                 }
@@ -559,6 +577,7 @@ impl Channel {
         let over = (bits as f64 - self.est_fit) / samples;
         self.fit_over = over;
         self.correction = Some((over - (self.best.bits as f64 - self.est_fixed) / samples).max(0.0));
+        self.lost = if bits as f64 - self.best.bits as f64 >= LOSS * samples { self.lost.saturating_add(1) } else { 0 };
         if bits < self.best.bits {
             std::mem::swap(&mut self.best, &mut self.trial);
         }
@@ -575,7 +594,7 @@ impl Channel {
         if !self.predictable {
             return false;
         }
-        if self.fixed_order == 0 && self.fit_declined && self.skipped < SKIPS {
+        if ((self.fixed_order == 0 && self.fit_declined) || self.lost >= LOSSES) && self.skipped < SKIPS {
             self.skipped += 1;
             return false;
         }
