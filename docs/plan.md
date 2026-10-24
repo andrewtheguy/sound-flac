@@ -96,7 +96,7 @@ plan are brought to the run.
 
 From the tables of the morning of 2026-10-24, the encoder of v0.0.8
 unchanged, the x86 run moved from the desktop i5 under WSL2, which was
-never quiet, to an idle Hyper-V machine on an AMD EPYC Rome, and a
+never quiet, to an idle KVM machine on an AMD EPYC Rome, and a
 fifteenth recording added, one voice talking over soft music: 0.24 to
 0.47 of libFLAC's time a block on the recordings for its bytes within
 0.2%, the late blocks 0.20 to 0.58 of its; the made sounds 0.05 to 0.44

@@ -57,8 +57,9 @@ later still, and this run the morning after, 2026-10-24, which is the
 clock's own day and is named by it from here on.
 
 They were run on 2026-10-24 by the machine's clock, in the morning, on a
-Hyper-V virtual machine with four virtual processors of an AMD EPYC Rome,
-two cores with two threads each and 16 MiB of L3, under Debian 13, one
+KVM virtual machine with four virtual processors of QEMU's EPYC-Rome
+model at 2.8 GHz, two cores with two threads each, the host's own chip
+not shown to it, under Debian 13, one
 thread, nothing else running on it, with rustc 1.98.1 at the x86-64
 baseline (SSE2, no `target-cpu`; the machine has AVX2 and the fused
 multiply-add and the build asks for neither), from the tree of this
