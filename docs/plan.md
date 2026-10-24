@@ -28,7 +28,9 @@ evening, when the fourth, the fourth block's counts spread over the
 cycle, was measured and not taken, and the bar on bytes against time was
 set; and to that night, when by that bar the corrections' refresh was
 halved, the pair's choice measured halved and not taken, and two more
-refusals made on bytes of that size put back among the open items.
+refusals made on bytes of that size put back among the open items; and
+to later that night, when the first of them, the partitions' search
+walked from the coarse end, was measured and taken at three rises.
 The days before that are the count the sessions kept, which ran ahead of
 the machine's clock: by the commits, which that clock stamps in Pacific
 time, all of it ran from the evening of 2026-10-22 to the afternoon of
@@ -114,15 +116,17 @@ the tables' arm64 section is of the run before the round.
 
 ## Where it stands
 
-The tables are of the night of 2026-10-24 on the EPYC, the Rice
-parameter's estimate corrected, the residual's fold and finest sums made
-one pass, the fixed path left out where the fit keeps winning and the
-corrections refreshed every other cycle (all four under *Measured and
+The tables are of the night of 2026-10-24 on the EPYC, its second run,
+the Rice parameter's estimate corrected, the residual's fold and finest
+sums made one pass, the fixed path left out where the fit keeps winning,
+the corrections refreshed every other cycle and the partitions' search
+stopped three orders past the best (all five under *Measured and
 taken*), the recordings 0.22 to 0.44 of libFLAC's time, the 48 kHz tone
 0.30 where the morning had it at 0.35 and 0.61 of level 0's time where it
-had 0.74, the same bytes as the morning's within two tenths of a byte a
-block but the 8-bit noise's and the 96 kHz tone's; the arm64 section is the morning's, held while the round is
-measured on x86. From the tables of that morning, the encoder of v0.0.8
+had 0.74, the same bytes as the morning's within 0.03% on every line but
+the 8-bit noise's and the 96 kHz tone's; the arm64 section is
+the morning's, held while the round is measured on x86. From the tables
+of that morning, the encoder of v0.0.8
 unchanged, the x86 run moved from the desktop i5 under WSL2, which was
 never quiet, to an idle KVM machine on an AMD EPYC Rome, and a
 fifteenth recording added, one voice talking over soft music: 0.24 to
@@ -271,25 +275,16 @@ block falling by a tenth for a mean 4% longer and a tenth of a per cent
 of the bytes, and the bar on bytes against time set then, under *What it
 is for*, brought two refusals back: the corrections' refresh halved,
 measured again that night and taken, under *Measured and taken*, and the
-pair's choice halved, measured with it and not; two more refusals of the
-same kind are the first two items now.
+pair's choice halved, measured with it and not; of the two more refusals
+of the same kind, the partitions' search stopped past the best was
+measured later that night and taken at three orders past, under
+*Measured and taken*, and the other is the first item now.
 Each is measured on the EPYC alone, bytes on every made sound and
 recording and time a block against the run before, and taken with the full
 x86 run and the tables; the arm64 run is made once, when the round is
 called ready.
 
-1. **The partitions' search stopped at the first rise**, measured on
-   2026-10-23 and refused on bytes the bar now allows, under *Measured
-   and not taken*: the sums folded into a pyramid first and the orders
-   walked from the coarsest, stopping at the first order that did not
-   beat the best, took 3% to 12% off a block for 0.07% more bytes on the
-   orchestra, 0.02% on the made speech and 0.01% on the Aria and the
-   rock master; the second-rise form taken instead saved nothing. To be
-   measured again on the EPYC, the search as it is now, from the finest
-   order down with the sums halved as it goes, against the walk from the
-   coarse end, bytes on every line and the time by the machine's
-   counters.
-2. **The fourth block where two channels are one signal**, refused the
+1. **The fourth block where two channels are one signal**, refused the
    same way under *The fresh block weighed on a one-partition count*: on
    the made speech and the 1962 speech, whose left and right are one
    signal, that block codes the three equivalent channels in turn, each
@@ -299,7 +294,7 @@ called ready.
    another pair after the coding only past an eighth of a bit a sample
    the Aria 0.1%. To be measured again, both ways and by the block's
    place in the cycle, on every recording.
-3. **The residual of a fit, 14% to 27% of the block**: 14% on the
+2. **The residual of a fit, 14% to 27% of the block**: 14% on the
    orchestra, 16% to 18% at 44.1 kHz and on the Fantasy, 22% on the 1924
    record and 27% on the Aria, where a 24-bit sample's residual runs as
    two 16-bit passes. The 16-bit loop widens each tap and multiplies it
@@ -314,7 +309,7 @@ called ready.
    a copy of the tree: how often a 16-bit stereo recording's side channel
    is 17 bits wide in its samples and takes the split pass, which is where
    the loud masters' time would go.
-4. **The CRC inside the writer's pass** (the frame's CRC 4% to 7% at 16
+3. **The CRC inside the writer's pass** (the frame's CRC 4% to 7% at 16
    bits, 7% to 14% on the 24-bit recordings and noise, 20% of 24-bit
    noise's block): the two chains of table lookups are their loads'
    latency, and they run after the writer, whose own work is a dependent
@@ -326,7 +321,7 @@ called ready.
    chain leaves the load ports idle, which is a measurement, apart on
    frames of 1500 to 8700 bytes and then in the encoder on pink noise and
    the 1924 record.
-5. **The stereo split and the four channels' preparing in one pass**, 8%
+4. **The stereo split and the four channels' preparing in one pass**, 8%
    to 9% of a stereo block: the split writes left, right, mid and side in
    one pass and each channel's `prepare` reads its signal back for the
    wasted bits, the constant check and the width, four passes over what
@@ -337,7 +332,7 @@ called ready.
    header are 13.6% of a 5 µs block, the strided copy being a copy of one
    channel: there the samples can be prepared straight from the block.
    About 3% of a stereo block to measure, the same bytes.
-6. **The autocorrelation**, the largest part at 16 bits, 19% to 23%, is at
+5. **The autocorrelation**, the largest part at 16 bits, 19% to 23%, is at
    the floor the x86-64 baseline sets: 18 floating-point operations on
    every two samples on two ports, with no fused multiply-add at the
    baseline, where the EPYC has one and the Altra uses it. Nothing to take
@@ -347,6 +342,34 @@ called ready.
 
 ## Measured and taken
 
+- **The partitions' search walked from the coarse end, stopped three
+  orders past the best** (later the night of 2026-10-24, item 1 of the
+  plan as it stood, refused on 2026-10-23 at the first rise for 0.07% of
+  the orchestra's bytes): the finest sums are folded into each coarser
+  partitioning's first, a pyramid after the finest in the sums the fold
+  wrote, and the orders are walked from one partition up, each counted
+  from its sums, until three in a row have not beaten the best, where
+  the search had counted every order from the finest down. The finest
+  order is half the search, so the saving is the blocks whose best is
+  coarse enough to leave it out. Measured on the EPYC against the run
+  before, one, two and three orders past the best: at one, 4% to 6%
+  fewer instructions on the 48 and 96 kHz recordings, the orchestra
+  5.8%, pink noise 5.7%, for 0.26% more bytes on the 1924 record, 0.06%
+  on the orchestra and 0.5% on the made 8-bit speech, 1.3 bytes a block
+  of 251, whose bits over the orders fall again past a rise; at two, 3%
+  to 5% for 0.10% and 0.3%; at three, 2.2% to 4.4%, the 1924 record
+  1.1%, and 2% to 9% off the made 48 and 96 kHz blocks, for 0.03% on the
+  1924 record and a tenth of a byte a block on the 8-bit speech, every
+  other line the same, which is within the bar, so three it is. A block
+  of 882 at 44.1 kHz has two partitionings, one and two, and nothing to
+  skip: every 44.1 kHz line, the six recordings and the made five, is
+  the same to the instruction. In the full run, the night's second: the
+  48 and 96 kHz recordings with sound in them 0.96 to 0.99 of the run
+  before's block, white noise 0.92, the 44.1 kHz recordings and the mono
+  reading 0.97 to 1.04 where libFLAC moves by as much; the made 48 and
+  96 kHz lines 0.88 to 0.98, the 96 kHz music the 0.88; the bytes the
+  same on every line but the two; the recordings 0.22 to 0.44 of level
+  5's block as before and the 99th-percentile block 0.23 to 0.54 of its.
 - **The corrections refreshed every other cycle** (the night of
   2026-10-24, item 1 of the plan as it stood, the first change taken by
   the bar on bytes against time): each channel of the pair has both
@@ -915,7 +938,9 @@ called ready.
 - **The quantization's shift one less where a coefficient clamps**: no
   byte changed on any made sound or recording; the carried rounding
   nearly cancels a clamp's error in the next coefficient. Out.
-- **The partitions' search stopped early** (2026-10-23, afternoon): the
+- **The partitions' search stopped early** (2026-10-23, afternoon; taken
+  on the night of 2026-10-24 at three orders past the best, under
+  *Measured and taken*): the
   sums folded into a pyramid first and the orders walked from the coarsest,
   stopping at the first order that did not beat the best: 3% to 12% of a
   block, for 0.07% more bytes on the orchestra, 0.02% on the made speech
