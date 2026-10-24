@@ -1,8 +1,9 @@
-//! The crate against libFLAC on 20 ms blocks of a desktop's sound, a line a
-//! cell for `tools/tables.py` to make the tables of `docs/benchmarks.md` from:
+//! The crate against libFLAC on 20 ms blocks of a desktop's sound, a JSON
+//! object a line (JSONL) for `tools/tables.py` to make the tables of
+//! `docs/benchmarks.md` from:
 //!
-//!     cargo run --release --manifest-path tools/bench/Cargo.toml > bench.log
-//!     python3 -I tools/tables.py bench.log
+//!     cargo run --release --manifest-path tools/bench/Cargo.toml > bench.jsonl
+//!     python3 -I tools/tables.py bench.jsonl
 //!
 //! Every shape is coded by libFLAC at its default level 5 as v0.0.4 of this
 //! crate ran it, a stream of its own for every frame; by libFLAC at 0, its
@@ -254,9 +255,26 @@ struct Measured {
 }
 
 impl std::fmt::Display for Measured {
+    /// The measurement's members of a line's JSON object, after the sound's.
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "us={:.2} p99={:.2} worst={:.2} worst_at={} bytes={:.1}", self.mean, self.p99, self.worst, self.worst_at, self.bytes)
+        write!(f, "\"us\":{:.2},\"p99\":{:.2},\"worst\":{:.2},\"worst_at\":{},\"bytes\":{:.1}", self.mean, self.p99, self.worst, self.worst_at, self.bytes)
     }
+}
+
+/// A string as a JSON string, quoted and escaped.
+fn json(s: &str) -> String {
+    let mut out = String::with_capacity(s.len() + 2);
+    out.push('"');
+    for c in s.chars() {
+        match c {
+            '"' => out.push_str("\\\""),
+            '\\' => out.push_str("\\\\"),
+            c if (c as u32) < 0x20 => out.push_str(&format!("\\u{:04x}", c as u32)),
+            c => out.push(c),
+        }
+    }
+    out.push('"');
+    out
 }
 
 /// Where a run dumps each block's least time and bytes, `BLOCKS` naming a
@@ -374,7 +392,7 @@ fn main() {
             let samples = signal(shape, 50, kind);
             for (coder_name, coder) in coders(shape).iter_mut().filter(|(n, _)| chosen(n)) {
                 let measured = measure(shape, &samples, coder.as_mut(), 5, 60, dump_path(&format!("{name}-{kind}"), coder_name));
-                println!("shape={name} block={} pcm={} kind={kind} coder={coder_name} {measured}", shape.block(), shape.pcm_bytes());
+                println!("{{\"shape\":{},\"block\":{},\"pcm\":{},\"kind\":{},\"coder\":{},{measured}}}", json(&name), shape.block(), shape.pcm_bytes(), json(kind), json(coder_name));
             }
         }
     }
@@ -395,7 +413,7 @@ fn main() {
         let seconds = samples.len() / shape.samples() / 50;
         for (coder_name, coder) in coders(shape).iter_mut().filter(|(n, _)| chosen(n)) {
             let measured = measure(shape, &samples, coder.as_mut(), 3, 0, dump_path(path.file_stem().unwrap_or_default().to_string_lossy().as_ref(), coder_name));
-            println!("shape={} block={} pcm={} file={file} seconds={seconds} coder={coder_name} {measured}", shape.name(), shape.block(), shape.pcm_bytes());
+            println!("{{\"shape\":{},\"block\":{},\"pcm\":{},\"file\":{},\"seconds\":{seconds},\"coder\":{},{measured}}}", json(&shape.name()), shape.block(), shape.pcm_bytes(), json(&file), json(coder_name));
         }
     }
 }

@@ -94,16 +94,20 @@ plan are brought to the run.
 ## Where it stands
 
 From the tables of the evening of 2026-10-23, after the fresh block was
-taken up: 0.30 to 0.57 of libFLAC's time a block on the recordings for
-its bytes within 0.2%, the Aria now at its bytes and the Fantasy a tenth
-of a per cent over where they were 0.1% and 0.2%, the late blocks 0.23 to
-0.60 of its; the made sounds 0.25 to 0.53 for the same bytes within two
-bytes, the pure tone under libFLAC's bytes, 0.90 to 1.00, where it was
-1.02 at 44.1 kHz and 1.05 at 24 bits. A block of a recording is 0.03% to
-0.22% of one core. This run's libFLAC was 3% to 15% faster than the run
-before's and this encoder's block within 5% of it, so the ratios read
-about a tenth worse than the afternoon's for a change that cost 0% to 4%
-on arm64, where the controls held. Where the time goes
+taken up, made again later that evening with the same encoder when the
+logs became JSON lines: 0.28 to 0.54 of libFLAC's time a block on the
+recordings for its bytes within 0.2%, the Aria at its bytes and the
+Fantasy a tenth of a per cent over where they were 0.1% and 0.2%, the
+late blocks 0.21 to 0.58 of its; the made sounds 0.23 to 0.50 for the
+same bytes within two bytes, the pure tone under libFLAC's bytes, 0.90 to
+1.00, where it was 1.02 at 44.1 kHz and 1.05 at 24 bits. A block of a
+recording is 0.03% to 0.22% of one core. The evening's run's libFLAC was
+3% to 15% faster than the afternoon's and this encoder's block within 5%
+of it, so its ratios read about a tenth worse than the afternoon's for a
+change that cost 0% to 4% on arm64, where the controls held; the
+remake's libFLAC was 5% to 17% slower than the evening's in its turn and
+this encoder's block within 4% of it, for no change at all, so the ratios
+read about where the afternoon's did. Where the time goes
 at 16-bit stereo, on the orchestra, by the
 parts measured apart: a carried block, three in four, is the two
 autocorrelations with their windowing 3.6 µs, their fits 0.7, the pair's
@@ -118,13 +122,15 @@ autocorrelations, four fits and, where the estimates do not settle the
 pair, the two other channels' residuals and folds in their place, and is
 the late block, by a fifth to a third of a carried one. At 24 bits the fit's residual
 runs as two 16-bit passes at twice the cost, 10 µs of the Aria's 39, and
-the writer takes 6 µs of pink noise's 24. On arm64, the same day, the
-recordings are 0.25 to 0.44 of libFLAC's time for the same bytes to a
-tenth of a byte, and against level 0 0.98 to 1.19 on the stereo
-recordings where x86 is 0.78 to 1.13. Under Windows, natively on the same
-i5, run on demand the same day, the encoder's blocks are the WSL run's
-within 6% for the same bytes, and libFLAC's levels within a tenth of
-theirs either way.
+the writer takes 6 µs of pink noise's 24. On arm64, the same evening, the
+recordings are 0.25 to 0.45 of libFLAC's time for the same bytes to a
+tenth of a byte, and against level 0 0.98 to 1.22 on the stereo
+recordings where x86 is 0.79 to 1.17. Under Windows, natively on the same
+i5, run on demand the same evening, the encoder's blocks are the WSL
+run's within 5% on the recordings for the same bytes, and libFLAC's
+levels 5 and 0 within a tenth of theirs either way but five cells, three
+silences and the 1924 record, where its level 8 is slower under Windows,
+by a tenth to a quarter on half of its 44 cells.
 
 ## Against libFLAC's level 0
 

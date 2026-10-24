@@ -1,7 +1,8 @@
-"""The tables of docs/benchmarks.md, from the log of tools/bench:
+"""The tables of docs/benchmarks.md, from the log of tools/bench, a JSON
+object a line (JSONL):
 
-    cargo run --release --manifest-path tools/bench/Cargo.toml > bench.log
-    python3 -I tools/tables.py bench.log [arm64=bench-arm64.log] [windows=bench-windows.log] [--before before.log]
+    cargo run --release --manifest-path tools/bench/Cargo.toml > bench.jsonl
+    python3 -I tools/tables.py bench.jsonl [arm64=bench-arm64.jsonl] [windows=bench-windows.jsonl] [--before before.jsonl]
 
 First, over every shape and made sound, this encoder's time a block and bytes
 a block over libFLAC's at level 5 as v0.0.4 ran it, a table each; then the
@@ -20,12 +21,12 @@ bytes are the same in both. A ratio is this encoder over libFLAC; green is
 this encoder's side of the line, and a ratio of 1.00 is left plain.
 """
 import collections
+import json
 import re
 import sys
 
 SHAPES = ["48k-stereo-16", "44.1k-stereo-16", "96k-stereo-16", "48k-mono-16", "48k-stereo-8", "48k-stereo-24"]
 KINDS = ["music", "speech", "tone", "noise", "silence"]
-FIELD = re.compile(r"(\w+)=(\S+)")
 SEPARATOR = re.compile(r"[\\/]")
 
 # A further run's name on the command line: the name of its section and
@@ -58,13 +59,17 @@ RECORDINGS = [
 def read(path):
     """(shape, kind) -> coder -> its line's fields, and shape -> (block, pcm),
     for the made sounds; and file -> (shape, seconds, coder -> fields) for the
-    recordings, in the order of RECORDINGS. A file is its name alone, without
-    the folders a log's machine put before it, so that two logs' lines meet."""
+    recordings, in the order of RECORDINGS. A line is a JSON object; a blank
+    line is skipped. A file is its name alone, without the folders a log's
+    machine put before it, so that two logs' lines meet."""
     data, shapes, files = collections.defaultdict(dict), {}, {}
-    for line in open(path):
-        f = dict(FIELD.findall(line))
-        if "coder" not in f:
+    for number, line in enumerate(open(path), 1):
+        if not line.strip():
             continue
+        try:
+            f = json.loads(line)
+        except json.JSONDecodeError as e:
+            sys.exit(f"{path}:{number}: not a JSON object a line: {e}")
         numbers = {k: float(f[k]) for k in ("us", "p99", "worst", "bytes") if k in f}
         if "file" in f:
             name = SEPARATOR.split(f["file"])[-1]

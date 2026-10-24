@@ -21,7 +21,8 @@
   a section each from the logs of the same run on an arm64 machine
   (`arm64=`) and natively on the Windows host (`windows=`), and the
   recordings tables' *run before* columns from the log of the commit
-  before; the logs are kept in `docs/bench/`. The x86 and arm64 runs are
+  before; the logs are JSON lines, a JSON object a line, kept in
+  `docs/bench/` as `.jsonl`. The x86 and arm64 runs are
   made again, and the doc's prose and `docs/plan.md` brought to the run,
   when the tuning changes; the Windows run only on demand, and the doc
   says which encoder it was of. The recordings live in the
