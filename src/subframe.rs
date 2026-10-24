@@ -35,7 +35,7 @@
 //! 1.1 through 16-bit lanes, which a side channel takes too where its
 //! samples fit 16 bits, and 1.6 split where they do not, and its partitions
 //! 0.8, of which the fold and the finest sums that count it in one
-//! partition are 0.25; the bound 0.3; the fixed predictor's one-partition
+//! partition are 0.25 on the i5 and 0.21 on the EPYC; the bound 0.3; the fixed predictor's one-partition
 //! count 0.3 at order 0,
 //! 0.22, 0.27 and 0.33 at orders 1 to 3 and 0.54 at order 4, taken as
 //! order 2 twice where one pass of five taps took 0.77; writing a block's
@@ -44,9 +44,14 @@
 //! 960 samples: the four fixed orders in one pass, with the binomial taps
 //! as differences of differences, did not vectorise and took 4.3 µs
 //! against the four passes' 1.1, and the sums alone then the chosen order
-//! 1.2, so the four passes stay; a partition's fold is 0.14 and its finest
-//! sums 0.09 in 32-bit lanes against 0.18 in 64-bit, the search over the
-//! orders 0.4, and stopping that search at the first order that does not
+//! 1.2, so the four passes stay; the fold and the finest sums are one pass
+//! over the finest partitions, on the EPYC 0.21 µs at 960 against 0.31 as
+//! a pass of the fold and then a call a partition over what it wrote, 0.41
+//! against 0.61 at 1920 and 0.11 against 0.21 over the two partitions of
+//! 882, the sums in 32-bit lanes where a bound on the folded value from
+//! the sample's width and the predictor's taps says a partition's fits
+//! one, which a 16-bit stream's always does, and in 64-bit lanes, 0.26 at
+//! 960, where it may not; the search over the orders 0.4, and stopping that search at the first order that does not
 //! win, from the coarsest, cost 0.07% of the orchestra's bytes, at the
 //! second rise no bytes and no time; the one-partition count without its
 //! residual stored was no faster than with it.
@@ -104,7 +109,8 @@ impl Kind {
 /// One way of coding the channel, with everything writing it needs.
 struct Coding {
     kind: Kind,
-    /// The predictor's residual, `signal.len() - order` of them.
+    /// A fit's residual, `signal.len() - order` of them; a fixed
+    /// predictor's is folded from the order search's scratch.
     residual: Vec<i32>,
     /// The residual folded to unsigned, as Rice codes it.
     folded: Vec<u32>,
@@ -658,9 +664,16 @@ impl Channel {
         if !lpc::residual(&self.signal, &predictor, self.width, &mut self.halves, &mut self.trial.residual) {
             return None;
         }
-        let total = fold(&mut self.trial, self.signal.len(), &mut self.sums);
+        // A folded value is at most twice the residual, which is at most
+        // the sample and the prediction, each of the width: the sample
+        // once, the prediction the coefficients' magnitudes over the
+        // shift, rounded up, and one.
+        let coefs: u64 = predictor.coefs[..predictor.order].iter().map(|&c| u64::from(c.unsigned_abs())).sum();
+        let most = (((coefs >> predictor.shift) + 2) << self.width) + 2;
+        let n = self.signal.len();
+        let total = fold(&self.trial.residual, predictor.order, n, most, &mut self.trial.folded, &mut self.sums);
         let order = predictor.order as u64;
-        let (k, rice) = best_param(total, self.signal.len() as u64 - order);
+        let (k, rice) = best_param(total, n as u64 - order);
         let param = if k > MAX_PARAM_4 { 5 } else { 4 };
         Some(self.fit_header(&predictor) + 2 + 4 + param + rice)
     }
@@ -669,7 +682,7 @@ impl Channel {
     /// partitions that cost least: the trial is `fit` coded, and its bits.
     fn search_fit(&mut self, fit: &Candidate) -> u64 {
         let predictor = fit.predictor();
-        let bits = self.fit_header(&predictor) + search(&mut self.trial, self.signal.len(), &mut self.sums, &mut self.params);
+        let bits = self.fit_header(&predictor) + search(&mut self.trial, self.signal.len(), predictor.order, &mut self.sums, &mut self.params);
         self.trial.kind = Kind::Lpc(predictor);
         self.trial.bits = bits;
         bits
@@ -682,15 +695,19 @@ impl Channel {
         self.header() + order * u64::from(self.bps) + 4 + 5 + order * u64::from(predictor.precision)
     }
 
-    /// The fixed predictor of the order found, its residual as the order
-    /// search left it, kept where it beats the coding so far.
+    /// The fixed predictor of the order found, its residual folded from
+    /// where the order search left it, kept where it beats the coding so
+    /// far.
     fn fixed(&mut self) {
         let n = self.signal.len();
         let order = self.fixed_order;
         let residual = if order == 0 { &self.signal[..] } else { &self.scratch[order - 1][..n - order] };
-        self.best.residual.clear();
-        self.best.residual.extend_from_slice(residual);
-        let bits = self.header() + (order as u64) * u64::from(self.bps) + partition(&mut self.best, n, &mut self.sums, &mut self.params);
+        // A folded value is at most twice the residual, which is at most
+        // the sample's width and the order's binomial taps, two to the
+        // order in all.
+        let most = 1u64 << (self.width + order as u32);
+        let header = self.header() + (order as u64) * u64::from(self.bps);
+        let bits = header + partition(residual, order, n, most, &mut self.best, &mut self.sums, &mut self.params);
         if bits < self.best.bits {
             self.best.kind = Kind::Fixed { order };
             self.best.bits = bits;
@@ -764,12 +781,13 @@ impl Channel {
     }
 }
 
-/// Choose the partitioning and the Rice parameters of `coding`'s residual
-/// over a block of `n`, and return the bits the residual coding takes, as
-/// [`search`] returns them.
-fn partition(coding: &mut Coding, n: usize, sums: &mut [u64], params: &mut [u8]) -> u64 {
-    fold(coding, n, sums);
-    search(coding, n, sums, params)
+/// Choose the partitioning and the Rice parameters of `coding` over
+/// `residual`, the `order` samples of a block of `n` short, and return the
+/// bits the residual coding takes, as [`search`] returns them; `most` is
+/// as [`fold`] takes it.
+fn partition(residual: &[i32], order: usize, n: usize, most: u64, coding: &mut Coding, sums: &mut [u64], params: &mut [u8]) -> u64 {
+    fold(residual, order, n, most, &mut coding.folded, sums);
+    search(coding, n, order, sums, params)
 }
 
 /// The finest partitioning of a residual over a block of `n` with `order`
@@ -779,43 +797,97 @@ fn finest(n: usize, order: usize) -> u32 {
     MAX_PARTITION_ORDER.min(n.trailing_zeros()).min((n / (order + 1).max(MIN_PARTITION)).ilog2())
 }
 
-/// Fold `coding`'s residual to unsigned as Rice codes it and sum it over
-/// the finest partitions into `sums`, for [`search`]; returns the sum over
-/// the whole, which is the one partition's.
-fn fold(coding: &mut Coding, n: usize, sums: &mut [u64]) -> u64 {
-    let order = n - coding.residual.len();
-    // Sized first and written through a slice, which the compiler
+/// Fold `residual`, the `order` samples of a block of `n` short, to
+/// unsigned as Rice codes it, into `folded`, and sum it over the finest
+/// partitions into `sums`, for [`search`], a partition at a time in the one
+/// pass, the sums in four lanes of 32 bits where `most`, a bound on a
+/// folded value, times the partition fits one, which a 16-bit stream's
+/// always does, and in lanes of 64 bits otherwise; returns the sum over the
+/// whole, which is the one partition's. The fold was a pass of its own
+/// before, and the sums a call a partition over what it wrote, 32 calls of
+/// 30 values at 960: on the EPYC, over 960 samples, 0.21 µs against 0.31,
+/// over 1920 0.41 against 0.61 and over the two partitions of 882, 0.11
+/// against 0.21; the 64-bit lanes 0.26, 0.51 and 0.15. The lanes chosen
+/// on the values' own bits, or-folded as they are folded, took 0.25 over
+/// 960; the bound in hand costs nothing.
+fn fold(residual: &[i32], order: usize, n: usize, most: u64, folded: &mut Vec<u32>, sums: &mut [u64]) -> u64 {
+    // Sized first and written through slices, which the compiler
     // vectorises where it leaves `extend` scalar.
-    coding.folded.resize(coding.residual.len(), 0);
-    let mut all = 0u32;
-    for (f, &r) in coding.folded.iter_mut().zip(&coding.residual) {
-        *f = zigzag(r);
-        all |= *f;
-    }
+    folded.resize(residual.len(), 0);
     let finest = finest(n, order);
     let parts = 1usize << finest;
     let size = n >> finest;
-    // The finest sums in 32-bit lanes where the largest value times the
-    // partition fits one, which a 16-bit stream's always does, and in 64-bit
-    // lanes where it may not: measured apart over 32 partitions of 30, 0.09
-    // against 0.18 µs, the widening to 64 bits costing more than the adds.
-    let sum: fn(&[u32]) -> u64 = if u64::from(all) * size as u64 <= u64::from(u32::MAX) { narrow_sum } else { wide_sum };
-    for (i, s) in sums[..parts].iter_mut().enumerate() {
-        let start = if i == 0 { 0 } else { i * size - order };
-        *s = sum(&coding.folded[start..(i + 1) * size - order]);
+    if most * size as u64 <= u64::from(u32::MAX) {
+        fold_parts::<u32>(residual, order, size, folded, &mut sums[..parts])
+    } else {
+        fold_parts::<u64>(residual, order, size, folded, &mut sums[..parts])
     }
-    sums[..parts].iter().sum()
+}
+
+/// A lane the finest sums are taken in, of 32 or 64 bits.
+trait Lane: Copy + Default + std::ops::AddAssign {
+    fn lane(folded: u32) -> Self;
+    fn whole(self) -> u64;
+}
+
+impl Lane for u32 {
+    fn lane(folded: u32) -> Self {
+        folded
+    }
+    fn whole(self) -> u64 {
+        u64::from(self)
+    }
+}
+
+impl Lane for u64 {
+    fn lane(folded: u32) -> Self {
+        u64::from(folded)
+    }
+    fn whole(self) -> u64 {
+        self
+    }
+}
+
+/// [`fold`] in lanes of `L`, a partition of `size` into each of `sums`, the
+/// first `order` short.
+#[inline]
+fn fold_parts<L: Lane>(residual: &[i32], order: usize, size: usize, folded: &mut [u32], sums: &mut [u64]) -> u64 {
+    for (i, s) in sums.iter_mut().enumerate() {
+        let start = if i == 0 { 0 } else { i * size - order };
+        let end = (i + 1) * size - order;
+        let (fours, rest) = folded[start..end].as_chunks_mut::<4>();
+        let (from_fours, from_rest) = residual[start..end].as_chunks::<4>();
+        let mut lanes = [L::default(); 4];
+        for (four, from) in fours.iter_mut().zip(from_fours) {
+            for j in 0..4 {
+                let f = zigzag(from[j]);
+                four[j] = f;
+                lanes[j] += L::lane(f);
+            }
+        }
+        let mut total = L::default();
+        for (o, &r) in rest.iter_mut().zip(from_rest) {
+            let f = zigzag(r);
+            *o = f;
+            total += L::lane(f);
+        }
+        for lane in lanes {
+            total += lane;
+        }
+        *s = total.whole();
+    }
+    sums.iter().sum()
 }
 
 /// Choose the partitioning and the Rice parameters of `coding`'s residual,
-/// folded and summed over the finest partitions by [`fold`], and return
-/// the bits the residual coding takes, estimated from the sums less the
-/// fractions the estimate drops ([`best_param`]), which the partitioning
-/// is chosen on as each parameter is: on the 8-bit noise the estimate with
-/// the fractions took two to eight partitions on the side channel for a
-/// gain that was the fractions', where libFLAC took one.
-fn search(coding: &mut Coding, n: usize, sums: &mut [u64], params: &mut [u8]) -> u64 {
-    let order = n - coding.residual.len();
+/// the `order` samples of a block of `n` short, folded and summed over the
+/// finest partitions by [`fold`], and return the bits the residual coding
+/// takes, estimated from the sums less the fractions the estimate drops
+/// ([`best_param`]), which the partitioning is chosen on as each parameter
+/// is: on the 8-bit noise the estimate with the fractions took two to
+/// eight partitions on the side channel for a gain that was the
+/// fractions', where libFLAC took one.
+fn search(coding: &mut Coding, n: usize, order: usize, sums: &mut [u64], params: &mut [u8]) -> u64 {
     let finest = finest(n, order);
     let mut best = (u64::MAX, 0, false);
     for p in (0..=finest).rev() {
@@ -850,36 +922,6 @@ fn search(coding: &mut Coding, n: usize, sums: &mut [u64], params: &mut [u8]) ->
 #[inline]
 fn zigzag(r: i32) -> u32 {
     ((r << 1) ^ (r >> 31)) as u32
-}
-
-/// The sum of `values`, each at most `u32::MAX / values.len()`, in four
-/// lanes of 32 bits.
-#[inline]
-fn narrow_sum(values: &[u32]) -> u64 {
-    let (fours, rest) = values.as_chunks::<4>();
-    let mut lanes = [0u32; 4];
-    for four in fours {
-        for (lane, &v) in lanes.iter_mut().zip(four) {
-            *lane += v;
-        }
-    }
-    u64::from(lanes.iter().sum::<u32>()) + rest.iter().map(|&v| u64::from(v)).sum::<u64>()
-}
-
-/// The sum of `values` whatever they are, in four lanes of 64 bits. Lanes of
-/// 32 bits over blocks of 32 were tried first: a partition of a 20 ms block
-/// is 30 or 60 samples, which never fills a block of 32, and the sum went
-/// scalar.
-#[inline]
-fn wide_sum(values: &[u32]) -> u64 {
-    let (fours, rest) = values.as_chunks::<4>();
-    let mut lanes = [0u64; 4];
-    for four in fours {
-        for (lane, &v) in lanes.iter_mut().zip(four) {
-            *lane += u64::from(v);
-        }
-    }
-    lanes.iter().sum::<u64>() + rest.iter().map(|&v| u64::from(v)).sum::<u64>()
 }
 
 /// The sum of the magnitudes of `values`, in eight lanes over blocks of 64:
@@ -1244,7 +1286,7 @@ mod tests {
         assert!(matches!(ch.best.kind, Kind::Lpc(_)), "{:?}", ch.best.kind);
         assert!(ch.best.bits * 5 < fixed * 4, "fitted {} against fixed {fixed}", ch.best.bits);
         assert!(ch.best.bits <= ch.coarse() && ch.coarse() * 10 <= ch.best.bits * 11, "counted {} against fitted {}", ch.coarse(), ch.best.bits);
-        assert_eq!(ch.best.residual.len() + ch.best.kind.order(), n);
+        assert_eq!(ch.best.folded.len() + ch.best.kind.order(), n);
 
         let mut ch = Channel::new(n, 10);
         let mut state = 0x9E37_79B9u32;
