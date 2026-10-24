@@ -23,7 +23,10 @@ own profile, the cells still over libFLAC first, with the arm64 run held
 until the round is called ready, and to that afternoon's end, when the
 first of them, the Rice parameter's estimate, was taken, and the second,
 the residual's fold and the finest partition sums in one pass, and the
-third, the fixed path left out where the fit keeps winning.
+third, the fixed path left out where the fit keeps winning; and to that
+evening, when the fourth, the fourth block's counts spread over the
+cycle, was measured and not taken, and the bar on bytes against time was
+set.
 The days before that are the count the sessions kept, which ran ahead of
 the machine's clock: by the commits, which that clock stamps in Pacific
 time, all of it ran from the evening of 2026-10-22 to the afternoon of
@@ -57,7 +60,11 @@ the block is whole and sent. That is the one use, and it sets what counts.
   the PCM on acoustic music and speech, 69% on a loud modern master at
   16 bits and 79% at 24, 75% to 95% on noise and old transfers. Fewer
   is better everywhere, and worth more than time: the time is already not
-  felt.
+  felt. But not at any rate: a hundredth or two of a per cent of the
+  bytes is not a reason against a few per cent of the time, the mean or
+  the late block, and a change that costs that for that is taken (set on
+  the evening of 2026-10-24, when two earlier refusals on 0.02% of the
+  bytes for 2.5% of the mean and on 0.05% were found wrong by it).
 - **The shapes are the users'.** wlshare codes 8-bit and 16-bit at 8 to
   96 kHz, zDesk 16-bit at 44.1 kHz; the crate takes 4 to 24 bits, 1 to 8
   channels. The tables cover 44.1, 48 and 96 kHz, mono and stereo, 8, 16
@@ -255,36 +262,30 @@ under *Where it stands*: the cells still over libFLAC first, then the
 parts of a block the profile puts at a fifth and the late block; the one
 cell in bytes, the 8-bit noise's, was the first item and is taken, below,
 the partitions' fold and finest sums, the second, after it, and the fixed
-path left out where the fit keeps winning, the third, after that.
+path left out where the fit keeps winning, the third, after that; the
+fourth, the fourth block's counts spread over the cycle, was measured
+that evening and not taken, under *Measured and not taken*, the late
+block falling by a tenth for a mean 4% longer and a tenth of a per cent
+of the bytes, and the bar on bytes against time set then, under *What it
+is for*, brings two refusals back as the first item.
 Each is measured on the EPYC alone, bytes on every made sound and
 recording and time a block against the run before, and taken with the full
 x86 run and the tables; the arm64 run is made once, when the round is
 called ready.
 
-1. **The fourth block, the late block** (1.31 of a carried block on the
-   orchestra on the EPYC, 14.3 against 10.9 µs, 1.34 on the Aria, 1.26 on
-   the Fantasy, 1.33 on the Raven): its excess over a carried block is the
-   third autocorrelation, two more fits and, where the estimates do not
-   settle the pair, the two other channels' residuals and folds, about
-   0.9, 0.5 and 1.8 µs on the orchestra. The excess can leave the block:
-   each of the two carried blocks before it codes the pair as now and
-   counts one of the two other channels besides, autocorrelation, fit and
-   the one-partition count, so that at the fresh block every channel has
-   real bits from the block before or the one before that, the pair's from
-   its coding; the pair is chosen on those at the start of the block, with
-   no work of its own, and coded as a carried block codes it. The late
-   block then falls to a carried block and a count, about 1.15 of a
-   carried one, and the mean stands. The counts are a block or two old
-   where the fresh block's were of the block itself: the pair carried
-   three blocks was measured to cost 0.00% to 0.09% of the bytes, and this
-   is a choice a block late, so under that, to be measured on every
-   recording; on the pianos, where left and right against mid and side are
-   within a twentieth of a bit a sample and the choice hops, a hop costs
-   nothing in time here where the fresh block coded it, so the margin on
-   a move can be none. With a third channel's count in hand on the third
-   block, the pair can move mid-cycle on a count rather than only on the
-   bound, which is where part of the recordings' 1.001 against libFLAC's
-   bytes went.
+1. **The two schedules halved**, each measured before and refused on
+   bytes the bar now allows: the corrections refreshed every other
+   cycle, both codings made on each channel of the pair once in eight
+   blocks rather than four, measured at 0.02% of the orchestra's bytes
+   for 2.5% of the mean with the late block the same; and the pair
+   chosen every eighth block rather than fourth, measured on the
+   recordings at the same bytes within 0.05%, which halves the blocks
+   that carry the choice's excess, 1.3 of a carried block, so the mean
+   falls by about 3% on the pianos and the orchestra and the late block,
+   which is still that block, comes half as often. Each to be measured
+   again apart and together on every recording, bytes and the time by
+   the block's place in the cycle, and taken where the bytes stay within
+   a few hundredths of a per cent.
 2. **The residual of a fit, 14% to 27% of the block**: 14% on the
    orchestra, 16% to 18% at 44.1 kHz and on the Fantasy, 22% on the 1924
    record and 27% on the Aria, where a 24-bit sample's residual runs as
@@ -328,8 +329,8 @@ called ready.
    every two samples on two ports, with no fused multiply-add at the
    baseline, where the EPYC has one and the Altra uses it. Nothing to take
    short of the users building with `target-cpu`, which is theirs; the
-   third autocorrelation on the fresh block leaves with item 1, and
-   nothing else in the block asks for one.
+   third autocorrelation on the fresh block comes half as often with
+   item 1, and nothing else in the block asks for one.
 
 ## Measured and taken
 
@@ -615,7 +616,9 @@ called ready.
   codings on the fourth block instead of the carried ones left the fourth
   block where it was, 26.4 on the orchestra; refreshing every other cycle
   cost the orchestra 0.02% for 2.5% of the mean and left the late block the
-  same, and was not taken. Where two channels are one signal the fourth
+  same, and was not taken then, a refusal the bar of 2026-10-24 under
+  *What it is for* overturns (open item 1). Where two channels are one
+  signal the fourth
   block codes the three equivalent channels in turn, each coming out over
   its estimate as the fit's saving is overstated; taking the channel's
   correction off its saving when weighing cost the Raven 0.05% and the
@@ -791,6 +794,46 @@ called ready.
 
 ## Measured and not taken
 
+- **The fourth block's counts spread over the cycle** (the evening of
+  2026-10-24, item 1 of the plan as it stood, the late block): in place
+  of the block that counts all four channels and chooses the pair on the
+  counts, every block coded the pair as a carried block does, one of the
+  two other channels was counted besides on each of the two blocks
+  before the choice, autocorrelation, fit, the fit's residual folded and
+  counted in one partition and the fixed predictor's where the fit was
+  not clear, what a channel last cost in one partition was kept across
+  blocks, and the pair was chosen on those four counts at the start of
+  its block, with the first block of a stream counting all four.
+  Measured on the EPYC against the run before, every block dumped and
+  read by its place in the cycle: the late block fell, the Aria's from
+  30.9 µs to 28.1 against a carried block of 24.2, the 1924 record's
+  from 32.1 to 30.5 against 26.8, the orchestra's from 13.7 to 12.6
+  against 11.2, the Raven's from 11.4 to 10.4 against 8.9, and the p99
+  with it, the Aria 43.5 to 42.5, the 1924 record 44.4 to 41.2, the
+  orchestra 21.7 to 20.0, the JFK 15.4 to 12.0; but a count is the
+  channel's
+  autocorrelation, fit, residual and fold, 1.5 µs on speech and 3.6 on
+  the Aria, nearly the channel's whole coding, and the choosing block
+  had been coding the pair from the counts' own residuals, which a
+  carried coding does over: a cycle took one more autocorrelation, the
+  mid's having followed from the other three's, and two more residuals,
+  and the mean rose 3% to 5% on every stereo recording, 25.3 to 26.3 µs
+  on the Aria, 9.4 to 9.7 on the Raven, and 9% to 13% on the made stereo
+  music and speech, whose estimates had settled the pair with no count
+  at all; the choice a block late cost 0.03% to 0.15% of the bytes, the
+  Aria 1.6 bytes a block of 5313, the 1924 record 12.4 of 8657, the
+  orchestra 1.0 of 1500, the talk 2.4 of 1620, the loud master 3.4 of
+  2547; and the first block of a
+  stream, counting all four and coding the pair, was half as long again,
+  16 to 23 µs on the made music, which a 50-block made sound's p99
+  reads. A second schedule, the choosing block counting the second other
+  channel itself so that nothing the choice read was older than a block,
+  cost the same bytes or more, the Aria 3.6 bytes, the talk 4.1: the
+  cost is the choice made on the block before, not the counts' age. Out,
+  the late block being worth a tenth less and the mean 4% more, with the
+  bytes against it too; the late block's excess over a carried block is
+  the two other channels' counts, which cannot leave the block without
+  being made again.
 - **The Rice parameter stepped from the logarithms' difference**, once
   more (the same afternoon, with the correction): the corrected cost's
   convexity gives the step up or down from one quotient and two
