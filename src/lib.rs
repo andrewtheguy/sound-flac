@@ -69,16 +69,17 @@
 //! than 16 bits in two 16-bit passes, and the Rice codes go out four, three or
 //! two to a word as the parameter lets them.
 //!
-//! Measured on 20 ms blocks of 16-bit stereo at 48 kHz, one core of an
-//! i5-8500T: a block of music takes about 17 µs and is 48% of its PCM, speech
-//! 10 µs and 30%, a pure tone 18 µs and 26%, noise 12 µs and 76%, silence
-//! a microsecond and sixteen bytes. libFLAC at its default level, which this
-//! replaced, took 43, 36, 40, 41 and 25 µs for the same bytes within a tenth
-//! of a per cent, and 1% more on the tone. Mono at 48 kHz is 7 µs against
-//! libFLAC's 23, and 44.1 kHz stereo 14 against 37. On recordings, 0.29 to
-//! 0.55 of its time a block for its bytes within 0.2%, the block that
-//! chooses the pair afresh, every fourth, a fifth to a third as long again
-//! as a carried one.
+//! Measured on 20 ms blocks of 16-bit stereo at 48 kHz, one core of an AMD
+//! EPYC Rome at the x86-64 baseline: a block of music takes about 11 µs and
+//! is 48% of its PCM, speech 7 µs and 30%, a pure tone 12 µs and 26%, noise
+//! 7 µs and 76%, silence a microsecond and sixteen bytes. libFLAC at its
+//! default level, which this replaced, took 34, 31, 32, 33 and 21 µs for the
+//! same bytes within a tenth of a per cent, and 1% more on the tone. Mono at
+//! 48 kHz is 5 µs against libFLAC's 20, and 44.1 kHz stereo 9 against 30. On
+//! recordings, 0.24 to 0.47 of its time a block for its bytes within 0.2%,
+//! the block that chooses the pair afresh, every fourth, a quarter to a
+//! third as long again as a carried one. On the i5-8500T of the runs before
+//! every block of this encoder's was half as long again, libFLAC's a quarter.
 //!
 //! Nothing about a wire is here: how a frame is framed in a message, how the
 //! stream's shape is agreed and what a sample's bytes are on either side belong

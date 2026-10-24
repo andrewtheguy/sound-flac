@@ -18,17 +18,18 @@
   `tools/bench` measures the crate against libFLAC as v0.0.4 linked it, on
   made sounds and on the recordings of `tools/samples.txt`, and
   `tools/tables.py` makes the tables of `docs/benchmarks.md` from its log,
-  a section each from the logs of the same run on an arm64 machine
-  (`arm64=`) and natively on the Windows host (`windows=`), and the
-  recordings tables' *run before* columns from the log of the commit
-  before; the logs are JSON lines, a JSON object a line, kept in
-  `docs/bench/` as `.jsonl`. The x86 and arm64 runs are
-  made again, and the doc's prose and `docs/plan.md` brought to the run,
-  when the tuning changes; the Windows run only on demand, and the doc
-  says which encoder it was of. The recordings live in the
-  artifact store (`tools/samples.sh fetch`, once) and are copied to the
-  gitignored `tmp/samples` for a run (`tools/samples.sh copy`); nothing in
-  the repository holds one, and the store is read, never written by a run.
+  a section of its own from the log of the same run on an arm64 machine
+  (`arm64=`), and the recordings tables' *run before* columns from the
+  log of the commit before; the logs are JSON lines, a JSON object a
+  line, kept in `docs/bench/` as `.jsonl`. The x86 run is made on an idle
+  Linux amd64 host over ssh, never on the desktop the session runs on,
+  and the arm64 run on the arm64 build box, both named in the gitignored
+  `CLAUDE.local.md`; both are made again, and the doc's prose and
+  `docs/plan.md` brought to the run, when the tuning changes. The
+  recordings live in the artifact store (`tools/samples.sh fetch`, once)
+  and are copied to the gitignored `tmp/samples` for a run
+  (`tools/samples.sh copy`); nothing in the repository holds one, and the
+  store is read, never written by a run.
 - After changes run `cargo test` and `cargo clippy --all-targets -- -D warnings`.
   The encoder gets an independent decoder in its tests, symphonia's, which reads
   every frame back bit for bit.
