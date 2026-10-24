@@ -33,15 +33,15 @@ git show HEAD:docs/bench/x86.jsonl > before.jsonl       # the run before, from t
 python3 -I tools/tables.py docs/bench/x86.jsonl arm64=docs/bench/arm64.jsonl --before before.jsonl
 ```
 
-In the recordings tables below, *the run before* is the first of the night's
-runs of 2026-10-24 on this machine, each channel of a pair having both
-codings made once in eight blocks rather than four, whose log the commit
+In the recordings tables below, *the run before* is the second of the night's
+runs of 2026-10-24 on this machine, the Rice partitions' search walked from
+one partition up and stopped three orders past the best, whose log the commit
 before this one carries as `docs/bench/x86.jsonl`; this run, the night's
-second, is the same machine with one change in the encoder, the Rice
-partitions' search walked from one partition up and stopped three orders
-past the best ([plan.md](plan.md), the second change taken by its bar on
-bytes against time), so the *run before* columns compare the two encoders
-like for like, on one machine.
+third, is the same machine with one change in the encoder, the block whose
+side channel is one value, the two channels being one signal, carried instead
+of chosen on ([plan.md](plan.md), the third change taken by its bar on bytes
+against time), so the *run before* columns compare the two encoders like for
+like, on one machine.
 The x86 run moved to this machine with the morning's run: every run before
 that one was made on the desktop, a six-core Intel i5-8500T under WSL2, which
 was never quiet, the session that started the run and the system under it
@@ -58,51 +58,52 @@ Pacific time, the run of v0.0.5 was made at noon on 2026-10-23, the run of
 v0.0.6 that afternoon, the run of v0.0.7 later that evening and the run of
 v0.0.8 later still, the morning's run on 2026-10-24, which is the clock's own
 day and is named by it from there on, the afternoon's run with the Rice
-parameter, the one after it with the fold, the third with the fixed path
-left out, the night's first with the refresh halved, and this run after
-that.
+parameter, the one after it with the fold, the third with the fixed path left
+out, the night's first with the refresh halved, the second with the
+partitions' search stopped past the best, and this run after that.
 
-They were run on 2026-10-24 by the machine's clock, at night, on a KVM
-virtual machine with four virtual processors of QEMU's
-EPYC-Rome model at 2.8 GHz, two cores with two threads each, the host's own
-chip not shown to it, under Debian 13, one thread, nothing else running on it,
-with rustc 1.98.1 at the x86-64 baseline (SSE2, no `target-cpu`; the machine
-has AVX2 and the fused multiply-add and the build asks for neither), from the
-tree of this commit copied over, the recordings in place from the morning: the
-encoder of v0.0.8 with the Rice parameter's estimate corrected, the residual's
-fold made one pass, the fixed path left out where the fit keeps winning, the
-corrections refreshed every other cycle and the partitions' search stopped
-three orders past the best. Against the run before this encoder's block is
-0.92 to 1.04 of its on the recordings: 0.96 to 0.99 on the 48 and 96 kHz
-recordings with sound in them, the orchestra the 0.96, the Fantasy and the
-1962 speech 0.97 and the Aria 0.98, 0.92 on white noise, and 0.97 to 1.04 on
-the 44.1 kHz recordings and the mono reading, whose block of 882 has two
-partitionings and nothing for the change to skip, the private wide mix the
-1.04 on a line where libFLAC's level 5 reads 0.98, the private loud master
-1.01 and the private talk 0.97 where it reads 0.92, the machine's; on the made sounds 0.88 to 0.98 at 48 and 96 kHz, the
-96 kHz music the 0.88, and 0.96 to 1.01 at 44.1 kHz; libFLAC's level 5 is
-0.91 to 1.04 of the run before's, its level 0 0.90 to 1.03 and its level 8
-0.93 to 1.05; the bytes are the run before's on every line of the three
-libFLAC coders and on every line of this encoder but two, the 1924 record
-2.7 bytes a block over of 8657, 0.03%, and the made 8-bit speech a tenth of a
-byte. By the machine's own counters, which the virtual machine shows, the
-change is 2.2% to 4.4% fewer instructions on the 48 and 96 kHz recordings,
-the orchestra 3.5%, the Aria 3.4%, the Fantasy 4.1%, the 1962 speech 2.2%,
-pink noise 4.4% and the 1924 record 1.1%, and none on the 44.1 kHz ones, the
-private wide mix, loud master and talk, the Raven, the prison song and the
-train station.
-A time ratio within a twentieth of 1.00 is on the line; a bytes ratio is exact.
-A worst block is one block of thousands and the machine's as much as the
-encoder's, even as the least over passes, so it is read as an order of
-magnitude; on this machine it is 103 to 146 µs on every recording for this
-encoder, the mono reading's 27 times its mean block, which is the virtual
-machine's tick and not the sound, where libFLAC's is 131 to 210. The bench
-also logs `worst_at`, the block that was slowest at its least over the passes,
-and dumps every block's least time and bytes when asked (`BLOCKS=dir`), which
-is how the late blocks below were read, in the morning's run; every pass
-starts from an encoder that has seen no block, so that what the encoder
-carries from block to block, the fourth-block choice, falls on the same blocks
-in every pass and the least over the passes is the block's own.
+They were run on 2026-10-24 by the machine's clock, at night, on a KVM virtual
+machine with four virtual processors of QEMU's EPYC-Rome model at 2.8 GHz, two
+cores with two threads each, the host's own chip not shown to it, under Debian
+13, one thread, nothing else running on it, with rustc 1.98.1 at the x86-64
+baseline (SSE2, no `target-cpu`; the machine has AVX2 and the fused multiply-
+add and the build asks for neither), from the tree of this commit copied over,
+the recordings in place from the morning: the encoder of v0.0.8 with the Rice
+parameter's estimate corrected, the residual's fold made one pass, the fixed
+path left out where the fit keeps winning, the corrections refreshed every
+other cycle, the partitions' search stopped three orders past the best and the
+block whose side is one value carried. Against the run before this encoder's
+block is 0.82 of its on the 1962 speech, whose left and right are one signal
+on every block, the change, 7.2 µs where it was 8.7, and 0.96 to 1.02 on every
+other recording, the Fantasy and the private wide mix the 0.96, the private
+loud master 0.98, the Aria 0.98, the orchestra 1.01, the private talk, the
+Raven, the 1924 record and the mono reading 1.00 and the train station the
+1.02, where libFLAC's level 5 moves by 0.95 to 1.01, the machine's; on the
+made speech, whose two channels are one signal, 0.81 at 8 bits, 0.87 at 96 kHz
+and 0.91 to 0.93 at 44.1 and 48 kHz, and 0.98 to 1.04 on the other made
+sounds; libFLAC's level 5 is 0.95 to 1.08 of the run before's, its level 0
+0.97 to 1.04 and its level 8 0.96 to 1.03; the bytes are the run before's on
+every line of the three libFLAC coders and on every line of this encoder but
+the made speech's at 8 bits, 48 kHz and 96 kHz, a tenth of a byte a block
+over, the fit-first coding's. By the machine's own counters, which the virtual
+machine shows, the change is 16.4% fewer instructions on the 1962 speech and
+none on any other recording, the Aria, the Fantasy, the orchestra, the 1924
+record, the Raven, the private wide mix, loud master and talk, the prison
+song, the indie record, the mono reading and pink noise all within 0.01% of
+the run before's.
+A time ratio within a twentieth of 1.00 is on the line; a bytes ratio is
+exact. A worst block is one block of thousands and the machine's as much as
+the encoder's, even as the least over passes, so it is read as an order of
+magnitude; on this machine it is 115 to 139 µs on every recording but the
+talk's, 73, and the train station's, 38, for this encoder, the mono reading's
+26 times its mean block, which is the virtual machine's tick and not the
+sound, where libFLAC's is 116 to 374. The bench also logs `worst_at`, the
+block that was slowest at its least over the passes, and dumps every block's
+least time and bytes when asked (`BLOCKS=dir`), which is how the late blocks
+below were read, in the morning's run; every pass starts from an encoder that
+has seen no block, so that what the encoder carries from block to block, the
+fourth-block choice, falls on the same blocks in every pass and the least over
+the passes is the block's own.
 
 The arm64 run of the section after the recordings is the morning's, made
 from the tree of two commits before, the encoder of v0.0.8 unchanged, on a
@@ -217,42 +218,48 @@ repository nothing else of them.
 
 - **Every recording and every made sound takes less than half of what
   libFLAC at its default level takes of a core, most of them about a
-  third or less.** The recordings are 0.22 to 0.44 of its time a block:
-  16-bit stereo 0.30 to 0.37, mono 0.22, 24-bit 0.22 to 0.44, the Aria
-  0.42 and the 1924 record 0.44. A block of a recording is 0.02% to
-  0.14% of one core. The made sounds are 0.05 to 0.39: music 0.24 to
-  0.36, speech 0.16 to 0.26, the tone 0.17 to 0.39, noise 0.16 to 0.23,
-  silence 0.05 to 0.06. The run before, the night's first on this
-  machine, the same encoder but for the partitions' search stopped past
-  the best, had them at 0.22 to 0.44 and 0.04 to 0.42, within a
-  twentieth of this run on every line but the made 96 kHz music's,
-  tone's and noise's, 0.36, 0.38 and 0.23 where they were 0.40, 0.42 and
-  0.26, the change, whose six partitionings at 1920 frames are the most
-  of any shape; the run before it, the afternoon's third, the same
-  encoder but for the corrections refreshed every other cycle, at 0.23
-  to 0.46 and 0.05 to 0.42, the one before that, the afternoon's second,
-  the same encoder but for the fixed path left out, at 0.23 to 0.46 and
-  0.05 to 0.42, the one before that, the afternoon's first, the same
-  encoder but for the fold, at 0.23 to 0.46 and 0.05 to 0.42, the
-  morning's, the same encoder but for the Rice parameter, at 0.24 to
-  0.47 and 0.05 to 0.44; the run before it, the same encoder on the
-  desktop i5 late the evening of 2026-10-23, at 0.29 to 0.55 and 0.05 to
-  0.50, the run of v0.0.7 before it that evening at 0.28 to 0.54 and
-  0.23 to 0.50, the run before it, the same encoder as v0.0.7's, at 0.30
-  to 0.57 and 0.25 to 0.53, the run of v0.0.6 before it, that afternoon,
-  at 0.28 to 0.52 and 0.23 to 0.52, the run of v0.0.5 before it at 0.34
-  to 0.58 and 0.27 to 0.55, the evening's before that 0.33 to 0.55 and
-  0.27 to 0.53, the afternoon's 0.31 to 0.59 and 0.25 to 0.49, the
-  morning's 0.44 to 0.77 and 0.40 to 0.74, for the same bytes within
-  half a per cent but the tone's, which fell, and two runs before the
-  pianos', which fell by a tenth of a per cent. The move from the
-  desktop's runs to this machine's is the machine's, not the encoder's:
-  this encoder's block here is 0.64 to 0.68 of its i5 block on the
-  recordings and 0.60 to 0.67 on the made sounds but the silences, and
-  libFLAC's default level 0.74 to 0.84 on the stereo recordings, 0.90 on
-  the mono reading and 0.71 to 0.90 on the made sounds, so the ratios
-  read a fifth better here for the same work. On arm64, where the run is
-  the morning's, held, they are 0.25 to 0.42 and 0.06 to 0.39.
+  third or less.** The recordings are 0.22 to 0.45 of its time a block:
+  16-bit stereo 0.30 to 0.36, mono 0.23, 24-bit 0.22 to 0.45, the 1962
+  speech and white noise the 0.22, the Aria 0.42 and the 1924 record
+  0.45. A block of a recording is 0.02% to 0.14% of one core. The made
+  sounds are 0.05 to 0.39: music 0.24 to 0.36, speech 0.13 to 0.24, the
+  tone 0.17 to 0.39, noise 0.16 to 0.23, silence 0.05 to 0.06. The run
+  before, the night's second on this machine, the same encoder but for
+  the block whose side is one value carried, had them at 0.22 to 0.44
+  and 0.05 to 0.39, within a twentieth of this run on every line but the
+  1962 speech's, 0.22 where it was 0.27, and the made stereo speech's,
+  0.13 to 0.23 where they were 0.16 to 0.26, the change, both one signal
+  on their two channels; the run before it, the night's first, the same
+  encoder but for the partitions' search stopped past the best, at 0.22
+  to 0.44 and 0.04 to 0.42, within a twentieth of the night's second on
+  every line but the made 96 kHz music's, tone's and noise's, 0.36, 0.38
+  and 0.23 where they were 0.40, 0.42 and 0.26, the change, whose six
+  partitionings at 1920 frames are the most of any shape; the run before
+  it, the afternoon's third, the same encoder but for the corrections
+  refreshed every other cycle, at 0.23 to 0.46 and 0.05 to 0.42, the one
+  before that, the afternoon's second, the same encoder but for the
+  fixed path left out, at 0.23 to 0.46 and 0.05 to 0.42, the one before
+  that, the afternoon's first, the same encoder but for the fold, at
+  0.23 to 0.46 and 0.05 to 0.42, the morning's, the same encoder but for
+  the Rice parameter, at 0.24 to 0.47 and 0.05 to 0.44; the run before
+  it, the same encoder on the desktop i5 late the evening of 2026-10-23,
+  at 0.29 to 0.55 and 0.05 to 0.50, the run of v0.0.7 before it that
+  evening at 0.28 to 0.54 and 0.23 to 0.50, the run before it, the same
+  encoder as v0.0.7's, at 0.30 to 0.57 and 0.25 to 0.53, the run of
+  v0.0.6 before it, that afternoon, at 0.28 to 0.52 and 0.23 to 0.52,
+  the run of v0.0.5 before it at 0.34 to 0.58 and 0.27 to 0.55, the
+  evening's before that 0.33 to 0.55 and 0.27 to 0.53, the afternoon's
+  0.31 to 0.59 and 0.25 to 0.49, the morning's 0.44 to 0.77 and 0.40 to
+  0.74, for the same bytes within half a per cent but the tone's, which
+  fell, and two runs before the pianos', which fell by a tenth of a per
+  cent. The move from the desktop's runs to this machine's is the
+  machine's, not the encoder's: this encoder's block here is 0.64 to
+  0.68 of its i5 block on the recordings and 0.60 to 0.67 on the made
+  sounds but the silences, and libFLAC's default level 0.74 to 0.84 on
+  the stereo recordings, 0.90 on the mono reading and 0.71 to 0.90 on
+  the made sounds, so the ratios read a fifth better here for the same
+  work. On arm64, where the run is the morning's, held, they are 0.25 to
+  0.42 and 0.06 to 0.39.
 - **The bytes are libFLAC's at its default level, within 0.2%, and on a
   pure tone under them.** Every recording is 1.000 but the Fantasy, the
   prison song, the orchestra, the two mixes and the talk at 1.001, a
@@ -347,14 +354,21 @@ repository nothing else of them.
   each pass and a worst block past a hundred µs is the machine's. A
   single pass's 99th percentile is higher still for both encoders, which
   is scheduling and cache, not the sound. On the recordings this
-  encoder's 99th-percentile block is 0.23 to 0.54 of libFLAC's, 8 to 42
-  µs against 34 to 80, and its worst block 103 to 146 µs, at most 0.7%
-  of the 20 ms the block is, where libFLAC's worst is 131 to 210. Where
-  two channels are one signal, the 1962 speech and the made speech, the
-  fourth block counts the three equivalent channels, each the same bits
-  within the estimates' margin: 12.8 µs against 7.5 on that recording
+  encoder's 99th-percentile block is 0.26 to 0.56 of libFLAC's, 7 to 43
+  µs against 29 to 77, and its worst block 38 to 139 µs, at most 0.7% of
+  the 20 ms the block is, where libFLAC's worst is 116 to 374. Where two
+  channels are one signal, the 1962 speech and the made speech, the
+  fourth block counted the three equivalent channels, each the same bits
+  within the estimates' margin, 12.8 µs against 7.5 on that recording
   and 7.8 against 5.8 on the made speech, the blocks between coding one
-  channel and a constant.
+  channel and a constant, until this run's encoder, which reads the side
+  one value as the three being one signal and carries that block too:
+  dumped again on this machine before the run, 12.5 against 6.8 became
+  6.8 against 6.8 on the 1962 speech and 7.4 against 5.2 became 6.2
+  against 4.8 to 6.2 on the made speech at 48 kHz, and in the run the
+  1962 speech's mean block fell from 8.7 to 7.2 µs, 0.27 of libFLAC's to
+  0.22, and its 99th-percentile block from 17 to 13, 0.33 of libFLAC's
+  to 0.28.
 - **The pair is chosen on the four channels' bits every fourth block,
   and carried between.** On the fourth block every channel is estimated
   from its autocorrelation, the mid's derived from left's, right's and
