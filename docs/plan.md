@@ -95,7 +95,7 @@ plan are brought to the run.
 
 From the tables of the evening of 2026-10-23, after the fresh block was
 taken up: 0.30 to 0.57 of libFLAC's time a block on the recordings for
-its bytes within 0.1%, the Aria now at its bytes and the Fantasy a tenth
+its bytes within 0.2%, the Aria now at its bytes and the Fantasy a tenth
 of a per cent over where they were 0.1% and 0.2%, the late blocks 0.23 to
 0.60 of its; the made sounds 0.25 to 0.53 for the same bytes within two
 bytes, the pure tone under libFLAC's bytes, 0.90 to 1.00, where it was
