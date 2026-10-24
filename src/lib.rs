@@ -35,11 +35,15 @@
 //! Levinson-Durbin as libFLAC's default level does, its order chosen with the
 //! error its coefficients' rounding adds weighed exactly, whichever writes
 //! fewer bits. A stereo pair is chosen every fourth block: each of left, right,
-//! mid and side is weighed from its autocorrelation, the mid's following from
-//! the other three's, at the fixed predictor of the order the autocorrelation
-//! chooses counted in one Rice partition, a true count, less what its fit is
-//! estimated to save; the pair is chosen on those, the two chosen are coded the
-//! fit first, and the pair is chosen again on their real bits until it stands.
+//! mid and side is estimated from its autocorrelation, the mid's following
+//! from the other three's, and where one pair is estimated under every other
+//! by a quarter of a bit a sample it is taken; otherwise all four channels are
+//! counted, the fit's residual taken and counted in one Rice partition, a
+//! true count, and the fixed predictor's beside it where the fit is not
+//! clear, the pair whose two counts are least is taken, and its two channels
+//! are finished, the partitions searched. That is libFLAC's choice, made on
+//! counts within the partitioning's gain of the real bits rather than on the
+//! estimates, which cannot tell left and right from mid and side on a piano.
 //! On the three blocks between, the pair the last block was coded with is coded
 //! again, each channel the fit first: where the fit is estimated to beat the
 //! best fixed predictor by an eighth of a bit a sample, after a correction the
@@ -65,11 +69,11 @@
 //! i5-8500T: a block of music takes about 17 µs and is 48% of its PCM, speech
 //! 10 µs and 30%, a pure tone 21 µs and 26%, noise 11 µs and 76%, silence
 //! a microsecond and sixteen bytes. libFLAC at its default level, which this
-//! replaced, took 44, 37, 42, 43 and 25 µs for the same bytes within a tenth
+//! replaced, took 42, 35, 40, 41 and 26 µs for the same bytes within a tenth
 //! of a per cent, and 1% more on the tone. Mono at 48 kHz is 7 µs against
-//! libFLAC's 24, and 44.1 kHz stereo 14 against 38. On recordings, 0.28 to
-//! 0.52 of its time a block for its bytes within 0.2%, the block that
-//! chooses the pair afresh, every fourth, a quarter to a third as long again
+//! libFLAC's 23, and 44.1 kHz stereo 14 against 37. On recordings, 0.30 to
+//! 0.57 of its time a block for its bytes within 0.2%, the block that
+//! chooses the pair afresh, every fourth, a fifth to a third as long again
 //! as a carried one.
 //!
 //! Nothing about a wire is here: how a frame is framed in a message, how the
@@ -82,7 +86,7 @@ mod subframe;
 
 use bits::{BitWriter, crc8, crc16};
 use lpc::Window;
-use subframe::Channel;
+use subframe::{Channel, PAIR};
 use thiserror::Error;
 
 /// The bytes of a `STREAMINFO` block.
@@ -328,9 +332,10 @@ impl Encoder {
                 best
             } else {
                 // Every channel that wants a fit has its autocorrelation
-                // taken, and is weighed on it: the fixed order it chooses
-                // counted in one Rice partition, a true count, less what
-                // the fit is estimated to save. The mid's autocorrelation
+                // taken, and is counted from it in one Rice partition, the
+                // fit's residual taken and the fixed predictor's where the
+                // fit is not clear: a true count, within what the
+                // partitioning gains. The mid's autocorrelation
                 // follows from the other three's, the mid being half of
                 // left plus right and the side their difference: autoc(m) =
                 // (2 (autoc(l) + autoc(r)) - autoc(s)) / 4, but for the
@@ -350,45 +355,42 @@ impl Encoder {
                     }
                     _ => mid.autocorrelation(window),
                 };
-                for (channel, autoc) in channels.iter_mut().zip([al, ar, am, as_]) {
-                    channel.weigh_alone(autoc.as_ref());
+                let mut estimates = [0.0; 4];
+                for ((channel, autoc), estimate) in channels.iter_mut().zip([al, ar, am, as_]).zip(&mut estimates) {
+                    *estimate = channel.weigh(autoc.as_ref());
                 }
-                // The pair is chosen on what each channel is weighed at,
-                // the two chosen are coded, and the pair is chosen again
-                // with their real bits in place of their estimates, until
-                // it stands: a fit the estimate counted on can lose on the
-                // samples, as a pure tone's does to its coefficients'
-                // rounding, and then another pair is cheaper after all. On
-                // sound the fit wins as estimated and the pair stands the
-                // first time.
-                let choose = |channels: &[&mut Channel; 4]| {
-                    let costs = PAIRS.map(|(a, b)| channels[a].estimate() + channels[b].estimate());
-                    let mut best = 0;
-                    for (i, &cost) in costs.iter().enumerate() {
-                        if cost < costs[best] {
-                            best = i;
-                        }
-                    }
+                // Where the estimates set one pair under every other by
+                // `PAIR` a sample, it is taken and its channels coded;
+                // otherwise all four channels are counted in one Rice
+                // partition, the fit's residual taken, and the pair is the
+                // one whose two counts are least, its two channels
+                // finished. Counting all four is what libFLAC's default
+                // level does with four codings; chosen on the estimates
+                // and coded again where the coded pair's real bits said
+                // another was cheaper, the choice coded 1.9 pairs a block
+                // on the orchestra and ended on another pair than the
+                // first on 15% of the blocks, and on the estimates alone
+                // 3.4 pairs for 0.17% fewer bytes on the Fantasy, so the
+                // four counts are the whole of that search for a residual
+                // pass and a fold a channel. On the piano recordings the
+                // estimates never settle it, left and right against mid
+                // and side within a twentieth of a bit a sample on 99% of
+                // the blocks and wrong on half; on made music they settle
+                // every block, on the mixes a quarter to a third.
+                let guessed = PAIRS.map(|(a, b)| estimates[a] + estimates[b]);
+                let best = least(&guessed);
+                let second = (0..PAIRS.len()).filter(|&i| i != best).map(|i| guessed[i]).fold(f64::INFINITY, f64::min);
+                let best = if second - guessed[best] >= PAIR * f64::from(stream.block) {
                     best
-                };
-                let mut best = choose(&channels);
-                // Where two channels are nearly one signal, the desktop
-                // playing the same sound on both, a pair coded comes out
-                // over its estimate and the next is coded for the same
-                // bits; taking another pair only past a margin of an
-                // eighth of a bit a sample saved that and cost the Aria
-                // 0.1% of its bytes, as did the channel's correction taken
-                // off its saving, so the pair is chosen again as estimated.
-                loop {
-                    let (a, b) = PAIRS[best];
-                    channels[a].code_weighed();
-                    channels[b].code_weighed();
-                    let again = choose(&channels);
-                    if again == best {
-                        break;
+                } else {
+                    for channel in channels.iter_mut() {
+                        channel.count();
                     }
-                    best = again;
-                }
+                    least(&PAIRS.map(|(a, b)| channels[a].coarse() + channels[b].coarse()))
+                };
+                let (a, b) = PAIRS[best];
+                channels[a].finish();
+                channels[b].finish();
                 best
             };
             // A frame is never more than its PCM and a header: where the
@@ -397,7 +399,7 @@ impl Encoder {
             let (a, b) = PAIRS[best];
             if best != 0 && channels[a].bits() + channels[b].bits() > channels[0].verbatim() + channels[1].verbatim() {
                 for i in [0, 1] {
-                    channels[i].code_weighed();
+                    channels[i].finish();
                 }
                 best = 0;
             }
@@ -453,6 +455,17 @@ impl Encoder {
         out.extend_from_slice(&crc.to_be_bytes());
         Ok(())
     }
+}
+
+/// The pair whose cost is least, the first on a tie.
+fn least<T: PartialOrd>(costs: &[T; PAIRINGS.len()]) -> usize {
+    let mut best = 0;
+    for (i, cost) in costs.iter().enumerate() {
+        if *cost < costs[best] {
+            best = i;
+        }
+    }
+    best
 }
 
 /// The error for a block with a sample outside `bits`, naming the first.

@@ -13,12 +13,16 @@ the fit clearly wins, and the autocorrelation at the floor; and to the end
 of that day, when the fourth block was weighed on a count in place of its
 four fixed codings; and to 2026-10-24, when the rows still on libFLAC's
 side of the line were taken up in the order of how far over they were: the
-tone's bytes and time, then the time against level 0 at 24 bits and 96 kHz.
-The days are the count the sessions kept, which ran ahead of the machine's
-clock: by the commits, which that clock stamps in Pacific time, all of it
-ran from the evening of 2026-10-22 to the afternoon of 2026-10-23, the
-night of 2026-10-23 here being noon of that day and 2026-10-24 its
-afternoon.
+tone's bytes and time, then the time against level 0 at 24 bits and 96 kHz;
+and to the evening of 2026-10-23 by the machine's clock, when the fresh
+block was taken up and the pair came to be chosen on the four channels'
+counts.
+The days before that are the count the sessions kept, which ran ahead of
+the machine's clock: by the commits, which that clock stamps in Pacific
+time, all of it ran from the evening of 2026-10-22 to the afternoon of
+2026-10-23, the night of 2026-10-23 here being noon of that day and
+2026-10-24 its afternoon; the evening of 2026-10-23 is the clock's, and
+follows them.
 
 ## What it is for
 
@@ -89,13 +93,18 @@ plan are brought to the run.
 
 ## Where it stands
 
-From the tables of 2026-10-24, after the day the rows still on libFLAC's
-side of the line were taken up: 0.28 to 0.52 of libFLAC's time a block on
-the recordings for its bytes within 0.2%, the late blocks 0.22 to 0.53 of
-its; the made sounds 0.23 to 0.52 for the same bytes within two bytes, the
-pure tone now under libFLAC's bytes, 0.91 to 1.00, where it was 1.02 at
-44.1 kHz and 1.05 at 24 bits. A block of a recording is 0.03% to 0.21% of
-one core. Where the time goes at 16-bit stereo, on the orchestra, by the
+From the tables of the evening of 2026-10-23, after the fresh block was
+taken up: 0.30 to 0.57 of libFLAC's time a block on the recordings for
+its bytes within 0.2%, the Aria now at its bytes and the Fantasy a tenth
+of a per cent over where they were 0.1% and 0.2%, the late blocks 0.23 to
+0.60 of its; the made sounds 0.25 to 0.53 for the same bytes within two
+bytes, the pure tone under libFLAC's bytes, 0.90 to 1.00, where it was
+1.02 at 44.1 kHz and 1.05 at 24 bits. A block of a recording is 0.03% to
+0.22% of one core. This run's libFLAC was 3% to 15% faster than the run
+before's and this encoder's block within 5% of it, so the ratios read
+about a tenth worse than the afternoon's for a change that cost 0% to 4%
+on arm64, where the controls held. Where the time goes
+at 16-bit stereo, on the orchestra, by the
 parts measured apart: a carried block, three in four, is the two
 autocorrelations with their windowing 3.6 µs, their fits 0.7, the pair's
 residuals 2.3 and partitions 1.9, the folds and bounds 1.2, the stereo
@@ -104,10 +113,10 @@ is clear on both channels, and a fixed coding of 1.7 for each channel whose
 fit is not, which on the orchestra is two carried channels in three, as on
 two of the three one channel has its fixed coding made whatever the fit is
 estimated at, to bring its correction up to date: about 18 on the mean
-carried block, 16.9 timed whole; the fourth block, about 22 µs, has three
-autocorrelations, four fits and four one-partition counts in their place,
-and is the late block,
-by a quarter to a third of a carried one. At 24 bits the fit's residual
+carried block, 17.1 timed whole; the fourth block, 21.9 µs, has three
+autocorrelations, four fits and, where the estimates do not settle the
+pair, the two other channels' residuals and folds in their place, and is
+the late block, by a fifth to a third of a carried one. At 24 bits the fit's residual
 runs as two 16-bit passes at twice the cost, 10 µs of the Aria's 39, and
 the writer takes 6 µs of pink noise's 24. On arm64, the same day, the
 recordings are 0.25 to 0.44 of libFLAC's time for the same bytes to a
@@ -161,15 +170,19 @@ where both codings are made on most blocks.
 
 ## Open items, in order
 
-1. **The fresh block**, every fourth, still the late block: over a carried
-   block it has the third autocorrelation, two more fits and the four
-   one-partition counts, 22 µs against 17 on the orchestra, 44 against 35
-   on the Aria and 18 against 14 on the Raven (below, the fresh block
-   weighed), and on a pure tone, where the estimates tie, the pairs coded
-   in turn, 24 µs against 18 at 48 kHz. What would take
-   that is a fit from fewer lags, or the side's autocorrelation from the
-   left's and the right's, which needs their cross-correlation, one more
-   pass of the same cost.
+1. **The fresh block**, every fourth, still the late block, by about a
+   quarter over a carried one: over a carried block it has the third
+   autocorrelation, two more fits, and, where the estimates do not settle
+   the pair, the two other channels' residual passes and folds, which on
+   the piano recordings is every block (below, the four channels counted).
+   The pair choice is now on counts of the channels' bits where the
+   estimates are close, true within what the partitioning gains, so what
+   is left is the cost of a pass:
+   the residual of a fit at 16 bits is 1.1 µs for 7680 multiply-adds that
+   `pmaddwd` does eight at a time, since the compiler widens and multiplies
+   each tap apart; the samples laid out in pairs once a block would let
+   each pair of taps be one multiply-add, and would take the carried
+   block's two residuals down with the fresh block's four.
 2. **The fixed path at 8 bits.** On 8-bit music the fit is coded alone on
    almost no carried channel, where at 16 bits it is on half, so both
    codings are made on nearly every block: 8-bit music is 19 µs a block
@@ -206,6 +219,51 @@ where both codings are made on most blocks.
 
 ## Measured and taken
 
+- **The four channels counted on the fresh block, the pair chosen on the
+  counts** (the evening of 2026-10-23 by the machine's clock, the session
+  after the one labelled 2026-10-24; item 1 as it stood): the fresh block's excess over
+  a carried one was not the third autocorrelation and the two fits, 2.6 µs
+  of the 5 on the orchestra, but the choice made again on real bits:
+  counted, the pair stood on 85% of the fresh blocks and yet 1.9 pairs
+  were coded on the mean one, nine blocks in ten hopping to another pair
+  and most hopping back, since a channel's one-partition count is over
+  its real bits by the partitioning's gain and its fit's estimated saving
+  is over the real one. On the estimates alone, without the counts, the
+  loop coded 3.4 pairs a block, nearly every channel, and the Fantasy
+  came to 0.9983 of its bytes, the Aria 0.9989, the train 0.9996 and the
+  96 kHz tone 0.990, nothing rising: that is libFLAC's choice, every pair
+  by its bits. Without the loop at all, the fresh block fell to a carried
+  block's height, 18.5 µs against 21.7 on the orchestra, 37.5 against
+  43.8 on the Aria, for 0.12% of the Fantasy's bytes and 0.05% of the
+  Aria's. The model's bias against real bits is the channel's, not the
+  block's: a bias taken from the channels just coded and put on the others
+  found no pair the loop without it did not, and each channel's last bias
+  carried between blocks cost the Raven 0.27%. So the choice is made on
+  real bits once: all four channels have the fit's residual taken and
+  counted in one Rice partition, the fold and the finest sums the
+  partition search needs anyway, and the fixed predictor counted beside it
+  where the fit is not clear; the pair whose two counts are least is
+  taken and its two channels finished, the search over the partitions and
+  the fixed path where the fit was not clear. The estimates are kept for
+  the gate: where they set one pair under every other by a quarter of a
+  bit a sample, it is taken and the two other channels are not counted.
+  Measured over every fresh block of twelve recordings and the made
+  sounds, no count changed the choice past a fifth of a bit, and an eighth
+  is not safe, since on 8-bit music the estimates' pair is wrong on every
+  block and wrong on all of the 8% they separate by a tenth; the gate
+  settles every block of the made 16-bit and 24-bit music, half the made
+  speech, a third of the noise and a quarter to a third of the mixes, and
+  none of the piano, where left and right against mid and side are within
+  a twentieth of a bit a sample on 99% of the blocks and the estimates'
+  pair is wrong on half of them, which is the 0.04 bit a sample the counts
+  buy there. Bytes as the loop on the estimates alone, the Fantasy 0.9983,
+  the Aria 0.9989, the train 0.9996, the Raven and the prison song 0.9999,
+  the 96 kHz tone 0.990, every other sound the same; the fresh block 21.7
+  µs on the orchestra as before, 36.8 against 33.1 on the Fantasy and 48.4
+  against 43.8 on the Aria, the made music's back at a carried block's
+  height, and the means within 3% either way on the recordings on both
+  machines. The weighing's four counts, the kept estimates and the loop
+  are gone with it.
 - **The coefficients' rounding weighed in the order choice, exactly**
   (2026-10-24, item 3 of the plan as it stood, the tone's coefficients):
   each order's predictor is quantized as it would be written and the
