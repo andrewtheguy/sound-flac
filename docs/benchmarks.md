@@ -77,9 +77,9 @@ three orders past the best. Against the run before this encoder's block is
 recordings with sound in them, the orchestra the 0.96, the Fantasy and the
 1962 speech 0.97 and the Aria 0.98, 0.92 on white noise, and 0.97 to 1.04 on
 the 44.1 kHz recordings and the mono reading, whose block of 882 has two
-partitionings and nothing for the change to skip, the wide mix the 1.04 on a
-line where libFLAC's level 5 reads 0.98 and the talk 0.97 where it reads
-0.92, the machine's; on the made sounds 0.88 to 0.98 at 48 and 96 kHz, the
+partitionings and nothing for the change to skip, the private wide mix the
+1.04 on a line where libFLAC's level 5 reads 0.98, the private loud master
+1.01 and the private talk 0.97 where it reads 0.92, the machine's; on the made sounds 0.88 to 0.98 at 48 and 96 kHz, the
 96 kHz music the 0.88, and 0.96 to 1.01 at 44.1 kHz; libFLAC's level 5 is
 0.91 to 1.04 of the run before's, its level 0 0.90 to 1.03 and its level 8
 0.93 to 1.05; the bytes are the run before's on every line of the three
@@ -88,7 +88,9 @@ libFLAC coders and on every line of this encoder but two, the 1924 record
 byte. By the machine's own counters, which the virtual machine shows, the
 change is 2.2% to 4.4% fewer instructions on the 48 and 96 kHz recordings,
 the orchestra 3.5%, the Aria 3.4%, the Fantasy 4.1%, the 1962 speech 2.2%,
-pink noise 4.4% and the 1924 record 1.1%, and none on the 44.1 kHz ones.
+pink noise 4.4% and the 1924 record 1.1%, and none on the 44.1 kHz ones, the
+private wide mix, loud master and talk, the Raven, the prison song and the
+train station.
 A time ratio within a twentieth of 1.00 is on the line; a bytes ratio is exact.
 A worst block is one block of thousands and the machine's as much as the
 encoder's, even as the least over passes, so it is read as an order of
@@ -189,7 +191,8 @@ the repository holds a recording. Three more are the user's own, not
 licensed for publication: two dense mixes and one voice talking over soft
 music, all at 44.1 kHz stereo 16-bit, WAVs at the root of the store named
 by their track numbers, not in `tools/samples.txt` and not fetched. The
-tables carry their numbers, named for what they sound like, and the
+tables carry their numbers, each labelled *Private* with its file stem and
+what it sounds like, so that the three are found at a glance, and the
 repository nothing else of them.
 
 | Recording | Item | Shape | Seconds | What it is |
@@ -198,12 +201,12 @@ repository nothing else of them.
 | Chopin, Fantasy Op. 49, piano | `musopen-chopin-complete-works-flac` | 96 kHz stereo 16-bit | 738 | Musopen's recording, CC0: piano from quiet to loud |
 | Shostakovich 5, orchestra, live | `dso20060204old` | 48 kHz stereo 16-bit | 324 | a concert recording, one movement, the hall in it |
 | Indie rock, 2022, mastered | `1.-golf-club-stay-awhile` | 48 kHz stereo 24-bit | 224 | Golf Club's "Stay Awhile", CC0 by the band: guitars, drums and voices in a loud modern master, the one popular record |
-| Mix at −13 LUFS, wide stereo | the user's own | 44.1 kHz stereo 16-bit | 250 | a studio mix integrated at −12.6 LUFS over a 6.4 LU range, peaks at full scale, the side channel 8 dB under the mix: 66% of its PCM |
-| Mix at −9 LUFS, loud master | the user's own | 44.1 kHz stereo 16-bit | 225 | a louder master, −9.2 LUFS over 4.6 LU, peaks at full scale, the side channel 6.6 dB under the mix: 72% of its PCM |
+| Private Track10, mix at −13 LUFS, wide stereo | the user's own | 44.1 kHz stereo 16-bit | 250 | a studio mix integrated at −12.6 LUFS over a 6.4 LU range, peaks at full scale, the side channel 8 dB under the mix: 66% of its PCM |
+| Private Track_1, mix at −9 LUFS, loud master | the user's own | 44.1 kHz stereo 16-bit | 225 | a louder master, −9.2 LUFS over 4.6 LU, peaks at full scale, the side channel 6.6 dB under the mix: 72% of its PCM |
 | Limehouse Blues, 1924 78 rpm | `TheColumbiansCollection1924-1929DirectedByBenSelvin` | 96 kHz stereo 24-bit | 197 | a 78 rpm transfer: dance band under surface noise |
 | Prison work song, 1947 field recording | `negroprisonsongs` | 44.1 kHz stereo 16-bit | 252 | Lomax's Parchman recording: voices and axes outdoors |
 | The Raven, read, produced | `TheRavenByEdgarAllanPoe` | 44.1 kHz stereo 16-bit | 559 | a radio theatre reading with music and effects |
-| Talk over soft music | the user's own | 44.1 kHz stereo 16-bit | 181 | one voice speaking with a little music under it, −17.5 LUFS over 5.9 LU, the side channel 10.8 dB under the mix: 45% of its PCM |
+| Private Track11, talk over soft music | the user's own | 44.1 kHz stereo 16-bit | 181 | one voice speaking with a little music under it, −17.5 LUFS over 5.9 LU, the side channel 10.8 dB under the mix: 45% of its PCM |
 | Leviticus 13, read | `LeviticusKJV` | 44.1 kHz mono 16-bit | 725 | one voice reading, a room's quiet between verses |
 | JFK at Rice, 1962 | `NasaAudioHighlightReels` | 48 kHz stereo 24-bit | 836 | a speech through a public-address system, a crowd |
 | Train station, field recording | `aporee_53029_60598` | 44.1 kHz stereo 16-bit | 141 | a passenger train arriving, the station's ambience |
@@ -686,12 +689,12 @@ the three levels.
 | Chopin, Fantasy Op. 49, piano | 96 kHz stereo 16-bit | $\color{green}{0.37}$ | 1.00 | $\color{green}{0.83}$ | $\color{green}{0.87}$ | $\color{green}{0.13}$ | $\color{red}{1.01}$ |
 | Shostakovich 5, orchestra, live | 48 kHz stereo 16-bit | $\color{green}{0.32}$ | 1.00 | $\color{green}{0.63}$ | $\color{green}{0.78}$ | $\color{green}{0.11}$ | $\color{red}{1.01}$ |
 | Indie rock, 2022, mastered | 48 kHz stereo 24-bit | $\color{green}{0.40}$ | 1.00 | $\color{green}{0.77}$ | $\color{green}{0.96}$ | $\color{green}{0.13}$ | 1.00 |
-| Mix at −13 LUFS, wide stereo | 44.1 kHz stereo 16-bit | $\color{green}{0.32}$ | 1.00 | $\color{green}{0.57}$ | $\color{green}{0.94}$ | $\color{green}{0.13}$ | 1.00 |
-| Mix at −9 LUFS, loud master | 44.1 kHz stereo 16-bit | $\color{green}{0.31}$ | 1.00 | $\color{green}{0.55}$ | $\color{green}{0.94}$ | $\color{green}{0.13}$ | 1.00 |
+| Private Track10, mix at −13 LUFS, wide stereo | 44.1 kHz stereo 16-bit | $\color{green}{0.32}$ | 1.00 | $\color{green}{0.57}$ | $\color{green}{0.94}$ | $\color{green}{0.13}$ | 1.00 |
+| Private Track_1, mix at −9 LUFS, loud master | 44.1 kHz stereo 16-bit | $\color{green}{0.31}$ | 1.00 | $\color{green}{0.55}$ | $\color{green}{0.94}$ | $\color{green}{0.13}$ | 1.00 |
 | Limehouse Blues, 1924 78 rpm | 96 kHz stereo 24-bit | $\color{green}{0.44}$ | 1.00 | $\color{green}{0.91}$ | $\color{green}{0.96}$ | $\color{green}{0.16}$ | 1.00 |
 | Prison work song, 1947 field recording | 44.1 kHz stereo 16-bit | $\color{green}{0.31}$ | 1.00 | $\color{green}{0.57}$ | $\color{green}{0.88}$ | $\color{green}{0.12}$ | 1.00 |
 | The Raven, read, produced | 44.1 kHz stereo 16-bit | $\color{green}{0.31}$ | 1.00 | $\color{green}{0.56}$ | $\color{green}{0.78}$ | $\color{green}{0.12}$ | 1.00 |
-| Talk over soft music | 44.1 kHz stereo 16-bit | $\color{green}{0.31}$ | 1.00 | $\color{green}{0.56}$ | $\color{green}{0.87}$ | $\color{green}{0.13}$ | 1.00 |
+| Private Track11, talk over soft music | 44.1 kHz stereo 16-bit | $\color{green}{0.31}$ | 1.00 | $\color{green}{0.56}$ | $\color{green}{0.87}$ | $\color{green}{0.13}$ | 1.00 |
 | Leviticus 13, read | 44.1 kHz mono 16-bit | $\color{green}{0.22}$ | 1.00 | $\color{green}{0.34}$ | $\color{green}{0.97}$ | $\color{green}{0.16}$ | 1.00 |
 | JFK at Rice, 1962 | 48 kHz stereo 24-bit | $\color{green}{0.27}$ | 1.00 | $\color{green}{0.46}$ | $\color{green}{0.49}$ | $\color{green}{0.10}$ | 1.00 |
 | Train station, field recording | 44.1 kHz stereo 16-bit | $\color{green}{0.30}$ | 1.00 | $\color{green}{0.55}$ | $\color{green}{0.94}$ | $\color{green}{0.12}$ | 1.00 |
@@ -712,12 +715,12 @@ this run's over that.
 | Chopin, Fantasy Op. 49, piano | 54.1 | $\color{green}{20.1}$ | $\color{green}{0.37}$ | 20.7 | $\color{green}{0.97}$ | 80.2 | $\color{green}{34.8}$ | 210 | $\color{green}{146}$ | 0.10% |
 | Shostakovich 5, orchestra, live | 34.6 | $\color{green}{11.2}$ | $\color{green}{0.32}$ | 11.7 | $\color{green}{0.96}$ | 53.8 | $\color{green}{20.3}$ | 153 | $\color{green}{120}$ | 0.06% |
 | Indie rock, 2022, mastered | 38.6 | $\color{green}{15.6}$ | $\color{green}{0.40}$ | 15.4 | $\color{red}{1.02}$ | 55.0 | $\color{green}{29.7}$ | 146 | $\color{green}{123}$ | 0.08% |
-| Mix at −13 LUFS, wide stereo | 30.9 | $\color{green}{10.0}$ | $\color{green}{0.32}$ | 9.6 | $\color{red}{1.04}$ | 46.1 | $\color{green}{17.7}$ | 159 | $\color{green}{123}$ | 0.05% |
-| Mix at −9 LUFS, loud master | 31.3 | $\color{green}{9.8}$ | $\color{green}{0.31}$ | 9.7 | $\color{red}{1.01}$ | 48.2 | $\color{green}{21.1}$ | 137 | $\color{green}{122}$ | 0.05% |
+| Private Track10, mix at −13 LUFS, wide stereo | 30.9 | $\color{green}{10.0}$ | $\color{green}{0.32}$ | 9.6 | $\color{red}{1.04}$ | 46.1 | $\color{green}{17.7}$ | 159 | $\color{green}{123}$ | 0.05% |
+| Private Track_1, mix at −9 LUFS, loud master | 31.3 | $\color{green}{9.8}$ | $\color{green}{0.31}$ | 9.7 | $\color{red}{1.01}$ | 48.2 | $\color{green}{21.1}$ | 137 | $\color{green}{122}$ | 0.05% |
 | Limehouse Blues, 1924 78 rpm | 63.0 | $\color{green}{27.9}$ | $\color{green}{0.44}$ | 28.3 | $\color{green}{0.99}$ | 77.9 | $\color{green}{42.4}$ | 186 | $\color{green}{146}$ | 0.14% |
 | Prison work song, 1947 field recording | 30.5 | $\color{green}{9.4}$ | $\color{green}{0.31}$ | 9.4 | $\color{green}{0.99}$ | 44.6 | $\color{green}{16.8}$ | 148 | $\color{green}{108}$ | 0.05% |
 | The Raven, read, produced | 30.4 | $\color{green}{9.6}$ | $\color{green}{0.31}$ | 9.7 | $\color{green}{0.99}$ | 42.1 | $\color{green}{16.8}$ | 140 | $\color{green}{128}$ | 0.05% |
-| Talk over soft music | 31.2 | $\color{green}{9.6}$ | $\color{green}{0.31}$ | 9.9 | $\color{green}{0.97}$ | 43.8 | $\color{green}{16.9}$ | 135 | $\color{green}{116}$ | 0.05% |
+| Private Track11, talk over soft music | 31.2 | $\color{green}{9.6}$ | $\color{green}{0.31}$ | 9.9 | $\color{green}{0.97}$ | 43.8 | $\color{green}{16.9}$ | 135 | $\color{green}{116}$ | 0.05% |
 | Leviticus 13, read | 20.4 | $\color{green}{4.5}$ | $\color{green}{0.22}$ | 4.4 | $\color{red}{1.01}$ | 34.6 | $\color{green}{7.9}$ | 136 | $\color{green}{121}$ | 0.02% |
 | JFK at Rice, 1962 | 32.5 | $\color{green}{8.7}$ | $\color{green}{0.27}$ | 8.9 | $\color{green}{0.97}$ | 50.9 | $\color{green}{16.9}$ | 167 | $\color{green}{119}$ | 0.04% |
 | Train station, field recording | 30.3 | $\color{green}{9.0}$ | $\color{green}{0.30}$ | 9.2 | $\color{green}{0.98}$ | 43.3 | $\color{green}{15.6}$ | 131 | $\color{green}{103}$ | 0.04% |
@@ -735,12 +738,12 @@ before this one, and *over it* this run's over that, to a ten-thousandth.
 | Chopin, Fantasy Op. 49, piano | 738 | 7680 | 2476 | $\color{red}{2478}$ | $\color{red}{1.001}$ | 2478 | 1.0000 | 32.3% |
 | Shostakovich 5, orchestra, live | 324 | 3840 | 1498 | $\color{red}{1500}$ | $\color{red}{1.001}$ | 1500 | 1.0000 | 39.1% |
 | Indie rock, 2022, mastered | 223 | 5760 | 4555 | $\color{red}{4557}$ | 1.000 | 4557 | 1.0000 | 79.1% |
-| Mix at −13 LUFS, wide stereo | 250 | 3528 | 2325 | $\color{red}{2327}$ | $\color{red}{1.001}$ | 2327 | 1.0000 | 66.0% |
-| Mix at −9 LUFS, loud master | 225 | 3528 | 2543 | $\color{red}{2547}$ | $\color{red}{1.001}$ | 2547 | 1.0000 | 72.2% |
+| Private Track10, mix at −13 LUFS, wide stereo | 250 | 3528 | 2325 | $\color{red}{2327}$ | $\color{red}{1.001}$ | 2327 | 1.0000 | 66.0% |
+| Private Track_1, mix at −9 LUFS, loud master | 225 | 3528 | 2543 | $\color{red}{2547}$ | $\color{red}{1.001}$ | 2547 | 1.0000 | 72.2% |
 | Limehouse Blues, 1924 78 rpm | 197 | 11520 | 8660 | 8660 | 1.000 | 8657 | $\color{red}{1.0003}$ | 75.2% |
 | Prison work song, 1947 field recording | 252 | 3528 | 1420 | $\color{red}{1421}$ | $\color{red}{1.001}$ | 1421 | 1.0000 | 40.3% |
 | The Raven, read, produced | 559 | 3528 | 1362 | $\color{red}{1363}$ | 1.000 | 1363 | 1.0000 | 38.6% |
-| Talk over soft music | 181 | 3528 | 1618 | $\color{red}{1620}$ | $\color{red}{1.001}$ | 1620 | 1.0000 | 45.9% |
+| Private Track11, talk over soft music | 181 | 3528 | 1618 | $\color{red}{1620}$ | $\color{red}{1.001}$ | 1620 | 1.0000 | 45.9% |
 | Leviticus 13, read | 725 | 1764 | 986 | $\color{red}{987}$ | 1.000 | 987 | 1.0000 | 55.9% |
 | JFK at Rice, 1962 | 836 | 5760 | 1798 | $\color{green}{1797}$ | 1.000 | 1797 | 1.0000 | 31.2% |
 | Train station, field recording | 141 | 3528 | 1272 | 1272 | 1.000 | 1272 | 1.0000 | 36.1% |
@@ -800,19 +803,19 @@ block, and the 99th-percentile block is this encoder's, the least over the passe
 | Chopin, Fantasy Op. 49, piano | 54.1 | 85.6 | 20.1 | 29.8 | $\color{green}{0.37}$ | $\color{green}{0.35}$ | 34.8 | 44.1 | $\color{green}{0.83}$ | $\color{red}{1.12}$ |
 | Shostakovich 5, orchestra, live | 34.6 | 46.2 | 11.2 | 16.9 | $\color{green}{0.32}$ | $\color{green}{0.37}$ | 20.3 | 24.5 | $\color{green}{0.63}$ | $\color{red}{1.07}$ |
 | Indie rock, 2022, mastered | 38.6 | 53.1 | 15.6 | 20.3 | $\color{green}{0.40}$ | $\color{green}{0.38}$ | 29.7 | 31.5 | $\color{green}{0.77}$ | $\color{red}{1.02}$ |
-| Mix at −13 LUFS, wide stereo | 30.9 | 42.2 | 10.0 | 14.2 | $\color{green}{0.32}$ | $\color{green}{0.34}$ | 17.7 | 21.5 | $\color{green}{0.57}$ | $\color{green}{0.93}$ |
-| Mix at −9 LUFS, loud master | 31.3 | 41.9 | 9.8 | 14.1 | $\color{green}{0.31}$ | $\color{green}{0.34}$ | 21.1 | 18.9 | $\color{green}{0.55}$ | $\color{green}{0.90}$ |
+| Private Track10, mix at −13 LUFS, wide stereo | 30.9 | 42.2 | 10.0 | 14.2 | $\color{green}{0.32}$ | $\color{green}{0.34}$ | 17.7 | 21.5 | $\color{green}{0.57}$ | $\color{green}{0.93}$ |
+| Private Track_1, mix at −9 LUFS, loud master | 31.3 | 41.9 | 9.8 | 14.1 | $\color{green}{0.31}$ | $\color{green}{0.34}$ | 21.1 | 18.9 | $\color{green}{0.55}$ | $\color{green}{0.90}$ |
 | Limehouse Blues, 1924 78 rpm | 63.0 | 96.7 | 27.9 | 37.3 | $\color{green}{0.44}$ | $\color{green}{0.39}$ | 42.4 | 52.2 | $\color{green}{0.91}$ | $\color{red}{1.02}$ |
 | Prison work song, 1947 field recording | 30.5 | 41.0 | 9.4 | 13.8 | $\color{green}{0.31}$ | $\color{green}{0.34}$ | 16.8 | 18.8 | $\color{green}{0.57}$ | $\color{green}{0.96}$ |
 | The Raven, read, produced | 30.4 | 41.4 | 9.6 | 14.2 | $\color{green}{0.31}$ | $\color{green}{0.34}$ | 16.8 | 20.7 | $\color{green}{0.56}$ | $\color{green}{0.96}$ |
-| Talk over soft music | 31.2 | 41.1 | 9.6 | 14.2 | $\color{green}{0.31}$ | $\color{green}{0.35}$ | 16.9 | 20.3 | $\color{green}{0.56}$ | $\color{green}{0.96}$ |
+| Private Track11, talk over soft music | 31.2 | 41.1 | 9.6 | 14.2 | $\color{green}{0.31}$ | $\color{green}{0.35}$ | 16.9 | 20.3 | $\color{green}{0.56}$ | $\color{green}{0.96}$ |
 | Leviticus 13, read | 20.4 | 19.4 | 4.5 | 6.3 | $\color{green}{0.22}$ | $\color{green}{0.32}$ | 7.9 | 7.8 | $\color{green}{0.34}$ | $\color{green}{0.69}$ |
 | JFK at Rice, 1962 | 32.5 | 43.1 | 8.7 | 12.0 | $\color{green}{0.27}$ | $\color{green}{0.28}$ | 16.9 | 19.8 | $\color{green}{0.46}$ | $\color{green}{0.64}$ |
 | Train station, field recording | 30.3 | 40.7 | 9.0 | 13.1 | $\color{green}{0.30}$ | $\color{green}{0.32}$ | 15.6 | 17.7 | $\color{green}{0.55}$ | $\color{green}{0.92}$ |
 | Pink noise | 37.0 | 49.9 | 15.8 | 21.1 | $\color{green}{0.43}$ | $\color{green}{0.42}$ | 27.5 | 28.8 | $\color{green}{0.79}$ | $\color{red}{1.07}$ |
 | White noise | 36.7 | 49.4 | 8.0 | 12.4 | $\color{green}{0.22}$ | $\color{green}{0.25}$ | 17.6 | 23.4 | $\color{green}{0.39}$ | $\color{green}{0.63}$ |
 
-The bytes a block of this encoder differ between the two runs on speech at 48 kHz stereo 16-bit (1151 against 1151), speech at 44.1 kHz stereo 16-bit (1064 against 1064), music at 96 kHz stereo 16-bit (3454 against 3454), tone at 96 kHz stereo 16-bit (1447 against 1481), speech at 48 kHz mono 16-bit (1148 against 1148), speech at 48 kHz stereo 8-bit (251 against 251), noise at 48 kHz stereo 8-bit (1002 against 1006), speech at 48 kHz stereo 24-bit (2114 against 2114), Bach, Goldberg Aria, piano (5313 against 5313), Chopin, Fantasy Op. 49, piano (2478 against 2478), Shostakovich 5, orchestra, live (1500 against 1499), Indie rock, 2022, mastered (4557 against 4556), Mix at −13 LUFS, wide stereo (2327 against 2327), Mix at −9 LUFS, loud master (2547 against 2547), Limehouse Blues, 1924 78 rpm (8660 against 8657), Prison work song, 1947 field recording (1421 against 1421), The Raven, read, produced (1363 against 1363), Talk over soft music (1620 against 1620), Leviticus 13, read (987 against 987), Train station, field recording (1272 against 1272).
+The bytes a block of this encoder differ between the two runs on speech at 48 kHz stereo 16-bit (1151 against 1151), speech at 44.1 kHz stereo 16-bit (1064 against 1064), music at 96 kHz stereo 16-bit (3454 against 3454), tone at 96 kHz stereo 16-bit (1447 against 1481), speech at 48 kHz mono 16-bit (1148 against 1148), speech at 48 kHz stereo 8-bit (251 against 251), noise at 48 kHz stereo 8-bit (1002 against 1006), speech at 48 kHz stereo 24-bit (2114 against 2114), Bach, Goldberg Aria, piano (5313 against 5313), Chopin, Fantasy Op. 49, piano (2478 against 2478), Shostakovich 5, orchestra, live (1500 against 1499), Indie rock, 2022, mastered (4557 against 4556), Private Track10, mix at −13 LUFS, wide stereo (2327 against 2327), Private Track_1, mix at −9 LUFS, loud master (2547 against 2547), Limehouse Blues, 1924 78 rpm (8660 against 8657), Prison work song, 1947 field recording (1421 against 1421), The Raven, read, produced (1363 against 1363), Private Track11, talk over soft music (1620 against 1620), Leviticus 13, read (987 against 987), Train station, field recording (1272 against 1272).
 
 The bytes a block of libFLAC at level 5 differ between the two runs on tone at 48 kHz stereo 24-bit (2321 against 2315).
 

@@ -362,14 +362,16 @@ called ready.
   1924 record and a tenth of a byte a block on the 8-bit speech, every
   other line the same, which is within the bar, so three it is. A block
   of 882 at 44.1 kHz has two partitionings, one and two, and nothing to
-  skip: every 44.1 kHz line, the six recordings and the made five, is
+  skip: every 44.1 kHz line, the private wide mix, loud master and talk,
+  the Raven, the prison song, the train station and the made five, is
   the same to the instruction. In the full run, the night's second: the
   48 and 96 kHz recordings with sound in them 0.96 to 0.99 of the run
   before's block, white noise 0.92, the 44.1 kHz recordings and the mono
-  reading 0.97 to 1.04 where libFLAC moves by as much; the made 48 and
-  96 kHz lines 0.88 to 0.98, the 96 kHz music the 0.88; the bytes the
-  same on every line but the two; the recordings 0.22 to 0.44 of level
-  5's block as before and the 99th-percentile block 0.23 to 0.54 of its.
+  reading 0.97 to 1.04, the private wide mix the 1.04, loud master 1.01
+  and talk 0.97, where libFLAC moves by as much; the made 48 and 96 kHz
+  lines 0.88 to 0.98, the 96 kHz music the 0.88; the bytes the same on
+  every line but the two; the recordings 0.22 to 0.44 of level 5's block
+  as before and the 99th-percentile block 0.23 to 0.54 of its.
 - **The corrections refreshed every other cycle** (the night of
   2026-10-24, item 1 of the plan as it stood, the first change taken by
   the bar on bytes against time): each channel of the pair has both
@@ -379,26 +381,27 @@ called ready.
   blocks. Measured on the EPYC against the run before, the recordings by
   the machine's counters: 1.3% to 2.8% fewer instructions on every
   stereo recording, the Aria 2.3%, the Fantasy 2.8%, the Raven 1.9%, the
-  JFK 2.0%, the orchestra 1.3%, for at most 0.013% more bytes, the
-  orchestra 0.2 of a byte a block of 1500, the Raven, the prison song
-  and the talk 0.1, every other line the same; the late block the same,
-  the refresh falling on carried blocks. With it the pair chosen every
-  eighth block rather than fourth was measured, apart and together:
-  apart 3.2% to 4.2% fewer instructions and 8.2% on the JFK, together
-  4.8% to 6.5% and 9.8%, the block that chooses the pair coming half as
-  often, 23.8 µs against a carried 20.2 on the Fantasy, for 0.015% of
-  the Aria's bytes, 0.033% of the rock master's, 0.065% of the
-  Fantasy's, 0.08% of the talk's, 0.094% of the loud master's and 0.11%
-  of the wide mix's, which is five to ten times the bar, and the user
-  kept the choice every fourth. In the full run, that night's: the
-  recordings 0.94 to 1.02 of the run before's block, the Aria the 0.94,
-  the Fantasy and the wide mix 0.96, the 1962 speech 0.95, the talk the
-  1.02 with libFLAC's level 5 at 1.10 on that line, the machine's; the
-  made sounds within the run's noise, 0.90 to 1.02; the bytes a tenth of
-  a byte a block over on six lines and 0.2 on the orchestra, 0.01%,
-  every other line the same; the 48 kHz tone 0.30 of level 5's block and
-  0.61 of level 0's, and the Aria 0.95 of level 0's where the run before
-  read 1.01.
+  JFK 2.0%, the private talk 2.0%, the private loud master and wide mix
+  1.9%, the orchestra 1.3%, for at most 0.013% more bytes, the orchestra
+  0.2 of a byte a block of 1500, the Raven, the prison song and the talk
+  0.1, every other line the same; the late block the same, the refresh
+  falling on carried blocks. With it the pair chosen every eighth block
+  rather than fourth was measured, apart and together: apart 3.2% to
+  4.2% fewer instructions and 8.2% on the JFK, together 4.8% to 6.5% and
+  9.8%, the block that chooses the pair coming half as often, 23.8 µs
+  against a carried 20.2 on the Fantasy, for 0.015% of the Aria's bytes,
+  0.033% of the rock master's, 0.065% of the Fantasy's, 0.08% of the
+  talk's, 0.094% of the loud master's and 0.11% of the wide mix's, which
+  is five to ten times the bar, and the user kept the choice every
+  fourth. In the full run, that night's: the recordings 0.94 to 1.02 of
+  the run before's block, the Aria the 0.94, the Fantasy and the private
+  wide mix 0.96, the 1962 speech 0.95, the private loud master 0.99, the
+  private talk the 1.02 with libFLAC's level 5 at 1.10 on that line, the
+  machine's; the made sounds within the run's noise, 0.90 to 1.02; the
+  bytes a tenth of a byte a block over on six lines and 0.2 on the
+  orchestra, 0.01%, every other line the same; the 48 kHz tone 0.30 of
+  level 5's block and 0.61 of level 0's, and the Aria 0.95 of level 0's
+  where the run before read 1.01.
 - **The fixed path left out where the fit keeps winning** (the end of the
   afternoon of 2026-10-24, item 1 of the plan as it stood, the tone's
   fixed path): the mirror of the skip. A channel whose fit, coded beside
@@ -874,32 +877,35 @@ called ready.
   read by its place in the cycle: the late block fell, the Aria's from
   30.9 µs to 28.1 against a carried block of 24.2, the 1924 record's
   from 32.1 to 30.5 against 26.8, the orchestra's from 13.7 to 12.6
-  against 11.2, the Raven's from 11.4 to 10.4 against 8.9, and the p99
-  with it, the Aria 43.5 to 42.5, the 1924 record 44.4 to 41.2, the
-  orchestra 21.7 to 20.0, the JFK 15.4 to 12.0; but a count is the
-  channel's
-  autocorrelation, fit, residual and fold, 1.5 µs on speech and 3.6 on
-  the Aria, nearly the channel's whole coding, and the choosing block
-  had been coding the pair from the counts' own residuals, which a
-  carried coding does over: a cycle took one more autocorrelation, the
-  mid's having followed from the other three's, and two more residuals,
-  and the mean rose 3% to 5% on every stereo recording, 25.3 to 26.3 µs
-  on the Aria, 9.4 to 9.7 on the Raven, and 9% to 13% on the made stereo
-  music and speech, whose estimates had settled the pair with no count
-  at all; the choice a block late cost 0.03% to 0.15% of the bytes, the
-  Aria 1.6 bytes a block of 5313, the 1924 record 12.4 of 8657, the
-  orchestra 1.0 of 1500, the talk 2.4 of 1620, the loud master 3.4 of
-  2547; and the first block of a
-  stream, counting all four and coding the pair, was half as long again,
-  16 to 23 µs on the made music, which a 50-block made sound's p99
-  reads. A second schedule, the choosing block counting the second other
-  channel itself so that nothing the choice read was older than a block,
-  cost the same bytes or more, the Aria 3.6 bytes, the talk 4.1: the
-  cost is the choice made on the block before, not the counts' age. Out,
-  the late block being worth a tenth less and the mean 4% more, with the
-  bytes against it too; the late block's excess over a carried block is
-  the two other channels' counts, which cannot leave the block without
-  being made again.
+  against 11.2, the Raven's from 11.4 to 10.4 against 8.9, the private
+  wide mix's from 11.0 to 10.6 against 9.2, the private loud master's
+  from 11.3 to 10.6 against 9.2 and the private talk's from 11.4 to 10.5
+  against 9.0, and the p99 with it, the Aria 43.5 to 42.5, the 1924
+  record 44.4 to 41.2, the orchestra 21.7 to 20.0, the JFK 15.4 to 12.0;
+  but a count is the channel's autocorrelation, fit, residual and fold,
+  1.5 µs on speech and 3.6 on the Aria, nearly the channel's whole
+  coding, and the choosing block had been coding the pair from the
+  counts' own residuals, which a carried coding does over: a cycle took
+  one more autocorrelation, the mid's having followed from the other
+  three's, and two more residuals, and the mean rose 3% to 5% on every
+  stereo recording, 25.3 to 26.3 µs on the Aria, 9.4 to 9.7 on the
+  Raven, 9.4 to 9.9 on the private wide mix, 9.5 to 9.9 on the private
+  loud master and 9.4 to 9.7 on the private talk, and 9% to 13% on the
+  made stereo music and speech, whose estimates had settled the pair
+  with no count at all; the choice a block late cost 0.03% to 0.15% of
+  the bytes, the Aria 1.6 bytes a block of 5313, the 1924 record 12.4 of
+  8657, the orchestra 1.0 of 1500, the private talk 2.4 of 1620, the
+  private loud master 3.4 of 2547 and the private wide mix 1.9 of 2327;
+  and the first block of a stream, counting all four and coding the
+  pair, was half as long again, 16 to 23 µs on the made music, which a
+  50-block made sound's p99 reads. A second schedule, the choosing block
+  counting the second other channel itself so that nothing the choice
+  read was older than a block, cost the same bytes or more, the Aria 3.6
+  bytes, the talk 4.1: the cost is the choice made on the block before,
+  not the counts' age. Out, the late block being worth a tenth less and
+  the mean 4% more, with the bytes against it too; the late block's
+  excess over a carried block is the two other channels' counts, which
+  cannot leave the block without being made again.
 - **The Rice parameter stepped from the logarithms' difference**, once
   more (the same afternoon, with the correction): the corrected cost's
   convexity gives the step up or down from one quotient and two
