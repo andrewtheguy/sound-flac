@@ -38,5 +38,5 @@ recording measured against libFLAC is in
 Use it by release tag:
 
 ```toml
-sound-flac = { git = "https://github.com/andrewtheguy/sound-flac", tag = "v0.0.6" }
+sound-flac = { git = "https://github.com/andrewtheguy/sound-flac", tag = "v0.0.7" }
 ```
