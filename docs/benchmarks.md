@@ -100,7 +100,21 @@ made sounds are within 1% but the mono shape, where all five are 0.2 µs
 over the run before's, silence 1.36 µs against 1.13, which the shape run
 twice more came to again while libFLAC's mono times held: the encoder
 being the same code, that is the bench binary, laid out otherwise with
-its JSON writer, and it is left as measured.
+its JSON writer, and it is left as measured. The level 0 cells of that
+machine, this encoder over libFLAC's fastest level at 1.08 on 48 kHz
+music and 1.43 on its tone, 1.45 and 1.51 on 8-bit, 1.23 and 1.39 at 96
+kHz, were checked afterwards with the bench timing the four coders
+together, every block by each coder in turn (`INTERLEAVE=1`), so that
+both sides of a ratio see the machine in one state: two such runs, with
+two ordinary runs between them, put every made-sound ratio of the arm64
+tables within 0.03 of the run's, this encoder's and level 0's times
+within 2%, and the mono shape's 0.2 µs came off again with the bench
+rebuilt. The cells are the machines', not the run's: this encoder's block
+is the same length on the two, 16.6 µs against 16.8 on 48 kHz music, and
+level 0's is 15.3 µs on the Altra against 19.9 on the i5. On the i5 the
+interleaving puts about 1 µs on every coder's block, the four sharing the
+cache, and leaves the ratios within 0.03 but silence, whose 1.3 µs block
+grows by half.
 
 The Windows run of the section after it was made the same evening, after
 the x86 run and while the arm64 run was ending on its own machine, on
