@@ -28,6 +28,8 @@ pub struct Predictor {
     pub precision: u32,
     /// The bits the prediction's sum is shifted down by.
     pub shift: u32,
+    /// The coefficients, the first `order` of them, and zero past it, which
+    /// the residual's loops rely on where they run at a higher order.
     pub coefs: [i32; MAX_ORDER],
 }
 
@@ -390,47 +392,71 @@ fn rounding_error(coefs: &[f64], predictor: &Predictor, autoc: &Autocorrelation)
 /// residual would not fit a 32-bit sample or would be its most negative
 /// value, which FLAC forbids a residual to be, and which only a wide
 /// sample's wild predictor can make.
+///
+/// The 16-bit loops are run at the orders the compiler lays out well, a
+/// lower order over a copy led by zero samples, its taps past the order
+/// zero: the compiler takes the taps two at a time into one multiply-add
+/// of 16-bit lanes, an odd order's last tap through a 32-bit multiply
+/// instead, and the split loop at orders 2, 3, 6 and 7 comes out partly or
+/// wholly scalar. Measured apart on the EPYC over 960 samples, the 16-bit
+/// loop at order 3 run as 4 is 0.66 of its time, 5 as 6 0.81 and 7 as 8
+/// 0.89, where 2 as 4 is 1.7, and the split loop at 2 as 4 0.47, 3 as 4
+/// 0.35, 6 as 8 0.75 and 7 as 8 0.56, where 5 as 8 is 1.16. In the
+/// encoder, against the run before: pink noise 5.3% fewer instructions,
+/// the indie record 3.6%, the Aria 3.1%, the 1962 speech 1.9%, the 1924
+/// record 1.6% and the 16-bit recordings 0.3% to 0.8%, the same bytes.
 pub fn residual(signal: &[i32], predictor: &Predictor, bps: u32, halves: &mut [Vec<i16>; 2], out: &mut Vec<i32>) -> bool {
     out.clear();
     let [upper, lower] = halves;
+    let n = signal.len();
+    let order = predictor.order;
     if bps <= 16 {
         // Samples and coefficients of 16 bits, which the compiler multiplies
         // and adds in pairs with one instruction at every x86-64's baseline.
-        upper.resize(signal.len(), 0);
-        for (h, &s) in upper.iter_mut().zip(signal) {
+        let run = match order {
+            3 => 4,
+            5 => 6,
+            7 => 8,
+            o => o,
+        };
+        let lead = run - order;
+        upper.resize(n + lead, 0);
+        upper[..lead].fill(0);
+        for (h, &s) in upper[lead..].iter_mut().zip(signal) {
             *h = s as i16;
         }
-        let halves = &upper[..];
-        match predictor.order {
-            1 => narrow::<1>(halves, predictor, out),
-            2 => narrow::<2>(halves, predictor, out),
-            3 => narrow::<3>(halves, predictor, out),
-            4 => narrow::<4>(halves, predictor, out),
-            5 => narrow::<5>(halves, predictor, out),
-            6 => narrow::<6>(halves, predictor, out),
-            7 => narrow::<7>(halves, predictor, out),
-            _ => narrow::<8>(halves, predictor, out),
+        match run {
+            1 => narrow::<1>(upper, predictor, out),
+            2 => narrow::<2>(upper, predictor, out),
+            4 => narrow::<4>(upper, predictor, out),
+            6 => narrow::<6>(upper, predictor, out),
+            _ => narrow::<8>(upper, predictor, out),
         }
         true
     } else if predictor.shift >= bps - 16 {
         // A wider sample as its upper 16 bits and its lower `bps - 16`, each
         // part's sum taken as the 16-bit path takes it; see `split`.
         let low = bps - 16;
-        upper.resize(signal.len(), 0);
-        lower.resize(signal.len(), 0);
-        for ((u, l), &s) in upper.iter_mut().zip(lower.iter_mut()).zip(signal) {
+        let run = match order {
+            2 | 3 => 4,
+            6 | 7 => 8,
+            o => o,
+        };
+        let lead = run - order;
+        upper.resize(n + lead, 0);
+        lower.resize(n + lead, 0);
+        upper[..lead].fill(0);
+        lower[..lead].fill(0);
+        for ((u, l), &s) in upper[lead..].iter_mut().zip(&mut lower[lead..]).zip(signal) {
             *u = (s >> low) as i16;
             *l = (s & ((1 << low) - 1)) as i16;
         }
-        match predictor.order {
-            1 => split::<1>(upper, lower, signal, predictor, low, out),
-            2 => split::<2>(upper, lower, signal, predictor, low, out),
-            3 => split::<3>(upper, lower, signal, predictor, low, out),
-            4 => split::<4>(upper, lower, signal, predictor, low, out),
-            5 => split::<5>(upper, lower, signal, predictor, low, out),
-            6 => split::<6>(upper, lower, signal, predictor, low, out),
-            7 => split::<7>(upper, lower, signal, predictor, low, out),
-            _ => split::<8>(upper, lower, signal, predictor, low, out),
+        let predicted = &signal[order..];
+        match run {
+            1 => split::<1>(upper, lower, predicted, predictor, low, out),
+            4 => split::<4>(upper, lower, predicted, predictor, low, out),
+            5 => split::<5>(upper, lower, predicted, predictor, low, out),
+            _ => split::<8>(upper, lower, predicted, predictor, low, out),
         }
         true
     } else {
@@ -439,10 +465,11 @@ pub fn residual(signal: &[i32], predictor: &Predictor, bps: u32, halves: &mut [V
 }
 
 /// The residual of 16-bit samples with 32-bit sums, the order a constant so
-/// the inner loop unrolls and the outer vectorises. The output is sized
-/// first and written through a slice: written through `extend`, the stores
-/// could alias the closure's coefficients for all the compiler knows, and
-/// the loop stays scalar.
+/// the inner loop unrolls and the outer vectorises; `ORDER` is the loop's,
+/// the predictor's or one above it with the taps past it zero. The output
+/// is sized first and written through a slice: written through `extend`,
+/// the stores could alias the closure's coefficients for all the compiler
+/// knows, and the loop stays scalar.
 fn narrow<const ORDER: usize>(signal: &[i16], predictor: &Predictor, out: &mut Vec<i32>) {
     let c: [i16; ORDER] = std::array::from_fn(|j| predictor.coefs[j] as i16);
     let shift = predictor.shift;
@@ -466,12 +493,14 @@ fn narrow<const ORDER: usize>(signal: &[i16], predictor: &Predictor, out: &mut V
 /// most, the upper part 16 and the lower 8, over eight taps. The 32-bit
 /// lanes this replaced have no multiply at the x86-64 baseline, and took
 /// four times as long on the side channel of a 16-bit stereo pair, which is
-/// 17 bits wide.
-fn split<const ORDER: usize>(upper: &[i16], lower: &[i16], signal: &[i32], predictor: &Predictor, low: u32, out: &mut Vec<i32>) {
+/// 17 bits wide. `predicted` is the samples predicted, from the
+/// predictor's order on, and `ORDER` the loop's, the predictor's or one
+/// above it with the halves led by as many zero samples.
+fn split<const ORDER: usize>(upper: &[i16], lower: &[i16], predicted: &[i32], predictor: &Predictor, low: u32, out: &mut Vec<i32>) {
     let c: [i16; ORDER] = std::array::from_fn(|j| predictor.coefs[j] as i16);
     let shift = predictor.shift - low;
-    out.resize(signal.len() - ORDER, 0);
-    for (((o, &s), u), l) in out.iter_mut().zip(&signal[ORDER..]).zip(upper.windows(ORDER)).zip(lower.windows(ORDER)) {
+    out.resize(predicted.len(), 0);
+    for (((o, &s), u), l) in out.iter_mut().zip(predicted).zip(upper.windows(ORDER)).zip(lower.windows(ORDER)) {
         let mut sum_upper = 0i32;
         let mut sum_lower = 0i32;
         for j in 0..ORDER {

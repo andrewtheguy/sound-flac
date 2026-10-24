@@ -1,46 +1,45 @@
 # The plan of the encoder, and what was decided
 
-What the encoder is for, what is decided about it, and what is taken up
-next, in which order and why. What it is now is in the module docs of
-`src/lib.rs`, `src/subframe.rs` and `src/lpc.rs`; the tables it is measured
-by are in [benchmarks.md](benchmarks.md). Written on 2026-10-22, on the
-first measurement over recordings, at commit e3173f7 of branch
-`own-encoder`; brought to the run of the fit in double precision the same
-day, to the night of 2026-10-23, when its six items were measured, to the
-day after, when the time against libFLAC's level 0 was taken up, and to
-that afternoon, when it was taken up again: the fixed path left out where
-the fit clearly wins, and the autocorrelation at the floor; and to the end
-of that day, when the fourth block was weighed on a count in place of its
-four fixed codings; and to 2026-10-24, when the rows still on libFLAC's
-side of the line were taken up in the order of how far over they were: the
-tone's bytes and time, then the time against level 0 at 24 bits and 96 kHz;
-and to the evening of 2026-10-23 by the machine's clock, when the fresh
-block was taken up and the pair came to be chosen on the four channels'
-counts; and to the morning of 2026-10-24, when the x86 run moved from the
-desktop to an idle machine and a fifteenth recording was added; and to
-that afternoon, when the open items were planned again from the EPYC's
-own profile, the cells still over libFLAC first, with the arm64 run held
-until the round is called ready, and to that afternoon's end, when the
-first of them, the Rice parameter's estimate, was taken, and the second,
-the residual's fold and the finest partition sums in one pass, and the
+What the encoder is for, what is decided about it, and what is taken up next,
+in which order and why. What it is now is in the module docs of `src/lib.rs`,
+`src/subframe.rs` and `src/lpc.rs`; the tables it is measured by are in
+[benchmarks.md](benchmarks.md). Written on 2026-10-22, on the first
+measurement over recordings, at commit e3173f7 of branch `own-encoder`;
+brought to the run of the fit in double precision the same day, to the night
+of 2026-10-23, when its six items were measured, to the day after, when the
+time against libFLAC's level 0 was taken up, and to that afternoon, when it
+was taken up again: the fixed path left out where the fit clearly wins, and
+the autocorrelation at the floor; and to the end of that day, when the fourth
+block was weighed on a count in place of its four fixed codings; and to
+2026-10-24, when the rows still on libFLAC's side of the line were taken up in
+the order of how far over they were: the tone's bytes and time, then the time
+against level 0 at 24 bits and 96 kHz; and to the evening of 2026-10-23 by the
+machine's clock, when the fresh block was taken up and the pair came to be
+chosen on the four channels' counts; and to the morning of 2026-10-24, when
+the x86 run moved from the desktop to an idle machine and a fifteenth
+recording was added; and to that afternoon, when the open items were planned
+again from the EPYC's own profile, the cells still over libFLAC first, with
+the arm64 run held until the round is called ready, and to that afternoon's
+end, when the first of them, the Rice parameter's estimate, was taken, and the
+second, the residual's fold and the finest partition sums in one pass, and the
 third, the fixed path left out where the fit keeps winning; and to that
-evening, when the fourth, the fourth block's counts spread over the
-cycle, was measured and not taken, and the bar on bytes against time was
-set; and to that night, when by that bar the corrections' refresh was
-halved, the pair's choice measured halved and not taken, and two more
-refusals made on bytes of that size put back among the open items; and
-to later that night, when the first of them, the partitions' search
-walked from the coarse end, was measured and taken at three rises; and
-to the small hours after, when the other, the fourth block where two
-channels are one signal, was taken another way, the block carried where
-the side is one value, and the two ways refused before were measured
-again and not taken.
-The days before that are the count the sessions kept, which ran ahead of
-the machine's clock: by the commits, which that clock stamps in Pacific
-time, all of it ran from the evening of 2026-10-22 to the afternoon of
-2026-10-23, the night of 2026-10-23 here being noon of that day and
-2026-10-24 its afternoon; the evening of 2026-10-23 is the clock's, and
-follows them.
+evening, when the fourth, the fourth block's counts spread over the cycle, was
+measured and not taken, and the bar on bytes against time was set; and to that
+night, when by that bar the corrections' refresh was halved, the pair's choice
+measured halved and not taken, and two more refusals made on bytes of that
+size put back among the open items; and to later that night, when the first of
+them, the partitions' search walked from the coarse end, was measured and
+taken at three rises; and to the small hours after, when the other, the fourth
+block where two channels are one signal, was taken another way, the block
+carried where the side is one value, and the two ways refused before were
+measured again and not taken; and to the hour after that, when the residual of
+a fit was measured apart, the pair layout not taken and the loops run at the
+orders the compiler lays out well. The days before that are the count the
+sessions kept, which ran ahead of the machine's clock: by the commits, which
+that clock stamps in Pacific time, all of it ran from the evening of
+2026-10-22 to the afternoon of 2026-10-23, the night of 2026-10-23 here being
+noon of that day and 2026-10-24 its afternoon; the evening of 2026-10-23 is
+the clock's, and follows them.
 
 ## What it is for
 
@@ -265,45 +264,30 @@ and what is left of it is the Altra's, where the run is unchanged.
 ## Open items, in order
 
 Planned again on the afternoon of 2026-10-24 from the EPYC's own profile,
-under *Where it stands*: the cells still over libFLAC first, then the
-parts of a block the profile puts at a fifth and the late block; the one
-cell in bytes, the 8-bit noise's, was the first item and is taken, below,
-the partitions' fold and finest sums, the second, after it, and the fixed
-path left out where the fit keeps winning, the third, after that; the
-fourth, the fourth block's counts spread over the cycle, was measured
-that evening and not taken, under *Measured and not taken*, the late
-block falling by a tenth for a mean 4% longer and a tenth of a per cent
-of the bytes, and the bar on bytes against time set then, under *What it
-is for*, brought two refusals back: the corrections' refresh halved,
-measured again that night and taken, under *Measured and taken*, and the
-pair's choice halved, measured with it and not; of the two more refusals
-of the same kind, the partitions' search stopped past the best was
-measured later that night and taken at three orders past, under
-*Measured and taken*, and the other, the fourth block where two
-channels are one signal, was taken another way in the small hours after,
-the block carried where the side is one value, under *Measured and
-taken*.
-Each is measured on the EPYC alone, bytes on every made sound and
-recording and time a block against the run before, and taken with the full
-x86 run and the tables; the arm64 run is made once, when the round is
-called ready.
+under *Where it stands*: the cells still over libFLAC first, then the parts of
+a block the profile puts at a fifth and the late block; the one cell in bytes,
+the 8-bit noise's, was the first item and is taken, below, the partitions'
+fold and finest sums, the second, after it, and the fixed path left out where
+the fit keeps winning, the third, after that; the fourth, the fourth block's
+counts spread over the cycle, was measured that evening and not taken, under
+*Measured and not taken*, the late block falling by a tenth for a mean 4%
+longer and a tenth of a per cent of the bytes, and the bar on bytes against
+time set then, under *What it is for*, brought two refusals back: the
+corrections' refresh halved, measured again that night and taken, under
+*Measured and taken*, and the pair's choice halved, measured with it and not;
+of the two more refusals of the same kind, the partitions' search stopped past
+the best was measured later that night and taken at three orders past, under
+*Measured and taken*, and the other, the fourth block where two channels are
+one signal, was taken another way in the small hours after, the block carried
+where the side is one value, under *Measured and taken*; and the residual of a
+fit, the first item after those, was measured apart the hour after, the pair
+layout not taken and the loops run at the orders the compiler lays out well,
+under *Measured and taken*. Each is measured on the EPYC alone, bytes on every
+made sound and recording and time a block against the run before, and taken
+with the full x86 run and the tables; the arm64 run is made once, when the
+round is called ready.
 
-1. **The residual of a fit, 14% to 27% of the block**: 14% on the
-   orchestra, 16% to 18% at 44.1 kHz and on the Fantasy, 22% on the 1924
-   record and 27% on the Aria, where a 24-bit sample's residual runs as
-   two 16-bit passes. The 16-bit loop widens each tap and multiplies it
-   apart, `pmaddwd` taking eight products at a time but two taps together
-   only as the compiler lays them; the samples laid out once a block as
-   pairs of adjacent 16-bit values would give each `pmaddwd` two taps of
-   two samples, about half the inner loop's instructions, and the split
-   path takes it twice over. Measured apart first, at orders 2, 4 and 8
-   over 960 and 1920 samples, 16-bit and split, against the loops as they
-   are: the compiler's codegen is the whole question, and the tree of
-   pairs tried before came out as the same loop. To be counted with it, in
-   a copy of the tree: how often a 16-bit stereo recording's side channel
-   is 17 bits wide in its samples and takes the split pass, which is where
-   the loud masters' time would go.
-2. **The CRC inside the writer's pass** (the frame's CRC 4% to 7% at 16
+1. **The CRC inside the writer's pass** (the frame's CRC 4% to 7% at 16
    bits, 7% to 14% on the 24-bit recordings and noise, 20% of 24-bit
    noise's block): the two chains of table lookups are their loads'
    latency, and they run after the writer, whose own work is a dependent
@@ -315,7 +299,7 @@ called ready.
    chain leaves the load ports idle, which is a measurement, apart on
    frames of 1500 to 8700 bytes and then in the encoder on pink noise and
    the 1924 record.
-3. **The stereo split and the four channels' preparing in one pass**, 8%
+2. **The stereo split and the four channels' preparing in one pass**, 8%
    to 9% of a stereo block: the split writes left, right, mid and side in
    one pass and each channel's `prepare` reads its signal back for the
    wasted bits, the constant check and the width, four passes over what
@@ -326,7 +310,7 @@ called ready.
    header are 13.6% of a 5 µs block, the strided copy being a copy of one
    channel: there the samples can be prepared straight from the block.
    About 3% of a stereo block to measure, the same bytes.
-4. **The autocorrelation**, the largest part at 16 bits, 19% to 23%, is at
+3. **The autocorrelation**, the largest part at 16 bits, 19% to 23%, is at
    the floor the x86-64 baseline sets: 18 floating-point operations on
    every two samples on two ports, with no fused multiply-add at the
    baseline, where the EPYC has one and the Altra uses it. Nothing to take
@@ -336,6 +320,54 @@ called ready.
 
 ## Measured and taken
 
+- **The residual's loops run at the orders the compiler lays out well,
+  the pair layout not taken** (the hour after the small hours' change of
+  2026-10-24, item 1 of the plan as it stood, the residual of a fit at
+  14% to 27% of the block): measured apart first, as the item asked, in
+  a microbench on the EPYC of the two 16-bit loops as they are against
+  the samples laid out once as pairs of adjacent 16-bit values. The
+  loops as they are already take the taps two at a time into one
+  `pmaddwd`, each tap's 16-bit lanes interleaved with zeros; from the
+  pairs, as `u32` or as `[i16; 2]`, the compiler did not make the one
+  multiply-add of two taps the layout is for but shuffled the halves
+  apart again and multiplied them one at a time, 2.1 to 2.5 times the
+  loop's time as `u32` and 0.83 to 1.6 as `[i16; 2]`, 0.83 to 0.88 at
+  orders 2 to 4 and 1.1 to 1.6 above, so the pair layout is not taken:
+  the codegen was the whole question, and it said no. What the
+  measurement did show is in the loops as they are. An odd order's last
+  tap goes through a 32-bit multiply, `pmuludq` and its shuffles, and
+  the loop takes half as long again as the next even order's, order 3
+  396 ns over 960 samples against order 4's 263, 5 466 against 6's 378
+  and 7 568 against 8's 503; and the split loop at orders 2 and 3 comes
+  out scalar, 1029 and 1362 ns against order 4's 470, and at 6 and 7
+  partly, 1275 and 1713 against 8's 954. So each loop is run at the
+  order the compiler lays out well, over the 16-bit copy led by as many
+  zero samples as the order is raised by, the taps past the order zero
+  as the predictor keeps them, which is exact: the 16-bit loop at 3 as
+  4, 5 as 6 and 7 as 8, 0.66, 0.81 and 0.89 of the time, and the split
+  loop at 2 and 3 as 4 and 6 and 7 as 8, 0.47, 0.35, 0.75 and 0.56; 2 as
+  4 in the 16-bit loop is 1.7 and 5 as 8 in the split 1.16, so those
+  stay. A scalar head loop before the even loop was tried first, for the
+  outputs the padded window cannot reach, and the compiler stopped
+  vectorising the even loop behind it; the leading zeros cost nothing,
+  the copy being made in any case. Counted in a copy of the tree, by
+  path and order: on the 16-bit recordings the odd orders are 27% to 60%
+  of the fit's residuals, the Fantasy 27%, the private wide mix 32%, the
+  Raven 36%, the orchestra 42%, the private talk 44% and loud master
+  60%; the split path is the 24-bit recordings' and nearly never a
+  16-bit side's, the side 17 bits wide on 3.4% of the private loud
+  master's blocks, 1.6% of the Fantasy's and none of the other 16-bit
+  recordings', which answers the item's question; and on the 24-bit
+  recordings orders 6 and 7 are 67% of the Aria's residuals and 49% of
+  the indie record's, orders 2 and 3 are 12% of the 1962 speech's and
+  62% of the noises', pink noise's, white noise's fit being order 1.
+  Measured on the EPYC against the run before: pink noise 5.3% fewer
+  instructions, the indie record 3.6%, the Aria 3.1%, the 1962 speech
+  1.9%, the 1924 record 1.6%, the train station 0.8%, the private loud
+  master 0.7%, talk 0.6% and wide mix 0.3%, the orchestra and the mono
+  reading 0.5%, the Raven 0.4%, the Fantasy and the prison song 0.3% and
+  white noise none; the made sounds within the timing's noise, the
+  24-bit tone 0.93; the bytes the same on every line.
 - **The block whose side is one value carried, not chosen on** (the
   small hours after the night of 2026-10-24, item 1 of the plan as it
   stood, the fourth block where two channels are one signal): where the
