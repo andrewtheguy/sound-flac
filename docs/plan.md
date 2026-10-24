@@ -22,7 +22,8 @@ that afternoon, when the open items were planned again from the EPYC's
 own profile, the cells still over libFLAC first, with the arm64 run held
 until the round is called ready, and to that afternoon's end, when the
 first of them, the Rice parameter's estimate, was taken, and the second,
-the residual's fold and the finest partition sums in one pass.
+the residual's fold and the finest partition sums in one pass, and the
+third, the fixed path left out where the fit keeps winning.
 The days before that are the count the sessions kept, which ran ahead of
 the machine's clock: by the commits, which that clock stamps in Pacific
 time, all of it ran from the evening of 2026-10-22 to the afternoon of
@@ -104,14 +105,15 @@ the tables' arm64 section is of the run before the round.
 
 ## Where it stands
 
-The tables are of the afternoon of 2026-10-24 on the EPYC, late in it, the
-Rice parameter's estimate corrected and the residual's fold and finest sums
-made one pass (both under *Measured and taken*), within a twentieth of the
-afternoon's run before it on every time but two made lines the machine's,
-and within a twentieth of the morning's but for those, the same bytes as
-the morning's but the 8-bit noise's and the 96 kHz tone's, the recordings
-0.23 to 0.46 of libFLAC's time; the arm64 section is the morning's, held
-while the round is measured on x86. From the tables of that morning, the encoder of v0.0.8
+The tables are of the end of the afternoon of 2026-10-24 on the EPYC, the
+Rice parameter's estimate corrected, the residual's fold and finest sums
+made one pass and the fixed path left out where the fit keeps winning (all
+three under *Measured and taken*), the recordings 0.23 to 0.46 of
+libFLAC's time, the 48 kHz tone 0.32 where the morning had it at 0.35 and
+0.66 of level 0's time where it had 0.74, the same bytes as the morning's
+within a tenth of a byte a block but the 8-bit noise's and the 96 kHz
+tone's; the arm64 section is the morning's, held while the round is
+measured on x86. From the tables of that morning, the encoder of v0.0.8
 unchanged, the x86 run moved from the desktop i5 under WSL2, which was
 never quiet, to an idle KVM machine on an AMD EPYC Rome, and a
 fifteenth recording added, one voice talking over soft music: 0.24 to
@@ -252,35 +254,14 @@ Planned again on the afternoon of 2026-10-24 from the EPYC's own profile,
 under *Where it stands*: the cells still over libFLAC first, then the
 parts of a block the profile puts at a fifth and the late block; the one
 cell in bytes, the 8-bit noise's, was the first item and is taken, below,
-and the partitions' fold and finest sums, the second, after it.
+the partitions' fold and finest sums, the second, after it, and the fixed
+path left out where the fit keeps winning, the third, after that.
 Each is measured on the EPYC alone, bytes on every made sound and
 recording and time a block against the run before, and taken with the full
 x86 run and the tables; the arm64 run is made once, when the round is
 called ready.
 
-1. **The fixed path left out where the fit keeps winning** (the tone's
-   time against level 0, 1.01 at 96 kHz on the EPYC and 1.11 to 1.27 past
-   44.1 kHz on the Altra, and a part of every recording's block). On the
-   side channel of the tone the fit wins by about an eighth of a bit a
-   sample and is never clear by the margin after the correction, so both
-   codings are made on every block: the fixed order search is 12% of the
-   48 kHz tone's block and the fixed path 15.5% in all, against 4% to 9%
-   elsewhere. On the orchestra both are coded on two carried channels in
-   three, one in three by the schedule that refreshes the correction and
-   one in three by the margin. The skip rule has a mirror: a channel whose
-   fit, both coded, has beaten the fixed coding by `LOSS` a sample
-   `LOSSES` blocks running has the fixed path left out for `SKIPS` blocks,
-   its correction kept, and both coded again after; the schedule's two
-   blocks a cycle stay, so the correction is never older than a cycle.
-   What it can cost is the blocks inside the run where the fixed coding
-   would have won by a sliver, which the loss skip, its mirror image,
-   measured at 0.01% on the recordings; what it buys is the fixed path on
-   the tone's side channel and on the margin's third of the orchestra's
-   carried channels, about a tenth of the tone's block and a twentieth of
-   the orchestra's. Bytes first, on every recording and made sound, the
-   tones' watched, since the rounding of their coefficients is what the
-   fixed path catches there.
-2. **The fourth block, the late block** (1.31 of a carried block on the
+1. **The fourth block, the late block** (1.31 of a carried block on the
    orchestra on the EPYC, 14.3 against 10.9 µs, 1.34 on the Aria, 1.26 on
    the Fantasy, 1.33 on the Raven): its excess over a carried block is the
    third autocorrelation, two more fits and, where the estimates do not
@@ -304,7 +285,7 @@ called ready.
    block, the pair can move mid-cycle on a count rather than only on the
    bound, which is where part of the recordings' 1.001 against libFLAC's
    bytes went.
-3. **The residual of a fit, 14% to 27% of the block**: 14% on the
+2. **The residual of a fit, 14% to 27% of the block**: 14% on the
    orchestra, 16% to 18% at 44.1 kHz and on the Fantasy, 22% on the 1924
    record and 27% on the Aria, where a 24-bit sample's residual runs as
    two 16-bit passes. The 16-bit loop widens each tap and multiplies it
@@ -319,7 +300,7 @@ called ready.
    a copy of the tree: how often a 16-bit stereo recording's side channel
    is 17 bits wide in its samples and takes the split pass, which is where
    the loud masters' time would go.
-4. **The CRC inside the writer's pass** (the frame's CRC 4% to 7% at 16
+3. **The CRC inside the writer's pass** (the frame's CRC 4% to 7% at 16
    bits, 7% to 14% on the 24-bit recordings and noise, 20% of 24-bit
    noise's block): the two chains of table lookups are their loads'
    latency, and they run after the writer, whose own work is a dependent
@@ -331,7 +312,7 @@ called ready.
    chain leaves the load ports idle, which is a measurement, apart on
    frames of 1500 to 8700 bytes and then in the encoder on pink noise and
    the 1924 record.
-5. **The stereo split and the four channels' preparing in one pass**, 8%
+4. **The stereo split and the four channels' preparing in one pass**, 8%
    to 9% of a stereo block: the split writes left, right, mid and side in
    one pass and each channel's `prepare` reads its signal back for the
    wasted bits, the constant check and the width, four passes over what
@@ -342,16 +323,50 @@ called ready.
    header are 13.6% of a 5 µs block, the strided copy being a copy of one
    channel: there the samples can be prepared straight from the block.
    About 3% of a stereo block to measure, the same bytes.
-6. **The autocorrelation**, the largest part at 16 bits, 19% to 23%, is at
+5. **The autocorrelation**, the largest part at 16 bits, 19% to 23%, is at
    the floor the x86-64 baseline sets: 18 floating-point operations on
    every two samples on two ports, with no fused multiply-add at the
    baseline, where the EPYC has one and the Altra uses it. Nothing to take
    short of the users building with `target-cpu`, which is theirs; the
-   third autocorrelation on the fresh block leaves with item 2, and
+   third autocorrelation on the fresh block leaves with item 1, and
    nothing else in the block asks for one.
 
 ## Measured and taken
 
+- **The fixed path left out where the fit keeps winning** (the end of the
+  afternoon of 2026-10-24, item 1 of the plan as it stood, the tone's
+  fixed path): the mirror of the skip. A channel whose fit, coded beside
+  the fixed coding, has beaten it by `WIN`, a sixteenth of a bit a sample,
+  `WINS` blocks running, two, has the fixed path left out for `SKIPS`
+  blocks, seven, the fit coded alone whatever the margin says, as the
+  margin codes it, the slack over its estimate still sending the fixed
+  path after it; both are coded again after, and on the two blocks a
+  cycle the pair's schedule has both coded on, so the correction is never
+  older than a cycle, and the run of wins and the blocks alone are kept
+  across a constant block as the losses are. The fourth block counts the
+  fixed predictor beside the fit by the same test. A sixteenth and not
+  the loss's eighth: instrumented, the fit wins the 48 kHz tone's side
+  channel by 0.121 bits a sample on every block, just under the eighth
+  the margin asks after the correction, so both codings were made on 58
+  of 100 channel-blocks of the made tone where the schedule alone would
+  make 22; with the rule, 22. On 60 s of the recordings, both coded on
+  the carried and fourth blocks' channels: the talk 2800 of 6000
+  channel-blocks to 2196, the 1962 speech 1547 to 1307, the wide mix 1902
+  to 1613, the indie 2012 to 1687, where the fit wins by under an eighth
+  on a third to a half of the blocks both are coded on and by under a
+  sixteenth on a tenth to a half; the pianos 1505 either way, the
+  schedule's, their fit clear by the margin on every block. Bytes, on the
+  EPYC: seven lines move by a tenth of a byte a block, 0.01%, the mono
+  and 24-bit made speech, the mono reading, the Raven, the orchestra and
+  the prison song over and the 1962 speech under; every other line the
+  same. Time: the 48 kHz tone's block 11.5 to 10.6 µs, four runs each
+  build alternating; by the machine's counters 1.8% fewer instructions on
+  the orchestra, 1.9% on the talk, 1.8% on the Raven, 1.4% on the 1962
+  speech, 0.2% on the Aria and none on the Fantasy; in the full run the 48
+  kHz tone 0.91 of the run before's block, 11.8 to 10.8 µs, 0.66 of level
+  0's time where it was 0.72, the recordings 0.95 to 1.03, the orchestra
+  the 0.95, and the other made sounds within the run's noise, which
+  reached a tenth on a few lines for every coder.
 - **The residual's fold and the finest partition sums in one pass** (the
   end of the afternoon of 2026-10-24, item 1 of the plan as it stood, the
   partitions' machinery): the fold wrote every folded value in a pass and
