@@ -272,7 +272,10 @@ recording, 0.58 to 0.87 on the 16-bit stereo ones and 0.78 to 0.98 on
 the 24-bit four, and on every made sound but the 96 kHz tone, 1.01: the
 EPYC runs this encoder half as fast again as the i5 and level 0's fixed
 path about as fast, so on x86 the column is now the machine's to read,
-and what is left of it is the Altra's, where the run is unchanged.
+and what was left of it was the Altra's, until the round's one run there at
+its end, under *Where it stands*, which reads 0.50 to 1.03 on the recordings,
+the Fantasy alone over 1.00, and over it on the made sounds only the 96 kHz
+music and tone and the 8-bit tone.
 
 ## Open items, in order
 
@@ -302,8 +305,8 @@ channels' preparing in one pass, the item after that, was taken the hour
 after, under *Measured and taken*; and the autocorrelation, the last, which
 the profile had put at the baseline's floor, was taken in the hours after
 that, summed as integers, under *Measured and taken*, which leaves the list
-empty: what is next is the arm64 run, when the round is called ready, and a
-plan again from a profile of this encoder. Each was measured on the EPYC
+empty; the arm64 run was made that night, when the round was called ready,
+and what is next is a plan again from a profile of this encoder. Each was measured on the EPYC
 alone, bytes on every made sound and recording and time a block against the
 run before, and taken with the full x86 run and the tables; the arm64 run is
 made once, when the round is called ready.

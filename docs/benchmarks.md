@@ -516,63 +516,65 @@ repository nothing else of them.
   block and level 0's 0.80 to 0.96 of its on the stereo recordings, 1.14
   on the mono reading, and 0.82 to 1.22 on the made sounds, the mono
   shape the over, so the EPYC runs this encoder half as fast again as
-  the i5 and level 0's fixed path about as fast. On arm64, where the run
-  is the morning's, held, it reads 0.90 to 1.12 on the 16-bit stereo
-  recordings, the Fantasy the 1.12 and the orchestra 1.07, the two mixes
-  0.90 and 0.93, the talk 0.96, the 1962 speech and white noise 0.64 and
-  0.63, the mono reading 0.69, and the 24-bit four 1.02 to 1.07; on the
-  made sounds 0.84 to 1.12 on stereo music, 48 kHz 0.98 and 8-bit 0.84,
-  and 0.98 to 1.27 on the tone, 48 kHz 1.11 and 8-bit 1.15. What is over
-  1.00 on the Altra is 96 kHz, the long block, the 24-bit four, the tone
-  past 44.1 kHz, where the side channel's fit wins by an eighth of a bit
-  and both codings are still made, and the orchestra and the Fantasy; on
-  the EPYC the Aria by a hundredth in this run, nothing in the two
-  before it and the 96 kHz tone in the morning's, the fixed path being
-  cheaper on the Altra against this encoder's work than on either x86
-  machine.
+  the i5 and level 0's fixed path about as fast. On arm64, the night's
+  run, it reads 0.85 to 1.03 on the 16-bit stereo recordings, the
+  Fantasy the 1.03 and the orchestra 0.99, the two mixes 0.85 and 0.87,
+  the talk 0.89, the 1962 speech and white noise 0.50 and 0.59, the mono
+  reading 0.66, and the 24-bit four 0.96 to 0.99, where the morning had
+  0.90 to 1.12, 0.64 and 0.63, 0.69 and 1.02 to 1.07; on the made sounds
+  0.82 to 1.04 on stereo music, 48 kHz 0.91 and 8-bit 0.82, and 0.96 to
+  1.20 on the tone, 48 kHz 0.99 and 8-bit 1.10. What is over 1.00 on the
+  Altra is 96 kHz, the long block, its music 1.04 and its tone 1.20, the
+  8-bit tone 1.10, where the side channel's fit wins by an eighth of a
+  bit and both codings are still made, and the Fantasy; on the EPYC
+  nothing in this run, the Aria by a hundredth in the morning's and the
+  96 kHz tone in the one before it, the fixed path being cheaper on the
+  Altra against this encoder's work than on either x86 machine.
 - **On arm64 the encoder stands where it does on x86 against libFLAC's
-  default level, and further from level 0.** The morning's run on the
-  two-core Ampere Altra, held there while the round is measured on x86
-  alone, in the section after the tables: the recordings are 0.25 to
-  0.42 of libFLAC's time a block where the EPYC is 0.23 to 0.46, the
-  made sounds 0.06 to 0.39 against 0.05 to 0.42 and silence 0.06 to 0.08
-  against 0.05 to 0.06. This encoder's mean block is longer there than
-  on the EPYC on every line, 1.24 to 1.46 of the morning's, the
-  recordings 1.24 to 1.43, while libFLAC's default level is 1.30 to 1.61
-  of its EPYC time on the stereo recordings and 1.01 on the mono
-  reading, and its level 0 0.84 to 1.20 on the recordings and 0.68 on
-  the mono reading; this encoder's 99th-percentile block is 8 to 52 µs
-  there against 7 to 46, and its worst 65 to 163 against 47 to 159, the
-  EPYC's being its tick. Against level 0 it is 0.90 to 1.12 of its time
-  on the 16-bit stereo recordings but the 1962 speech and white noise,
-  0.64 and 0.63, where the EPYC is 0.43 to 1.01, and 0.69 on the mono
-  reading where the EPYC is 0.34: level 0's fixed path is cheap on the
-  Altra, 0.78 to 0.99 of its i5 time and 0.84 to 1.20 of its EPYC time,
-  and this encoder's block, 0.83 to 0.94 of its i5 block on the Altra
-  since the fused multiply-add, is 0.68 to 0.81 of its Altra block on
-  the EPYC. Against its own run before, the same encoder on the same
-  machine the evening before, every line of every coder is within 2%,
-  this encoder 1.00 to 1.01, for the same bytes, so that machine's
-  tables are its run before's but for the talk's line. The one thing in
-  the encoder written with a machine in mind is the autocorrelation's
-  multiply and add fused into one instruction where the machine has it,
-  which the Altra has and the x86-64 baseline has not, though this EPYC
-  does, and it is a question to the compiler, `cfg!`, not an instruction
-  of its own. LLVM vectorizes the residual of a fit in four 16-bit lanes
-  with NEON's widening multiply where SSE2 has its own, the
-  autocorrelation in two f64 lanes, fused there, and the fixed
-  predictors' residual sums in eight 16-bit lanes; the Rice coding and
-  the bit writer are scalar on both. This encoder's bytes a block were
-  the same on both machines to a tenth of a byte on every made sound and
-  every recording in the morning's two runs, so a frame does not depend
-  on the machine, the one rounding of the fused sum against the two
-  differing in a last bit no fit is decided by; against this run's they
-  differ where the Rice change moved them, the 8-bit noise and the 96
-  kHz tone by whole bytes and a dozen lines by fractions of one, which
-  the note under the tables lists and which is the encoder's, not the
-  machine's; libFLAC's differ on the 24-bit tone, 2321 against 2315 at
-  level 5 and 2302 against 2502 at level 8, its arm64 build taking
-  another arithmetic path through the ill-conditioned fit.
+  default level, and further from level 0.** The night's run on the two-
+  core Ampere Altra, made once when the round was called ready, in the
+  section after the tables: the recordings are 0.22 to 0.39 of libFLAC's
+  time a block where the EPYC is 0.20 to 0.39, the made sounds 0.06 to
+  0.37 against 0.04 to 0.38 and silence 0.06 to 0.08 against 0.04 to
+  0.06. This encoder's mean block is longer there than on the EPYC on
+  every line, 1.25 to 1.83 of the night's, the recordings 1.45 to 1.65
+  where before the round they were 1.24 to 1.43, the round's integer
+  sums having bought the EPYC more than the Altra's fused multiply-add
+  bought it, while libFLAC's default level is 1.29 to 1.58 of its EPYC
+  time on the stereo recordings and 0.99 on the mono reading, and its
+  level 0 0.84 to 1.21 on the recordings and 0.70 on the mono reading;
+  this encoder's 99th-percentile block is 7 to 51 µs there against 6 to
+  41, and its worst 33 to 184 against 38 to 145, the EPYC's being its
+  tick. Against level 0 it is 0.85 to 1.03 of its time on the 16-bit
+  stereo recordings but the 1962 speech and white noise, 0.50 and 0.59,
+  where the EPYC is 0.29 to 0.80, and 0.66 on the mono reading where the
+  EPYC is 0.29: level 0's fixed path is cheap on the Altra, 0.78 to 0.99
+  of its i5 time and 0.84 to 1.21 of its EPYC time, and this encoder's
+  block is 0.61 to 0.69 of its Altra block on the EPYC. Against its own
+  run before, the morning's, the encoder of v0.0.8 before the round,
+  this encoder is 0.78 to 0.97 of its block on the recordings and 0.83
+  to 0.99 on the made sounds, libFLAC's three levels within 2% on every
+  line, for the same bytes on every line of this encoder. The one thing
+  in the encoder written with a machine in mind is the multiply and add
+  of the exact autocorrelation's sums, a pure tone's block's, fused into
+  one instruction where the machine has it, which the Altra has and the
+  x86-64 baseline has not, though this EPYC does, and it is a question
+  to the compiler, `cfg!`, not an instruction of its own. LLVM
+  vectorizes the residual of a fit in four 16-bit lanes with NEON's
+  widening multiply where SSE2 has its own, the autocorrelation in two
+  f64 lanes, fused there, and the fixed predictors' residual sums in
+  eight 16-bit lanes; the Rice coding and the bit writer are scalar on
+  both. This encoder's bytes a block were the same on both machines to a
+  tenth of a byte on every made sound and every recording in the
+  morning's two runs, so a frame does not depend on the machine, the one
+  rounding of the fused sum against the two differing in a last bit no
+  fit is decided by; against this run's they differ where the Rice
+  change moved them, the 8-bit noise and the 96 kHz tone by whole bytes
+  and a dozen lines by fractions of one, which the note under the tables
+  lists and which is the encoder's, not the machine's; libFLAC's differ
+  on the 24-bit tone, 2321 against 2315 at level 5 and 2302 against 2502
+  at level 8, its arm64 build taking another arithmetic path through the
+  ill-conditioned fit.
 
 ## The made sounds, against libFLAC at level 5 as v0.0.4 ran it
 
