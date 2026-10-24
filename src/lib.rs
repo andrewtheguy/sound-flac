@@ -69,10 +69,10 @@
 //! i5-8500T: a block of music takes about 17 µs and is 48% of its PCM, speech
 //! 10 µs and 30%, a pure tone 21 µs and 26%, noise 11 µs and 76%, silence
 //! a microsecond and sixteen bytes. libFLAC at its default level, which this
-//! replaced, took 42, 35, 40, 41 and 26 µs for the same bytes within a tenth
+//! replaced, took 44, 37, 42, 42 and 25 µs for the same bytes within a tenth
 //! of a per cent, and 1% more on the tone. Mono at 48 kHz is 7 µs against
-//! libFLAC's 23, and 44.1 kHz stereo 14 against 37. On recordings, 0.30 to
-//! 0.57 of its time a block for its bytes within 0.2%, the block that
+//! libFLAC's 24, and 44.1 kHz stereo 14 against 39. On recordings, 0.28 to
+//! 0.54 of its time a block for its bytes within 0.2%, the block that
 //! chooses the pair afresh, every fourth, a fifth to a third as long again
 //! as a carried one.
 //!
