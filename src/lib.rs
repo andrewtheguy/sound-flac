@@ -58,7 +58,11 @@
 //! on noise and a quiet desktop, and where the fit, coded beside the fixed
 //! coding, has lost to it by an eighth of a bit a sample two blocks running,
 //! as on 8-bit music, where the fixed coding wins every block; either skip is
-//! for seven blocks and the fit is tried again. A residual is Rice-coded in
+//! for seven blocks and the fit is tried again. The fixed path is left out
+//! the same way where the fit, coded beside it, has won by a sixteenth of a
+//! bit a sample two blocks running, as on the side channel of a pure tone,
+//! where the fit wins every block by just under the margin, but for the two
+//! scheduled blocks a cycle. A residual is Rice-coded in
 //! the partitions that cost least. Bits every sample of a channel has zero at the bottom, as
 //! 8-bit content in a 16-bit stream does, are shifted out as FLAC's wasted
 //! bits. A channel that is one value is a constant, and one nothing shortens

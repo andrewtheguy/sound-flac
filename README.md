@@ -21,8 +21,8 @@ It is tuned for sound heard as it is made: the fixed predictor of the best
 order on every channel, a linear predictor of up to order 8 fitted to each
 and weighed, the cheapest stereo pairing chosen on the four channels' bits
 counted in one partition where the estimates are close, the fit skipped on
-noise and where it keeps losing, Rice partitions that cost least and
-wasted bits shifted out. On 20 ms blocks of 16-bit stereo at 48 kHz a block
+noise and where it keeps losing and the fixed path where the fit keeps
+winning, Rice partitions that cost least and wasted bits shifted out. On 20 ms blocks of 16-bit stereo at 48 kHz a block
 of music takes about 11 µs of one core and is 48% of its PCM, speech 7 µs
 and 30%, silence a microsecond and sixteen bytes: the bytes libFLAC's
 default level makes, in a third of its time on music and less than a

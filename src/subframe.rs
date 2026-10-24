@@ -23,7 +23,11 @@
 //! both are coded and the better kept, which is also what brings the
 //! correction up to date; a channel whose fit has lost that comparison by
 //! [`LOSS`] a sample [`LOSSES`] blocks running has the fit skipped for
-//! [`SKIPS`] blocks, as a channel of noise has. A channel not coded on a block is bounded from
+//! [`SKIPS`] blocks, as a channel of noise has, and one whose fit has won
+//! it by [`WIN`] a sample [`WINS`] blocks running has the fixed path left
+//! out for [`SKIPS`] blocks, the fit coded alone whatever the margin says,
+//! its correction kept, but for the blocks the pair's schedule has both
+//! coded on. A channel not coded on a block is bounded from
 //! one pass over its differences ([`Channel::at_most`]). A residual is
 //! Rice-coded in the partitions that cost least.
 //!
@@ -198,6 +202,14 @@ pub struct Channel {
     lost: u8,
     /// The blocks in a row the fit has been skipped on.
     skipped: u8,
+    /// The blocks in a row the fit, coded beside the fixed coding, has
+    /// beaten it by [`WIN`] a sample on real bits; a constant block ends the
+    /// row as it ends `lost`'s, unless the fixed path is being left out on
+    /// the row's account.
+    won: u8,
+    /// The blocks in a row the fit has been coded alone, the fixed path not
+    /// run; none once both are coded.
+    fit_alone: u8,
     /// The last fit's and fixed coding's estimated bits, for the corrections.
     est_fit: f64,
     est_fixed: f64,
@@ -212,7 +224,9 @@ pub struct Channel {
     fit_over: f64,
 }
 
-/// The blocks in a row a fit is skipped on before it is tried again.
+/// The blocks in a row a fit is skipped on before it is tried again, and
+/// the blocks in a row the fixed path is left out for before it is run
+/// beside the fit again.
 const SKIPS: u8 = 7;
 /// The blocks in a row a fit must lose to the fixed coding by [`LOSS`] a
 /// sample, both coded, for the fit to be skipped: on 8-bit music and on one
@@ -226,6 +240,19 @@ const LOSSES: u8 = 2;
 /// next block's fit wins, where on 8-bit music the fit loses by a quarter
 /// of a bit on every block.
 const LOSS: f64 = 1.0 / 8.0;
+/// The blocks in a row a fit must beat the fixed coding by [`WIN`] a sample,
+/// both coded, for the fixed path to be left out, the mirror of [`LOSSES`]:
+/// on the side channel of a pure tone at 48 kHz the fit wins every block by
+/// 0.12 bits a sample, under the margin a fit is coded alone on from its
+/// estimate, so both codings were made on every block, the fixed path a
+/// seventh of the tone's block, and on an orchestra one carried channel in
+/// three had both made by that margin.
+const WINS: u8 = 2;
+/// The bits a sample a fit must beat the fixed coding by to count as won:
+/// half of [`LOSS`], since the tone's margin is just under an eighth, and
+/// the fixed path left out costs only where the fixed coding would have
+/// won, which two wins by a sixteenth make rare.
+const WIN: f64 = 1.0 / 16.0;
 
 /// A channel counted in one partition and not yet finished: the fit whose
 /// residual is in the trial, and whether it was estimated to win clearly,
@@ -262,6 +289,8 @@ impl Channel {
             fit_declined: false,
             lost: 0,
             skipped: 0,
+            won: 0,
+            fit_alone: 0,
             est_fit: 0.0,
             est_fixed: 0.0,
             correction: None,
@@ -331,10 +360,13 @@ impl Channel {
             self.coded = true;
             self.analysed = true;
             // No fit is compared on a constant block, so the fit's losses
-            // on either side of it are not in a row; a skip under way,
-            // which the losses earned, is kept.
+            // or wins on either side of it are not in a row; a skip under
+            // way, which the losses or the wins earned, is kept.
             if self.skipped == 0 {
                 self.lost = 0;
+            }
+            if self.fit_alone == 0 {
+                self.won = 0;
             }
         } else {
             self.best.kind = Kind::Verbatim;
@@ -409,12 +441,11 @@ impl Channel {
         let Some(estimate) = self.weighed.take() else {
             return;
         };
-        let samples = self.signal.len() as f64;
         let Some(fit) = estimate.fit else {
             self.coarse = self.measure(self.fixed_order).min(self.best.bits);
             return;
         };
-        let clear = self.correction.is_some_and(|c| fit.bits() + (c + ALONE) * samples < estimate.fixed);
+        let clear = self.fit_clear(&fit, estimate.fixed);
         let Some(bits) = self.count_fit(&fit) else {
             self.coarse = self.measure(self.fixed_order).min(self.best.bits);
             return;
@@ -450,11 +481,7 @@ impl Channel {
         let bits = self.search_fit(&fit);
         let over = (bits as f64 - fit.bits()) / self.signal.len() as f64;
         if clear && over <= self.fit_over + SLACK {
-            self.fit_over = over;
-            self.lost = 0;
-            if bits < self.best.bits {
-                std::mem::swap(&mut self.best, &mut self.trial);
-            }
+            self.keep_fit(bits, over);
         } else {
             self.analyse_fixed();
             self.settle(bits);
@@ -578,15 +605,11 @@ impl Channel {
             self.analyse_fixed();
             return;
         };
-        let clear = !both && self.correction.is_some_and(|c| fit.bits() + (c + ALONE) * samples < estimate.fixed);
+        let clear = !both && self.fit_clear(&fit, estimate.fixed);
         if clear && let Some(bits) = self.fit_into_trial(&fit) {
             let over = (bits as f64 - fit.bits()) / samples;
             if over <= self.fit_over + SLACK {
-                self.fit_over = over;
-                self.lost = 0;
-                if bits < self.best.bits {
-                    std::mem::swap(&mut self.best, &mut self.trial);
-                }
+                self.keep_fit(bits, over);
             } else {
                 self.analyse_fixed();
                 self.settle(bits);
@@ -597,15 +620,40 @@ impl Channel {
         }
     }
 
+    /// Whether `fit`, estimated at `fixed` for the fixed predictor, is to
+    /// be coded alone, the fixed path not run: where it is estimated to win
+    /// by [`ALONE`] a sample after the channel's correction, or where it
+    /// has beaten the fixed coding by [`WIN`] a sample [`WINS`] blocks
+    /// running and has been coded alone fewer than [`SKIPS`] blocks since.
+    fn fit_clear(&self, fit: &Candidate, fixed: f64) -> bool {
+        let samples = self.signal.len() as f64;
+        self.correction.is_some_and(|c| fit.bits() + (c + ALONE) * samples < fixed) || (self.won >= WINS && self.fit_alone < SKIPS)
+    }
+
+    /// The fit coded alone as the trial, at `bits`, `over` its estimate a
+    /// sample, kept where it beats the coding so far.
+    fn keep_fit(&mut self, bits: u64, over: f64) {
+        self.fit_over = over;
+        self.lost = 0;
+        self.fit_alone = self.fit_alone.saturating_add(1);
+        if bits < self.best.bits {
+            std::mem::swap(&mut self.best, &mut self.trial);
+        }
+    }
+
     /// The fit coded as the trial, at `bits`, against the fixed coding in
-    /// `best`: the better is kept, and the channel's correction and the
-    /// fit's excess over its estimate are brought to this block.
+    /// `best`: the better is kept, and the channel's correction, the fit's
+    /// excess over its estimate and its runs of losses and wins are brought
+    /// to this block.
     fn settle(&mut self, bits: u64) {
         let samples = self.signal.len() as f64;
         let over = (bits as f64 - self.est_fit) / samples;
         self.fit_over = over;
         self.correction = Some((over - (self.best.bits as f64 - self.est_fixed) / samples).max(0.0));
-        self.lost = if bits as f64 - self.best.bits as f64 >= LOSS * samples { self.lost.saturating_add(1) } else { 0 };
+        let fit_less = self.best.bits as f64 - bits as f64;
+        self.lost = if -fit_less >= LOSS * samples { self.lost.saturating_add(1) } else { 0 };
+        self.won = if fit_less >= WIN * samples { self.won.saturating_add(1) } else { 0 };
+        self.fit_alone = 0;
         if bits < self.best.bits {
             std::mem::swap(&mut self.best, &mut self.trial);
         }
