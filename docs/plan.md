@@ -16,7 +16,8 @@ side of the line were taken up in the order of how far over they were: the
 tone's bytes and time, then the time against level 0 at 24 bits and 96 kHz;
 and to the evening of 2026-10-23 by the machine's clock, when the fresh
 block was taken up and the pair came to be chosen on the four channels'
-counts.
+counts; and to the morning of 2026-10-24, when the x86 run moved from the
+desktop to an idle machine and a fifteenth recording was added.
 The days before that are the count the sessions kept, which ran ahead of
 the machine's clock: by the commits, which that clock stamps in Pacific
 time, all of it ran from the evening of 2026-10-22 to the afternoon of
@@ -93,23 +94,29 @@ plan are brought to the run.
 
 ## Where it stands
 
-From the tables of late the evening of 2026-10-23, after v0.0.7, with
-the fit skipped where it keeps losing and the autocorrelation's multiply
-and add fused where the machine has the instruction: 0.29 to 0.55 of
-libFLAC's time a block on the recordings for its bytes within 0.2%, the
-late blocks 0.25 to 0.60 of its; the made sounds 0.05 to 0.50 for the
-same bytes within two bytes, the pure tone under libFLAC's bytes, 0.90
-to 1.00. A block of a recording is 0.04% to 0.22% of one core. This
-run's libFLAC was 2% to 11% faster than v0.0.7's run on the recordings
-and this encoder's block within 2% of it there, the x86 build having only
-the skip, which the recordings seldom take, so the ratios read a few
-hundredths worse than v0.0.7's for nothing the encoder did; on the made
-sounds the skip took 8-bit music to 0.65 of its time, the 48 kHz tone to
-0.83 and the mono tone to 0.60. On arm64, where the fused multiply-add
-holds, every sounded block is 0.89 to 0.93 of v0.0.7's run and the
-recordings 0.25 to 0.42 of libFLAC's time. Where the time goes
-at 16-bit stereo, on the orchestra, by the
-parts measured apart: a carried block, three in four, is the two
+From the tables of the morning of 2026-10-24, the encoder of v0.0.8
+unchanged, the x86 run moved from the desktop i5 under WSL2, which was
+never quiet, to an idle Hyper-V machine on an AMD EPYC Rome, and a
+fifteenth recording added, one voice talking over soft music: 0.24 to
+0.47 of libFLAC's time a block on the recordings for its bytes within
+0.2%, the late blocks 0.20 to 0.58 of its; the made sounds 0.05 to 0.44
+for the same bytes within two bytes, the pure tone under libFLAC's
+bytes, 0.90 to 1.00. A block of a recording is 0.02% to 0.15% of one
+core. The move is the machine's, not the encoder's: on the EPYC this
+encoder's block is 0.64 to 0.68 of its i5 block on every recording and
+libFLAC's default level 0.74 to 0.84 of its on the stereo recordings,
+its fastest level 0.80 to 0.96, so every ratio reads a fifth or a
+quarter better than v0.0.8's run on the i5 for the same work, and the
+bytes are that run's on every line of every coder. The machine repeats
+a time within a twentieth, two runs with different compilers agreeing
+within 6% on every line, where the i5 moved by a tenth. On arm64, where
+nothing moved and the run is the evening before's within 2% on every
+line, the recordings are 0.25 to 0.42 of libFLAC's time; this encoder's
+block is 1.24 to 1.46 of its EPYC block there, libFLAC's default level
+1.30 to 1.61 on the stereo recordings and its level 0 0.84 to 1.20. Where
+the time goes at 16-bit stereo, on the orchestra, by the parts measured
+apart on the i5, whose carried block was 16.9 µs where the EPYC's is
+10.9: a carried block, three in four, is the two
 autocorrelations with their windowing 3.6 µs, their fits 0.7, the pair's
 residuals 2.3 and partitions 1.9, the folds and bounds 1.2, the stereo
 split 0.7, the bits out 4.4 and the CRC 0.7, about 16 in all where the fit
@@ -121,16 +128,14 @@ carried block, 17.1 timed whole; the fourth block, 21.9 µs, has three
 autocorrelations, four fits and, where the estimates do not settle the
 pair, the two other channels' residuals and folds in their place, and is
 the late block, by a fifth to a third of a carried one. At 24 bits the fit's residual
-runs as two 16-bit passes at twice the cost, 10 µs of the Aria's 39, and
-the writer takes 6 µs of pink noise's 24. On arm64 the recordings are 0.25
-to 0.42 of libFLAC's time for the same bytes to a tenth of a byte, and
-against level 0 0.90 to 1.11 on the stereo recordings where x86 is 0.85
-to 1.09. Under Windows, natively on the same i5, run on demand the same
-evening with the encoder of v0.0.7, that encoder's blocks were that run's
-WSL blocks within 5% on the recordings for the same bytes, and libFLAC's
-levels 5 and 0 within a tenth of theirs either way but five cells, three
-silences and the 1924 record, where its level 8 is slower under Windows,
-by a tenth to a quarter on half of its 44 cells.
+runs as two 16-bit passes at twice the cost, 10 µs of the Aria's 39 on
+the i5, and the writer takes 6 µs of pink noise's 24. On arm64 the
+recordings are 0.25 to 0.42 of libFLAC's time for the same bytes to a
+tenth of a byte, and against level 0 0.90 to 1.12 on the 16-bit stereo
+recordings where the EPYC is 0.58 to 0.87 and under 1.00 on every
+recording. The Windows run, which was made on demand on the desktop as a
+quieter reading of the same machine, is retired with the move: the
+desktop is no longer where the x86 run is made.
 
 ## Against libFLAC's level 0
 
@@ -185,7 +190,13 @@ is left over 1.00 is 96 kHz, the long block, 1.11 on its music on both
 machines, the 24-bit four at 1.10 to 1.24 on x86 and 1.02 to 1.07 on
 arm64, and the tone past 44.1 kHz, 1.00 to 1.29 on x86 and 1.01 to 1.27
 on arm64, where the side channel's fit wins by an eighth of a bit and
-both codings are still made.
+both codings are still made. The morning after, the x86 run moved to an
+idle EPYC Rome machine, where the column reads under 1.00 on every
+recording, 0.58 to 0.87 on the 16-bit stereo ones and 0.78 to 0.98 on
+the 24-bit four, and on every made sound but the 96 kHz tone, 1.01: the
+EPYC runs this encoder half as fast again as the i5 and level 0's fixed
+path about as fast, so on x86 the column is now the machine's to read,
+and what is left of it is the Altra's, where the run is unchanged.
 
 ## Open items, in order
 

@@ -23,13 +23,13 @@ and weighed, the cheapest stereo pairing chosen on the four channels' bits
 counted in one partition where the estimates are close, the fit skipped on
 noise and where it keeps losing, Rice partitions that cost least and
 wasted bits shifted out. On 20 ms blocks of 16-bit stereo at 48 kHz a block
-of music takes about 17 µs of one core and is 48% of its PCM, speech 10 µs
+of music takes about 11 µs of one core and is 48% of its PCM, speech 7 µs
 and 30%, silence a microsecond and sixteen bytes: the bytes libFLAC's
-default level makes, in two fifths of its time on music and less than a
-third on speech, and on recordings 0.29 to 0.55 of its time for its bytes
-within 0.2%, all
-from the x86 run kept as `docs/bench/x86.jsonl`, the one the crate's own
-documentation cites.
+default level makes, in a third of its time on music and less than a
+quarter on speech, and on recordings 0.24 to 0.47 of its time for its
+bytes within 0.2%, all from the x86 run kept as `docs/bench/x86.jsonl`,
+the one the crate's own documentation cites, made on an idle AMD EPYC
+Rome virtual machine; on an Ampere Altra the recordings are 0.25 to 0.42.
 Every shape, made sound and
 recording measured against libFLAC is in
 [docs/benchmarks.md](docs/benchmarks.md), and what is taken up next in
