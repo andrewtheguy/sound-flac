@@ -42,8 +42,8 @@
 //! true count, and the fixed predictor's beside it where the fit is not
 //! clear, the pair whose two counts are least is taken, and its two channels
 //! are finished, the partitions searched. That is libFLAC's choice, made on
-//! real bits rather than estimates, which cannot tell left and right from mid
-//! and side on a piano.
+//! counts within the partitioning's gain of the real bits rather than on the
+//! estimates, which cannot tell left and right from mid and side on a piano.
 //! On the three blocks between, the pair the last block was coded with is coded
 //! again, each channel the fit first: where the fit is estimated to beat the
 //! best fixed predictor by an eighth of a bit a sample, after a correction the

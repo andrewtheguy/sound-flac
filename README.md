@@ -20,7 +20,8 @@ compiles no C and nothing of FLAC is installed or loaded where the binary runs.
 It is tuned for sound heard as it is made: the fixed predictor of the best
 order on every channel, a linear predictor of up to order 8 fitted to each
 and weighed, the cheapest stereo pairing chosen on the four channels' bits
-counted, the fit skipped on noise, Rice partitions that cost least and
+counted in one partition where the estimates are close, the fit skipped on
+noise, Rice partitions that cost least and
 wasted bits shifted out. On 20 ms blocks of 16-bit stereo at 48 kHz a block
 of music takes about 17 µs of one core and is 48% of its PCM, speech 10 µs
 and 30%, silence a microsecond and sixteen bytes: the bytes libFLAC's

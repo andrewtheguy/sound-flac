@@ -244,7 +244,7 @@ for what they sound like, and the repository nothing else of them.
   times its mean on the stereo recordings, and its worst about twice. A
   single pass's 99th percentile is higher still for both encoders, which
   is scheduling and cache, not the sound. On the recordings this encoder's
-  99th-percentile block is 0.22 to 0.53 of libFLAC's, 9 to 70 µs against
+  99th-percentile block is 0.23 to 0.60 of libFLAC's, 9 to 71 µs against
   38 to 129, and its worst block 86 to 228 µs, at most 1.1% of the 20 ms
   the block is, where libFLAC's worst is 126 to 2791. Where two channels
   are one signal, the 1962 speech and the made speech, the fourth block

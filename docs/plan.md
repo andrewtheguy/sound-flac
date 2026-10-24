@@ -175,7 +175,9 @@ where both codings are made on most blocks.
    autocorrelation, two more fits, and, where the estimates do not settle
    the pair, the two other channels' residual passes and folds, which on
    the piano recordings is every block (below, the four channels counted).
-   The pair choice is now exact, so what is left is the cost of a pass:
+   The pair choice is now on counts of the channels' bits where the
+   estimates are close, true within what the partitioning gains, so what
+   is left is the cost of a pass:
    the residual of a fit at 16 bits is 1.1 µs for 7680 multiply-adds that
    `pmaddwd` does eight at a time, since the compiler widens and multiplies
    each tap apart; the samples laid out in pairs once a block would let
