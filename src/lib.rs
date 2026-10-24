@@ -74,10 +74,10 @@
 //! two to a word as the parameter lets them.
 //!
 //! Measured on 20 ms blocks of 16-bit stereo at 48 kHz, one core of an AMD
-//! EPYC Rome at the x86-64 baseline: a block of music takes about 11 µs and
-//! is 48% of its PCM, speech 7 µs and 30%, a pure tone 11 µs and 26%, noise
+//! EPYC Rome at the x86-64 baseline: a block of music takes about 10 µs and
+//! is 48% of its PCM, speech 6 µs and 30%, a pure tone 10 µs and 26%, noise
 //! 7 µs and 76%, silence a microsecond and sixteen bytes. libFLAC at its
-//! default level, which this replaced, took 34, 29, 36, 36 and 21 µs for the
+//! default level, which this replaced, took 34, 29, 33, 33 and 20 µs for the
 //! same bytes within a tenth of a per cent, and 1% more on the tone. Mono at
 //! 48 kHz is 5 µs against libFLAC's 20, and 44.1 kHz stereo 9 against 31. On
 //! recordings, 0.22 to 0.44 of its time a block for its bytes within 0.2%,

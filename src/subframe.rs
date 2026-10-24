@@ -55,9 +55,12 @@
 //! 882, the sums in 32-bit lanes where a bound on the folded value from
 //! the sample's width and the predictor's taps says a partition's fits
 //! one, which a 16-bit stream's always does, and in 64-bit lanes, 0.26 at
-//! 960, where it may not; the search over the orders 0.4, and stopping that search at the first order that does not
-//! win, from the coarsest, cost 0.07% of the orchestra's bytes, at the
-//! second rise no bytes and no time; the one-partition count without its
+//! 960, where it may not; the search over the orders 0.4 from the finest down, and walked from
+//! the coarsest over a pyramid of the sums and stopped three orders past
+//! the best, 2% to 4% fewer instructions on the 48 and 96 kHz recordings
+//! and 4% to 7% off a made 48 kHz block, for 0.03% of the 1924 record's
+//! bytes and a tenth of a byte a block on the 8-bit speech, where a block
+//! of 882 at 44.1 kHz has two partitionings and nothing to skip; the one-partition count without its
 //! residual stored was no faster than with it.
 
 use crate::bits::BitWriter;
@@ -162,7 +165,8 @@ pub struct Channel {
     /// The samples as 16 bits for a linear predictor's residual, or where
     /// they are wider their upper 16 bits and their lower bits.
     halves: [Vec<i16>; 2],
-    /// Sums of a folded residual over the finest partitions.
+    /// Sums of a folded residual over the finest partitions, and after them
+    /// over each coarser partitioning, the pyramid [`search`] walks.
     sums: Vec<u64>,
     /// The Rice parameters of the partitioning being tried.
     params: Vec<u8>,
@@ -272,7 +276,7 @@ impl Channel {
             scratch: std::array::from_fn(|_| vec![0; block]),
             windowed: vec![0.0; block],
             halves: [vec![0; block], vec![0; block]],
-            sums: vec![0; 1 << MAX_PARTITION_ORDER],
+            sums: vec![0; 2 << MAX_PARTITION_ORDER],
             params: vec![0; 1 << MAX_PARTITION_ORDER],
             wasted: 0,
             bps: 0,
@@ -927,6 +931,19 @@ fn fold_parts<L: Lane>(residual: &[i32], order: usize, size: usize, folded: &mut
     sums.iter().sum()
 }
 
+/// The partitionings tried past the best so far before the search stops,
+/// from the coarsest: the bits over the partition orders mostly fall and
+/// then rise, and the finest orders are the costliest to count, half the
+/// search at the finest alone. Measured on the EPYC against the whole
+/// search: stopped one order past the best, 4% to 6% fewer instructions on
+/// the 48 and 96 kHz recordings for 0.26% more bytes on the 1924 record,
+/// 0.06% on the orchestra and 0.5% on the made 8-bit speech, whose bits
+/// over the orders fall again past a rise; two past, 3% to 5% for 0.10%
+/// and 0.3%; three past, 2% to 4% and 4% to 7% of a made 48 kHz block for
+/// 0.03% on the 1924 record and a tenth of a byte a block on the 8-bit
+/// speech, every other line the same, which is within the bar.
+const RISES: u32 = 3;
+
 /// Choose the partitioning and the Rice parameters of `coding`'s residual,
 /// the `order` samples of a block of `n` short, folded and summed over the
 /// finest partitions by [`fold`], and return the bits the residual coding
@@ -934,16 +951,31 @@ fn fold_parts<L: Lane>(residual: &[i32], order: usize, size: usize, folded: &mut
 /// ([`best_param`]), which the partitioning is chosen on as each parameter
 /// is: on the 8-bit noise the estimate with the fractions took two to
 /// eight partitions on the side channel for a gain that was the
-/// fractions', where libFLAC took one.
+/// fractions', where libFLAC took one. The finest sums are folded into the
+/// coarser partitionings' first, a pyramid in `sums` after the finest, and
+/// the orders are walked from one partition up, stopping [`RISES`] orders
+/// past the best.
 fn search(coding: &mut Coding, n: usize, order: usize, sums: &mut [u64], params: &mut [u8]) -> u64 {
     let finest = finest(n, order);
+    let parts = 1usize << finest;
+    // The sums of partitioning `p` start at `at(p)`: the finest's where the
+    // fold wrote them, each coarser one's after the one before.
+    let at = |p: u32| if p == finest { 0 } else { 2 * parts - (2usize << p) };
+    for p in (0..finest).rev() {
+        let (from, to) = (at(p + 1), at(p));
+        for i in 0..1usize << p {
+            sums[to + i] = sums[from + 2 * i] + sums[from + 2 * i + 1];
+        }
+    }
     let mut best = (u64::MAX, 0, false);
-    for p in (0..=finest).rev() {
+    let mut rises = 0;
+    for p in 0..=finest {
         let parts = 1usize << p;
         let size = n >> p;
+        let base = at(p);
         let mut total = 0;
         let mut wide = false;
-        for (i, &sum) in sums[..parts].iter().enumerate() {
+        for (i, &sum) in sums[base..base + parts].iter().enumerate() {
             let count = if i == 0 { size - order } else { size };
             let (k, bits) = best_param(sum, count as u64);
             wide |= k > MAX_PARAM_4;
@@ -951,13 +983,15 @@ fn search(coding: &mut Coding, n: usize, order: usize, sums: &mut [u64], params:
             params[i] = k as u8;
         }
         total += 2 + 4 + (parts as u64) * if wide { 5 } else { 4 };
-        if total <= best.0 {
+        if total < best.0 {
             best = (total, p, wide);
             coding.chosen[..parts].copy_from_slice(&params[..parts]);
-        }
-        // The sums of the partitioning one coarser.
-        for i in 0..parts / 2 {
-            sums[i] = sums[2 * i] + sums[2 * i + 1];
+            rises = 0;
+        } else {
+            rises += 1;
+            if rises >= RISES {
+                break;
+            }
         }
     }
     let (bits, p, wide) = best;
