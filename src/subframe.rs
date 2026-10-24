@@ -686,6 +686,11 @@ impl Channel {
         self.wasted
     }
 
+    /// Whether the channel prepared is one value, coded as a constant.
+    pub fn constant(&self) -> bool {
+        matches!(self.best.kind, Kind::Constant(_))
+    }
+
 
     /// The channel analysed is coded as it stands.
     pub fn code(&mut self) {

@@ -34,7 +34,9 @@
 //! to order 8 fitted to it by autocorrelation through a Tukey window and
 //! Levinson-Durbin as libFLAC's default level does, its order chosen with the
 //! error its coefficients' rounding adds weighed exactly, whichever writes
-//! fewer bits. A stereo pair is chosen every fourth block: each of left, right,
+//! fewer bits. A stereo pair is chosen every fourth block, unless the side is
+//! one value, the two channels being one signal, when there is no pair to
+//! choose and the block is carried: each of left, right,
 //! mid and side is estimated from its autocorrelation, the mid's following
 //! from the other three's, and where one pair is estimated under every other
 //! by a quarter of a bit a sample it is taken; otherwise all four channels are
@@ -310,7 +312,18 @@ impl Encoder {
             mid.prepare(bps);
             side.prepare(bps + 1);
             let tick = self.tick;
-            let fresh = tick.is_multiple_of(RECHOOSE);
+            // Where the side is one value, the two channels being one
+            // signal, as a mono recording stored as stereo is, left, right
+            // and mid are that signal to a constant and cost the same with
+            // it, so there is no pair to choose: the block is carried, the
+            // side coded by the check and the pair moved to it by the bound,
+            // where the fresh block had counted the three in turn. Measured
+            // on the EPYC: the 1962 speech, one signal on every block, took
+            // 16% fewer instructions for the same bytes, its choosing block
+            // from 12.5 µs to 6.8 against a carried block's 6.8, and the
+            // made speech 0.82 to 0.92 of its time; no other recording
+            // moved.
+            let fresh = tick.is_multiple_of(RECHOOSE) && !side.constant();
             let mut channels = [left, right, mid, side];
             // Every fourth block all four channels are weighed from their
             // autocorrelations and the pair chosen on that; on the blocks

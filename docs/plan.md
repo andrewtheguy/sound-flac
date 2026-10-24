@@ -30,7 +30,11 @@ set; and to that night, when by that bar the corrections' refresh was
 halved, the pair's choice measured halved and not taken, and two more
 refusals made on bytes of that size put back among the open items; and
 to later that night, when the first of them, the partitions' search
-walked from the coarse end, was measured and taken at three rises.
+walked from the coarse end, was measured and taken at three rises; and
+to the small hours after, when the other, the fourth block where two
+channels are one signal, was taken another way, the block carried where
+the side is one value, and the two ways refused before were measured
+again and not taken.
 The days before that are the count the sessions kept, which ran ahead of
 the machine's clock: by the commits, which that clock stamps in Pacific
 time, all of it ran from the evening of 2026-10-22 to the afternoon of
@@ -278,23 +282,16 @@ measured again that night and taken, under *Measured and taken*, and the
 pair's choice halved, measured with it and not; of the two more refusals
 of the same kind, the partitions' search stopped past the best was
 measured later that night and taken at three orders past, under
-*Measured and taken*, and the other is the first item now.
+*Measured and taken*, and the other, the fourth block where two
+channels are one signal, was taken another way in the small hours after,
+the block carried where the side is one value, under *Measured and
+taken*.
 Each is measured on the EPYC alone, bytes on every made sound and
 recording and time a block against the run before, and taken with the full
 x86 run and the tables; the arm64 run is made once, when the round is
 called ready.
 
-1. **The fourth block where two channels are one signal**, refused the
-   same way under *The fresh block weighed on a one-partition count*: on
-   the made speech and the 1962 speech, whose left and right are one
-   signal, that block codes the three equivalent channels in turn, each
-   coming out over its estimate, 19 µs against a carried block's 12 on
-   the 1962 speech, where taking the channel's correction off its saving
-   when weighing cost the Raven 0.05% and the Aria 0.09%, and taking
-   another pair after the coding only past an eighth of a bit a sample
-   the Aria 0.1%. To be measured again, both ways and by the block's
-   place in the cycle, on every recording.
-2. **The residual of a fit, 14% to 27% of the block**: 14% on the
+1. **The residual of a fit, 14% to 27% of the block**: 14% on the
    orchestra, 16% to 18% at 44.1 kHz and on the Fantasy, 22% on the 1924
    record and 27% on the Aria, where a 24-bit sample's residual runs as
    two 16-bit passes. The 16-bit loop widens each tap and multiplies it
@@ -309,7 +306,7 @@ called ready.
    a copy of the tree: how often a 16-bit stereo recording's side channel
    is 17 bits wide in its samples and takes the split pass, which is where
    the loud masters' time would go.
-3. **The CRC inside the writer's pass** (the frame's CRC 4% to 7% at 16
+2. **The CRC inside the writer's pass** (the frame's CRC 4% to 7% at 16
    bits, 7% to 14% on the 24-bit recordings and noise, 20% of 24-bit
    noise's block): the two chains of table lookups are their loads'
    latency, and they run after the writer, whose own work is a dependent
@@ -321,7 +318,7 @@ called ready.
    chain leaves the load ports idle, which is a measurement, apart on
    frames of 1500 to 8700 bytes and then in the encoder on pink noise and
    the 1924 record.
-4. **The stereo split and the four channels' preparing in one pass**, 8%
+3. **The stereo split and the four channels' preparing in one pass**, 8%
    to 9% of a stereo block: the split writes left, right, mid and side in
    one pass and each channel's `prepare` reads its signal back for the
    wasted bits, the constant check and the width, four passes over what
@@ -332,7 +329,7 @@ called ready.
    header are 13.6% of a 5 µs block, the strided copy being a copy of one
    channel: there the samples can be prepared straight from the block.
    About 3% of a stereo block to measure, the same bytes.
-5. **The autocorrelation**, the largest part at 16 bits, 19% to 23%, is at
+4. **The autocorrelation**, the largest part at 16 bits, 19% to 23%, is at
    the floor the x86-64 baseline sets: 18 floating-point operations on
    every two samples on two ports, with no fused multiply-add at the
    baseline, where the EPYC has one and the Altra uses it. Nothing to take
@@ -342,6 +339,38 @@ called ready.
 
 ## Measured and taken
 
+- **The block whose side is one value carried, not chosen on** (the
+  small hours after the night of 2026-10-24, item 1 of the plan as it
+  stood, the fourth block where two channels are one signal): where the
+  side channel is one value, left and right being one signal to a
+  constant, as a mono recording stored as stereo is and as the made
+  speech is, left, right and mid are that signal to a constant and cost
+  the same beside the side, so the block that would choose the pair
+  afresh is carried instead, the side coded as a constant by the check
+  and the pair moved to it by the bound, where it had counted the three
+  in turn, an autocorrelation, a fit and a residual each, and finished
+  one; exact, the pairs it could choose among costing the same bits.
+  Measured on the EPYC against the run before: the 1962 speech, left and
+  right one signal on every block, 16.4% fewer instructions for the same
+  bytes, its choosing block from 12.5 µs to 6.8 against a carried block
+  of 6.8 and its mean from 8.4 to 6.9; the made speech, the same on both
+  channels, 0.82 of its time at 8 bits and 0.90 to 0.92 at 16 and 24
+  bits from 44.1 to 96 kHz, its choosing block at 48 kHz from 7.4 to 6.2
+  against carried blocks of 4.8 to 6.2, for a tenth of a byte a block of
+  1151, the fit-first coding's; every other recording the same to a
+  hundredth of a per cent of the instructions and to the byte, the Aria,
+  the Fantasy, the orchestra, the 1924 record, the Raven, the private
+  wide mix, loud master and talk, the prison song, the indie record, the
+  mono reading and pink noise all 0.9999 to 1.0001 of before. The two
+  ways refused on 2026-10-23 were measured again beside it: the
+  channel's correction taken off its fit's saving when weighing took
+  7.9% off the Aria's instructions, whose estimates then settled the
+  pair, for 0.24% of its bytes, 12.7 a block of 5313, and 0.5% off the
+  1924 record's for 0.003%, left the other recordings within 0.3% and
+  made the made music 2.5% to 5.5% slower, so it is not taken, well past
+  the bar; and another pair taken on a carried block only past an eighth
+  of a bit a sample moved no line by more than 0.05% either way, so
+  there was nothing to take.
 - **The partitions' search walked from the coarse end, stopped three
   orders past the best** (later the night of 2026-10-24, item 1 of the
   plan as it stood, refused on 2026-10-23 at the first rise for 0.07% of
@@ -652,51 +681,54 @@ called ready.
   0.87 by the shape, the speeches to 0.90 to 0.96, the mono reading to
   0.95, the orchestra to 0.97.
 - **The fresh block weighed on a one-partition count** (2026-10-23, late
-  afternoon, item 4 of the plan as it stood): on the block that chooses the
-  pair afresh, the four fixed codings, each an order search and a partition
-  search at 1.9 µs, are replaced by a count: the fixed order the
-  autocorrelation chooses has its residual taken and folded in one pass,
-  0.22 to 0.54 µs by the order, and counted in one Rice partition, a true
-  count of the channel's bits within the partitioning's gain, and the fit's
-  estimated saving comes off it as it came off the fixed coding's real bits
-  before. The two channels chosen are then coded the fit first as a carried
-  block codes them. Coded the fit first on every block, a channel's
-  correction went stale, both codings being made only where the fit was
-  not clear, and the orchestra cost 0.41% more bytes; so each channel of the
-  pair has both coded once a cycle whatever the estimate, the first on the
-  first carried block and the second on the next, where the cost of 1.9 µs
-  falls on blocks that are not the fresh one. A block with a constant channel, the
-  desktop playing the same sound on both channels or on one, took the
-  full choice on every block before; it now takes the carried path like
-  any other, the constant coded by the check and the pair moved to it by
-  the bound, which took the made speech, whose two channels are one
-  signal, from 1.16 to 1.37 of its time to 0.75 to 0.88, and the 1962
-  speech to 0.86, for 0.05% of the made speech's bytes and 0.16% at 8
-  bits, the fit-first cost its exact path never paid. Measured in the
-  tables' run against the commit before, by the block's place in the
-  cycle: the fourth block went from 27.1 to 22.5 µs on the orchestra, 22.2
-  to 18.3 on the Raven, 21.2 to 16.7 on the wide mix and 57.9 to 45.1 on
-  the Aria, against a carried block of 17.6, 14.0, 13.9 and 35.4; the two
-  blocks after the choice rose by about 1 µs at 16 bits and 4 on the Aria;
-  the means fell by up to 8% on the stereo music on both machines and stood
-  within 2% on the stereo speech and the mixes, and the bytes were 1.0000
-  to 1.0001 of before on every recording. Both
-  codings on the fourth block instead of the carried ones left the fourth
-  block where it was, 26.4 on the orchestra; refreshing every other cycle
-  cost the orchestra 0.02% for 2.5% of the mean and left the late block the
-  same, and was not taken then, a refusal the bar of 2026-10-24 under
-  *What it is for* overturned that night, under *The corrections
-  refreshed every other cycle*. Where two channels are one signal the
-  fourth
-  block codes the three equivalent channels in turn, each coming out over
-  its estimate as the fit's saving is overstated; taking the channel's
-  correction off its saving when weighing cost the Raven 0.05% and the
-  Aria 0.09%, and taking another pair after the coding only past an eighth
-  of a bit a sample the Aria 0.1%, so the pair is chosen again as
-  estimated and that block stays, 19 µs against 12 on the 1962 speech. The
-  count without its residual stored measured no faster than with it, and
-  order 4 in one pass of five taps 0.77 µs against 0.54 as order 2 twice,
-  which is how it is taken.
+  afternoon, item 4 of the plan as it stood): on the block that chooses
+  the pair afresh, the four fixed codings, each an order search and a
+  partition search at 1.9 µs, are replaced by a count: the fixed order
+  the autocorrelation chooses has its residual taken and folded in one
+  pass, 0.22 to 0.54 µs by the order, and counted in one Rice partition,
+  a true count of the channel's bits within the partitioning's gain, and
+  the fit's estimated saving comes off it as it came off the fixed
+  coding's real bits before. The two channels chosen are then coded the
+  fit first as a carried block codes them. Coded the fit first on every
+  block, a channel's correction went stale, both codings being made only
+  where the fit was not clear, and the orchestra cost 0.41% more bytes;
+  so each channel of the pair has both coded once a cycle whatever the
+  estimate, the first on the first carried block and the second on the
+  next, where the cost of 1.9 µs falls on blocks that are not the fresh
+  one. A block with a constant channel, the desktop playing the same
+  sound on both channels or on one, took the full choice on every block
+  before; it now takes the carried path like any other, the constant
+  coded by the check and the pair moved to it by the bound, which took
+  the made speech, whose two channels are one signal, from 1.16 to 1.37
+  of its time to 0.75 to 0.88, and the 1962 speech to 0.86, for 0.05% of
+  the made speech's bytes and 0.16% at 8 bits, the fit-first cost its
+  exact path never paid. Measured in the tables' run against the commit
+  before, by the block's place in the cycle: the fourth block went from
+  27.1 to 22.5 µs on the orchestra, 22.2 to 18.3 on the Raven, 21.2 to
+  16.7 on the wide mix and 57.9 to 45.1 on the Aria, against a carried
+  block of 17.6, 14.0, 13.9 and 35.4; the two blocks after the choice
+  rose by about 1 µs at 16 bits and 4 on the Aria; the means fell by up
+  to 8% on the stereo music on both machines and stood within 2% on the
+  stereo speech and the mixes, and the bytes were 1.0000 to 1.0001 of
+  before on every recording. Both codings on the fourth block instead of
+  the carried ones left the fourth block where it was, 26.4 on the
+  orchestra; refreshing every other cycle cost the orchestra 0.02% for
+  2.5% of the mean and left the late block the same, and was not taken
+  then, a refusal the bar of 2026-10-24 under *What it is for*
+  overturned that night, under *The corrections refreshed every other
+  cycle*. Where two channels are one signal the fourth block codes the
+  three equivalent channels in turn, each coming out over its estimate
+  as the fit's saving is overstated; taking the channel's correction off
+  its saving when weighing cost the Raven 0.05% and the Aria 0.09%, and
+  taking another pair after the coding only past an eighth of a bit a
+  sample the Aria 0.1%, so the pair was chosen again as estimated and
+  that block stayed, 19 µs against 12 on the 1962 speech, until the
+  small hours after the night of 2026-10-24, when the side one value was
+  read as the three being one signal and the block carried, under *The
+  block whose side is one value carried*. The count without its residual
+  stored measured no faster than with it, and order 4 in one pass of
+  five taps 0.77 µs against 0.54 as order 2 twice, which is how it is
+  taken.
 - **The fit first on a carried block, the fixed path left out where the
   fit clearly wins** (2026-10-23, the level-0 ask taken up again): on the
   three blocks in four between full choices, the carried pair's two
