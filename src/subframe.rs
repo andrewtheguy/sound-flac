@@ -266,6 +266,40 @@ struct Counted {
     clear: bool,
 }
 
+/// What preparing a channel reads of its samples, folded in one pass: the
+/// samples' bits together for the wasted bits, their differences from the
+/// first for the constant, and their magnitudes for the width, which the
+/// compiler vectorises where a test of every sample against the first,
+/// leaving at the first that differs, stayed scalar. The pass is the
+/// caller's, so that the stereo split folds the four channels as it writes
+/// them; a channel on its own is folded after its copy, [`Fold::of`].
+#[derive(Clone, Copy, Default)]
+pub struct Fold {
+    all: i32,
+    differ: i32,
+    magnitude: i32,
+}
+
+impl Fold {
+    /// Sample `s` folded in, `first` being the channel's first sample.
+    #[inline(always)]
+    pub fn take(&mut self, s: i32, first: i32) {
+        self.all |= s;
+        self.differ |= s ^ first;
+        self.magnitude |= s ^ (s >> 31);
+    }
+
+    /// The fold of `signal`, which has a sample, in a pass of its own.
+    pub fn of(signal: &[i32]) -> Self {
+        let first = signal[0];
+        let mut fold = Self::default();
+        for &s in signal {
+            fold.take(s, first);
+        }
+        fold
+    }
+}
+
 impl Channel {
     /// A channel of `block` samples, coefficients at `precision` bits.
     pub fn new(block: usize, precision: u32) -> Self {
@@ -320,24 +354,16 @@ impl Channel {
         self.coarse
     }
 
-    /// Take `signal` in, of `bps` bits a sample: shift the wasted bits out,
-    /// find the width the samples need, and code a channel that is one
-    /// value as a constant; any other is as it is until it is coded. One
-    /// pass folds the samples' bits together for the wasted bits, their
-    /// differences from the first for the constant, and their magnitudes
-    /// for the width, which the compiler vectorises where a test of every
-    /// sample against the first, leaving at the first that differs, stayed
-    /// scalar. False where a sample does not fit `bps`, which the width
-    /// says for nothing; the channel is then not to be coded.
-    pub fn prepare(&mut self, bps: u32) -> bool {
+    /// Take `signal` in, of `bps` bits a sample, `fold` being
+    /// [`Fold::of`] it: shift the wasted bits out, find the width the
+    /// samples need, and code a channel that is one value as a constant;
+    /// any other is as it is until it is coded. False where a sample does
+    /// not fit `bps`, which the width says for nothing; the channel is then
+    /// not to be coded.
+    pub fn prepare(&mut self, bps: u32, fold: Fold) -> bool {
         let n = self.signal.len();
         let first = self.signal[0];
-        let (mut all, mut differ, mut magnitude) = (0i32, 0i32, 0i32);
-        for &s in &self.signal {
-            all |= s;
-            differ |= s ^ first;
-            magnitude |= s ^ (s >> 31);
-        }
+        let Fold { all, differ, magnitude } = fold;
         // A sample's two's complement is the bits of its magnitude, less
         // one for a negative, which the fold has, and a sign bit.
         if 33 - magnitude.leading_zeros() > bps {
@@ -1312,7 +1338,7 @@ mod tests {
         for (i, s) in ch.signal.iter_mut().enumerate() {
             *s = ((i as i32 % 7) - 3) << 8;
         }
-        assert!(ch.prepare(16));
+        assert!(ch.prepare(16, Fold::of(&ch.signal)));
         ch.analyse_fixed();
         assert_eq!(ch.wasted, 8);
         assert_eq!(ch.bps, 8);
@@ -1329,7 +1355,7 @@ mod tests {
         }
         for (value, fits) in [(1 << 15, false), ((1 << 15) - 1, true), (-1 << 15, true), ((-1 << 15) - 1, false), (i32::MIN, false), (i32::MAX, false)] {
             ch.signal[5] = value;
-            assert_eq!(ch.prepare(16), fits, "{value}");
+            assert_eq!(ch.prepare(16, Fold::of(&ch.signal)), fits, "{value}");
         }
     }
 
@@ -1355,7 +1381,7 @@ mod tests {
         // Coded without the fit, for the fixed bits.
         let mut ch = Channel::new(n, 10);
         two_tones(&mut ch);
-        ch.prepare(16);
+        ch.prepare(16, Fold::of(&ch.signal));
         ch.analyse_fixed();
         ch.code();
         let fixed = ch.best.bits;
@@ -1365,7 +1391,7 @@ mod tests {
 
         let mut ch = Channel::new(n, 10);
         two_tones(&mut ch);
-        ch.prepare(16);
+        ch.prepare(16, Fold::of(&ch.signal));
         count(&mut ch);
         assert!(ch.counted.is_some());
         assert!(ch.coarse() < fixed, "counted {} against fixed {fixed}", ch.coarse());
@@ -1383,7 +1409,7 @@ mod tests {
             state ^= state << 5;
             *s = (state >> 21) as i32 - 1024;
         }
-        ch.prepare(16);
+        ch.prepare(16, Fold::of(&ch.signal));
         count(&mut ch);
         ch.finish();
         assert!(matches!(ch.best.kind, Kind::Fixed { order: 0 }), "{:?}", ch.best.kind);
