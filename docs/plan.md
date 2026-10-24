@@ -128,7 +128,9 @@ tenth of a byte, and against level 0 0.98 to 1.22 on the stereo
 recordings where x86 is 0.79 to 1.17. Under Windows, natively on the same
 i5, run on demand the same evening, the encoder's blocks are the WSL
 run's within 5% on the recordings for the same bytes, and libFLAC's
-levels within a tenth of theirs either way but one cell.
+levels 5 and 0 within a tenth of theirs either way but five cells, three
+silences and the 1924 record, where its level 8 is a tenth to a quarter
+over on a fifth of its cells.
 
 ## Against libFLAC's level 0
 

@@ -30,7 +30,7 @@ cargo run --release --manifest-path tools/bench/Cargo.toml > docs/bench/x86.json
 python3 -I tools/tables.py docs/bench/x86.jsonl
 python3 -I tools/tables.py docs/bench/x86.jsonl arm64=docs/bench/arm64.jsonl   # with an arm64 run's log, its section too
 python3 -I tools/tables.py docs/bench/x86.jsonl arm64=docs/bench/arm64.jsonl windows=docs/bench/windows.jsonl   # and the Windows run's, made on demand
-git show HEAD:docs/bench/x86.jsonl > before.jsonl       # the run before, from the commit before
+git show HEAD:docs/bench/x86.jsonl > before.jsonl       # the run before, from the commit before; a commit from before the JSON lines holds x86.log, whose key=value lines are made JSON objects by hand first
 python3 -I tools/tables.py docs/bench/x86.jsonl arm64=docs/bench/arm64.jsonl windows=docs/bench/windows.jsonl --before before.jsonl
 ```
 
@@ -413,8 +413,9 @@ for what they sound like, and the repository nothing else of them.
   ill-conditioned fit.
 - **Under Windows, natively, this encoder's times are the WSL run's within
   5% on the recordings and 6% on the made sounds but one silence, and its
-  bytes the same; libFLAC's levels within a tenth either way but a few
-  cells: WSL2 costs this encoder nothing a block.** The run of the same
+  bytes the same; libFLAC's levels 5 and 0 within a tenth either way but
+  five cells, and its level 8 a tenth to a quarter over on a fifth of its:
+  WSL2 costs this encoder nothing a block.** The run of the same
   evening on the same i5 under Windows 11, in the last section, from the
   tree of this commit, the same encoder as this run's WSL columns: this
   encoder's mean block is 0.95 to 1.05 of the WSL run's on the recordings,
