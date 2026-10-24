@@ -400,9 +400,10 @@ impl Encoder {
             };
             // A frame is never more than its PCM and a header: where the
             // pair chosen has a side that noise fills past the width, left
-            // and right go instead.
+            // and right go instead, weighed by the most the pair can take,
+            // its bits as estimated and half a bit a sample over them.
             let (a, b) = PAIRS[best];
-            if best != 0 && channels[a].bits() + channels[b].bits() > channels[0].verbatim() + channels[1].verbatim() {
+            if best != 0 && channels[a].at_most() + channels[b].at_most() > channels[0].verbatim() + channels[1].verbatim() {
                 for i in [0, 1] {
                     channels[i].finish();
                 }

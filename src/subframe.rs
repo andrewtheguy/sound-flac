@@ -113,7 +113,11 @@ struct Coding {
     partition_order: u32,
     /// Whether a parameter takes 5 bits rather than 4.
     wide_params: bool,
-    /// The bits the subframe takes.
+    /// The bits the subframe takes, as the sums estimate them less the
+    /// fractions the estimate drops ([`best_param`]), within a part in a
+    /// thousand of the real bits on sound, which never exceed them by more
+    /// than half a bit a sample; exact for a constant or a verbatim
+    /// subframe.
     bits: u64,
 }
 
@@ -259,7 +263,9 @@ impl Channel {
         }
     }
 
-    /// The bits the subframe takes as coded.
+    /// The bits the subframe takes as coded, estimated within a part in a
+    /// thousand on sound and never under the real bits by more than half a
+    /// bit a sample; [`Self::at_most`] is what they never exceed.
     pub fn bits(&self) -> u64 {
         self.best.bits
     }
@@ -472,15 +478,18 @@ impl Channel {
         self.header() + order as u64 * u64::from(self.bps) + 2 + 4 + param + rice
     }
 
-    /// The most the channel can cost coded, from its bits where it is
-    /// coded, and otherwise from one pass over the samples: the fixed
-    /// predictor of order 1 in one Rice partition, which the coding
-    /// chosen, of the best order in the best partitions, never exceeds.
-    /// For a pair not coded this block to be weighed against the pair that
-    /// was, on a block where the other two channels are not coded.
+    /// The most the channel can cost coded: where it is coded, its bits
+    /// and half a bit a sample, the most the estimate's fractions can be
+    /// under the real bits, and otherwise a bound from one pass over the
+    /// samples, the fixed predictor of order 1 in one Rice partition, which
+    /// the coding chosen, of the best order in the best partitions, never
+    /// exceeds but for the estimate's own error. For a pair not coded this
+    /// block to be weighed against the pair that was, on a block where the
+    /// other two channels are not coded, and for the frame to be held under
+    /// its PCM.
     pub fn at_most(&mut self) -> u64 {
         if self.coded {
-            return self.best.bits;
+            return self.best.bits + (self.signal.len() as u64 >> 1);
         }
         if let Some(bound) = self.bound {
             return bound;
@@ -489,7 +498,11 @@ impl Channel {
         let bound = if n <= MAX_FIXED_ORDER {
             self.best.bits
         } else {
-            // Twice the magnitude is at least the folded value.
+            // Twice the magnitude is at least the folded value. The bound is
+            // on the scale the pair's bits are, the fractions off, so that
+            // it moves the pair as often as it did: on the plain estimate
+            // against corrected bits it moved it less, and the wide mix
+            // cost 0.03%.
             let sum = difference(&self.signal, &mut self.scratch[0][..n - 1]);
             let (k, rice) = best_param(2 * sum, (n - 1) as u64);
             let param = if k > MAX_PARAM_4 { 5 } else { 4 };
@@ -752,7 +765,8 @@ impl Channel {
 }
 
 /// Choose the partitioning and the Rice parameters of `coding`'s residual
-/// over a block of `n`, and return the bits the residual coding takes.
+/// over a block of `n`, and return the bits the residual coding takes, as
+/// [`search`] returns them.
 fn partition(coding: &mut Coding, n: usize, sums: &mut [u64], params: &mut [u8]) -> u64 {
     fold(coding, n, sums);
     search(coding, n, sums, params)
@@ -795,7 +809,11 @@ fn fold(coding: &mut Coding, n: usize, sums: &mut [u64]) -> u64 {
 
 /// Choose the partitioning and the Rice parameters of `coding`'s residual,
 /// folded and summed over the finest partitions by [`fold`], and return
-/// the bits the residual coding takes.
+/// the bits the residual coding takes, estimated from the sums less the
+/// fractions the estimate drops ([`best_param`]), which the partitioning
+/// is chosen on as each parameter is: on the 8-bit noise the estimate with
+/// the fractions took two to eight partitions on the side channel for a
+/// gain that was the fractions', where libFLAC took one.
 fn search(coding: &mut Coding, n: usize, sums: &mut [u64], params: &mut [u8]) -> u64 {
     let order = n - coding.residual.len();
     let finest = finest(n, order);
@@ -1015,35 +1033,70 @@ fn fixed_pass<const ORDER: usize>(signal: &[i32], out: &mut [i32]) -> u64 {
 }
 
 /// The Rice parameter for `count` residuals whose zigzag values sum to `sum`,
-/// and the bits they take with it, estimated from the sum alone: the parameter
-/// near the mean's logarithm, one either side of it tried, whichever is
-/// cheapest, none past what a 5-bit field holds. No division: the
-/// logarithms' difference is within one of the mean's. The cost is convex
-/// in the parameter, and a walk from the difference by exact cost
-/// differences, a comparison of two quotients a step in place of a
-/// multiplication a trial, found the same parameter on every sound and
-/// took 1.01 to 1.05 of the time a block on arm64, so the three trials
-/// stay.
+/// and the bits they take with it: the estimate from the sum,
+/// `count * (k + 1) + (sum >> k)`, which the real bits never exceed, less the fractions
+/// it drops, which the real bits never exceed by more than half a bit a
+/// sample. The parameter is the one near the mean's logarithm or one
+/// either side of it, whichever is cheapest by that, none past what a
+/// 5-bit field holds. No division: the
+/// logarithms' difference is within one of the mean's. The quotients' bits
+/// are the sum of each value shifted down, under the sum shifted down by
+/// the fractions dropped, about half a bit a sample less half a bit over
+/// two to the parameter, `(1 - 2^-k) / 2` a value: the same at every parameter a
+/// loud residual is in reach of, and on a quiet one, at a parameter of 1 to
+/// 3, enough to favour the smaller parameter and the finer partitioning
+/// wrongly, which on 8-bit noise was a parameter under libFLAC's on the mid
+/// channel and 0.46% of the bytes, and on the 96 kHz tone 2.3%. The half
+/// bit a sample is the same at every parameter and is left out of the
+/// weighing. The three weights come from one quotient, one share of the
+/// count and one multiplication, the neighbours' by constant shifts, two
+/// variable shifts where the three costs took three; over the 63
+/// partitions of a 960-frame block the correction is 0.7% of the
+/// orchestra's instructions and 0.9% of the Fantasy's, within the bench's
+/// noise. The step from the difference by the costs' convexity, a quotient
+/// and two comparisons, was slower on the EPYC, `search` going from seven
+/// per cent of a block to eleven, since the machine runs the independent
+/// weights four instructions a cycle and a chain not, as a walk had lost on
+/// arm64 before.
 #[inline]
 fn best_param(sum: u64, count: u64) -> (u32, u64) {
     if sum < count {
         return (0, count + sum);
     }
     let near = (sum.ilog2() - count.ilog2()).min(MAX_PARAM_5);
-    let cost = |k: u32| count * (u64::from(k) + 1) + (sum >> k);
-    let mut best = (near, cost(near));
-    for k in [near.saturating_sub(1), (near + 1).min(MAX_PARAM_5)] {
-        let bits = cost(k);
-        if bits < best.1 {
-            best = (k, bits);
-        }
+    let half = count >> 1;
+    if near == 0 {
+        // A mean under two: parameter 0 or 1.
+        let (w0, w1) = (count + sum + half, 2 * count + (sum >> 1) + (count >> 2));
+        return if w1 < w0 { (1, w1 - half) } else { (0, count + sum) };
     }
-    best
+    // The quotient one step down, this one and the one up; the count's
+    // share at each, `count >> (k + 1)`; and the weights, the plain cost
+    // with the share, near first, then down and up on a strictly smaller
+    // weight, as the trials went.
+    let q_down = sum >> (near - 1);
+    let q = q_down >> 1;
+    let share_down = count >> near;
+    let m = count * u64::from(near);
+    let w_down = m + q_down + share_down;
+    let w = m + count + q + (share_down >> 1);
+    let w_up = if near < MAX_PARAM_5 { m + 2 * count + (q >> 1) + (share_down >> 2) } else { u64::MAX };
+    let (k, w) = if w_down < w { (near - 1, w_down) } else { (near, w) };
+    let (k, w) = if w_up < w { (near + 1, w_up) } else { (k, w) };
+    (k, w - half)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// The bits the estimate from the sum has over the quotients' real
+    /// bits at parameter `k` where the values' low bits are spread evenly:
+    /// the mean fraction dropped, `(1 - 2^-k) / 2`, over `count` values,
+    /// which is none at 0, where nothing is dropped.
+    fn floor_slack(count: u64, k: u32) -> u64 {
+        (count >> 1) - (count >> (k + 1))
+    }
 
     #[test]
     fn the_order_with_the_smallest_residual_is_chosen() {
@@ -1069,9 +1122,13 @@ mod tests {
         assert_eq!(scratch[3][..4], [0, 0, 0, 0]);
     }
 
-    /// The parameter found is the one of least cost by the estimate, as
-    /// trying every parameter finds it, on sums from a residual at the
-    /// floor to a wide sample's wild one, and the bits are the cost at it.
+    /// The parameter found is the one of least cost by the corrected
+    /// estimate, as trying every parameter finds it, on sums from a
+    /// residual at the floor to a wide sample's wild one, and the bits are
+    /// that estimate at it; the plain estimate is never under the real bits
+    /// of values whose low bits are anything, the corrected one is within a
+    /// part in a thousand of them on values spread evenly and never under
+    /// them by more than half a bit a sample.
     #[test]
     fn the_parameter_tracks_the_mean() {
         assert_eq!(best_param(0, 100), (0, 100));
@@ -1085,6 +1142,7 @@ mod tests {
         let (k, _) = best_param(100 << 20, 100);
         assert!((19..=20).contains(&k), "{k}");
         let cost = |sum: u64, count: u64, k: u32| count * (u64::from(k) + 1) + (sum >> k);
+        let corrected = |sum: u64, count: u64, k: u32| cost(sum, count, k) - floor_slack(count, k);
         let mut seed = 0x9E37_79B9u64;
         for count in [1u64, 15, 30, 60, 240, 960, 1920] {
             for e in 0..40 {
@@ -1092,10 +1150,29 @@ mod tests {
                 seed ^= seed >> 7;
                 seed ^= seed << 17;
                 let sum = (seed % (count * 3 + 1)) << e;
-                let (k, bits) = best_param(sum, count);
-                assert_eq!(bits, cost(sum, count, k));
-                let least = (0..=MAX_PARAM_5).map(|k| cost(sum, count, k)).min().unwrap();
-                assert_eq!(bits, least, "sum {sum} count {count}: parameter {k}");
+                let (k, less) = best_param(sum, count);
+                assert_eq!(less, corrected(sum, count, k));
+                let least = (0..=MAX_PARAM_5).map(|k| corrected(sum, count, k)).min().unwrap();
+                assert_eq!(less, least, "sum {sum} count {count}: parameter {k}");
+            }
+        }
+        // Values spread evenly over 0..2^12 and the same values all even,
+        // all a multiple of eight: the plain estimate is over the real bits
+        // of each at every parameter, and the corrected one is within a part
+        // in a thousand of the evenly spread values' real bits.
+        let real = |values: &[u32], k: u32| values.iter().map(|&u| u64::from(u >> k) + 1 + u64::from(k)).sum::<u64>();
+        let spread: Vec<u32> = (0..960u32).map(|i| i.wrapping_mul(2_654_435_761).wrapping_mul(i | 1) >> 20).collect();
+        for shift in [0, 1, 3] {
+            let values: Vec<u32> = spread.iter().map(|&u| (u >> shift) << shift).collect();
+            let sum = values.iter().map(|&u| u64::from(u)).sum::<u64>();
+            for k in 0..=14 {
+                assert!(cost(sum, 960, k) >= real(&values, k), "shift {shift} parameter {k}");
+            }
+            let (k, less) = best_param(sum, 960);
+            let bits = real(&values, k);
+            assert!(bits <= less + 480, "shift {shift}: real {bits} over the corrected {less} by more than half a bit a sample");
+            if shift == 0 {
+                assert!(less.abs_diff(bits) * 1000 <= bits, "corrected {less} against real {bits} at {k}");
             }
         }
     }

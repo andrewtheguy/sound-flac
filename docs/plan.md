@@ -20,7 +20,8 @@ counts; and to the morning of 2026-10-24, when the x86 run moved from the
 desktop to an idle machine and a fifteenth recording was added; and to
 that afternoon, when the open items were planned again from the EPYC's
 own profile, the cells still over libFLAC first, with the arm64 run held
-until the round is called ready.
+until the round is called ready, and to that afternoon's end, when the
+first of them, the Rice parameter's estimate, was taken.
 The days before that are the count the sessions kept, which ran ahead of
 the machine's clock: by the commits, which that clock stamps in Pacific
 time, all of it ran from the evening of 2026-10-22 to the afternoon of
@@ -239,39 +240,13 @@ and what is left of it is the Altra's, where the run is unchanged.
 ## Open items, in order
 
 Planned again on the afternoon of 2026-10-24 from the EPYC's own profile,
-under *Where it stands*: the cells still over libFLAC first, the one in
-bytes being free, then the parts of a block the profile puts at a fifth and
-the late block. Each is measured on the EPYC alone, bytes on every made
+under *Where it stands*: the cells still over libFLAC first, then the parts
+of a block the profile puts at a fifth and the late block; the one cell in
+bytes, the 8-bit noise's, was the first item and is taken, below. Each is measured on the EPYC alone, bytes on every made
 sound and recording and time a block against the run before; the arm64 run
 is made once, when the round is called ready.
 
-1. **The Rice parameter's estimate, corrected for the floor** (the 8-bit
-   noise's bytes, 1.0046 of libFLAC's at every level, the one made cell over
-   its default level by more than a byte). Read with the flac tool's
-   analysis of this encoder's frames beside libFLAC's: the pairing is the
-   same on every block, mid and side, and the fixed order the same, 0; the
-   parameters are not. On the mid this encoder takes 1 where libFLAC takes
-   2, and on the side 2 and 3 in two to eight partitions where libFLAC
-   takes 3 in one. `best_param` weighs a parameter at count·(k + 1) +
-   (sum >> k), and the quotients' bits are Σ(u >> k), under (Σu) >> k by
-   the fractions dropped, about count·(1 − 2^−k)/2: a quarter of a bit a
-   sample at k = 1, three eighths at 2, nearly a half from 4 on. On a loud
-   residual the bias is the same at every parameter in reach and moves no
-   choice; on a quiet one it favours the smaller parameter and the finer
-   partitioning. On the first block's mid the exact bits are 3538 at 1 and
-   3481 at 2, the estimate 3759 and 3799. With the fractions taken off,
-   count·(2^k − 1) >> (k + 1) at k ≥ 1, the choice on the 8-bit noise comes
-   to 7914 residual bits a frame against 7950 as coded and the exact
-   optimum's 7910, which is the 4.6 bytes. On the recordings the same
-   count, over 15 s of each, finds the exact optimum within 0.013% of what
-   is coded, the orchestra the 0.013%, and the corrected estimate takes
-   0.009% off the orchestra, 0.004% off the wide mix and nothing past a
-   tie's rounding off the rest: the parameter is not where the recordings'
-   bytes are. Nothing to measure in time, the correction being a shift of
-   the count. The bound a channel not coded is given (`Channel::at_most`)
-   stays on the uncorrected estimate, which is over the real bits, where
-   the corrected one may be under them.
-2. **The partitions' machinery, a fifth of a 48 or 96 kHz block**: the
+1. **The partitions' machinery, a fifth of a 48 or 96 kHz block**: the
    fold 4%, the finest sums 5% to 6% and the search over the orders and
    the parameters 6% to 9%, 19.5% of the orchestra's block, 16% to 17% of
    the Fantasy's, the made music's, the tone's and pink noise's, 14% of
@@ -291,7 +266,7 @@ is made once, when the round is called ready.
    1920 residuals at the parameters of 16 and 24 bits, then in the
    encoder; the same bytes on every line is the test, neither changing a
    choice.
-3. **The fixed path left out where the fit keeps winning** (the tone's
+2. **The fixed path left out where the fit keeps winning** (the tone's
    time against level 0, 1.01 at 96 kHz on the EPYC and 1.11 to 1.27 past
    44.1 kHz on the Altra, and a part of every recording's block). On the
    side channel of the tone the fit wins by about an eighth of a bit a
@@ -313,7 +288,7 @@ is made once, when the round is called ready.
    the orchestra's. Bytes first, on every recording and made sound, the
    tones' watched, since the rounding of their coefficients is what the
    fixed path catches there.
-4. **The fourth block, the late block** (1.31 of a carried block on the
+3. **The fourth block, the late block** (1.31 of a carried block on the
    orchestra on the EPYC, 14.3 against 10.9 µs, 1.34 on the Aria, 1.26 on
    the Fantasy, 1.33 on the Raven): its excess over a carried block is the
    third autocorrelation, two more fits and, where the estimates do not
@@ -337,7 +312,7 @@ is made once, when the round is called ready.
    block, the pair can move mid-cycle on a count rather than only on the
    bound, which is where part of the recordings' 1.001 against libFLAC's
    bytes went.
-5. **The residual of a fit, 14% to 27% of the block**: 14% on the
+4. **The residual of a fit, 14% to 27% of the block**: 14% on the
    orchestra, 16% to 18% at 44.1 kHz and on the Fantasy, 22% on the 1924
    record and 27% on the Aria, where a 24-bit sample's residual runs as
    two 16-bit passes. The 16-bit loop widens each tap and multiplies it
@@ -352,7 +327,7 @@ is made once, when the round is called ready.
    a copy of the tree: how often a 16-bit stereo recording's side channel
    is 17 bits wide in its samples and takes the split pass, which is where
    the loud masters' time would go.
-6. **The CRC inside the writer's pass** (the frame's CRC 4% to 7% at 16
+5. **The CRC inside the writer's pass** (the frame's CRC 4% to 7% at 16
    bits, 7% to 14% on the 24-bit recordings and noise, 20% of 24-bit
    noise's block): the two chains of table lookups are their loads'
    latency, and they run after the writer, whose own work is a dependent
@@ -364,7 +339,7 @@ is made once, when the round is called ready.
    chain leaves the load ports idle, which is a measurement, apart on
    frames of 1500 to 8700 bytes and then in the encoder on pink noise and
    the 1924 record.
-7. **The stereo split and the four channels' preparing in one pass**, 8%
+6. **The stereo split and the four channels' preparing in one pass**, 8%
    to 9% of a stereo block: the split writes left, right, mid and side in
    one pass and each channel's `prepare` reads its signal back for the
    wasted bits, the constant check and the width, four passes over what
@@ -375,16 +350,52 @@ is made once, when the round is called ready.
    header are 13.6% of a 5 µs block, the strided copy being a copy of one
    channel: there the samples can be prepared straight from the block.
    About 3% of a stereo block to measure, the same bytes.
-8. **The autocorrelation**, the largest part at 16 bits, 19% to 23%, is at
+7. **The autocorrelation**, the largest part at 16 bits, 19% to 23%, is at
    the floor the x86-64 baseline sets: 18 floating-point operations on
    every two samples on two ports, with no fused multiply-add at the
    baseline, where the EPYC has one and the Altra uses it. Nothing to take
    short of the users building with `target-cpu`, which is theirs; the
-   third autocorrelation on the fresh block leaves with item 4, and
+   third autocorrelation on the fresh block leaves with item 3, and
    nothing else in the block asks for one.
 
 ## Measured and taken
 
+- **The Rice parameter and the partitioning chosen on the estimate less
+  the fractions it drops** (the afternoon of 2026-10-24, item 1 of the plan
+  as it stood, the 8-bit noise's bytes): `best_param` weighed a parameter
+  at count·(k + 1) + (sum >> k), and the quotients' real bits are under
+  that by the fractions the shift drops, about count·(1 − 2^−k)/2, nothing
+  at a parameter of 0, a quarter of a bit a sample at 1 and nearly half
+  from 4 on, so that on a quiet residual the smaller parameter and the
+  finer partitioning were favoured by the bias and not by bits; read with
+  the flac tool, the 8-bit noise's mid channel was at a parameter under
+  libFLAC's and its side in two to eight partitions where libFLAC had one,
+  the pairing and the fixed order the same. The weight is now the estimate
+  with the count's share, count >> (k + 1), the half bit a sample that is
+  the same at every parameter left out; the bits a coding reports are the
+  estimate less the fractions, within a part in a thousand of the real
+  bits on sound and never under them by more than half a bit a sample, and
+  the most a coded channel can take, for the pair's move and the frame's
+  guard against outgrowing its PCM, is its bits and that half bit. The
+  three weights come from one quotient, one share and one multiplication,
+  the neighbours' by constant shifts. On the EPYC: the 8-bit noise from
+  1006.1 bytes a block to 1001.6, 1.0001 of libFLAC's where it was 1.0046;
+  the 96 kHz tone from 1481 to 1447, 0.876 of libFLAC's and under its level
+  8, where it was 0.90; every other made sound the same bytes but 8-bit
+  speech, 0.2 of a byte a block over, 0.08%; the recordings within 0.02%,
+  the wide mix 1.0002, the Fantasy, the prison song, the talk, the loud
+  mix and the rock master 1.0001, the Raven and the train 0.9999. Counted
+  exactly over 15 s of every recording before the change, the estimate's
+  choice was within 0.013% of the optimum, so nothing more was there to
+  find. The time: 0.7% more instructions on the orchestra and 0.9% on the
+  Fantasy by the machine's counters, the bench's block within 1.5% either
+  way, which is the run's noise. On the way: the parameter chosen on the
+  corrected estimate but reported plain cost the mid 40 bits on the plain
+  scale and the pair choice went wrong, 1003.4 bytes; reported corrected
+  with the pair's bound still plain, the bound moved the pair less and the
+  wide mix cost 0.03%; and the three costs each with the correction as two
+  shifts cost 2% to 5% of a 48 or 96 kHz block, which the one quotient
+  and one multiplication took back.
 - **The fit skipped where it keeps losing** (late the evening of
   2026-10-23 by the machine's clock, after the v0.0.7 release; item 2 as
   it stood, the fixed path at 8 bits): the double coding on 8-bit music
@@ -745,6 +756,14 @@ is made once, when the round is called ready.
 
 ## Measured and not taken
 
+- **The Rice parameter stepped from the logarithms' difference**, once
+  more (the same afternoon, with the correction): the corrected cost's
+  convexity gives the step up or down from one quotient and two
+  comparisons, without the trials' multiplications, and on the EPYC it was
+  slower, `search` going from 6.9% of the made 48 kHz music's block to
+  10.6% and the orchestra taking 1.6% more instructions against the three
+  weights' 0.7%: the independent weights run four instructions a cycle
+  and the step's chain does not. Out, as the walk on arm64 was.
 - **The Rice bits counted exactly** (the afternoon of 2026-10-24, with
   the flac tool's residual dump over 15 s of every recording, this
   encoder's own frames read back): the exact optimum over the
