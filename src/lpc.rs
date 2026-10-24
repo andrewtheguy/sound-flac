@@ -15,6 +15,24 @@ pub const MAX_ORDER: usize = 8;
 pub const MAX_FIXED_ORDER: usize = 4;
 /// The most a coefficient shift can be, FLAC's field holding 0 to 15.
 const MAX_SHIFT: i32 = 15;
+/// The width the samples are scaled to for the autocorrelation, the most a
+/// scaled sample may be, and the samples a chunk of the sums, whose
+/// products are summed in 32 bits: `CHUNK` products of `LIMIT` must fit.
+const SCALED: u32 = 14;
+const LIMIT: i16 = (1 << (SCALED - 1)) - 1;
+const CHUNK: usize = 32;
+const _: () = assert!(CHUNK as i64 * (LIMIT as i64 * LIMIT as i64) <= i32::MAX as i64);
+/// A block whose fit at order 2 leaves less than this of its power has its
+/// autocorrelation taken again in double precision: the pure tone, 1.1 to
+/// 1.2 millionths on the made tone's blocks, whose fit the window's 15-bit
+/// weights alone move by a tenth of its bytes either way. On the
+/// recordings' blocks dumped the rule falls on a fifth of a per cent of the
+/// Aria's, a tenth of the Raven's and none of the rest's; a rule on the
+/// rounding noise against the fit's error, which took the loud, resonant
+/// passage of the indie record from 0.11% of its bytes to 0.09%, sent a
+/// sixth of the Aria's blocks to the exact sums and halved its gain, so
+/// it is not applied.
+const EXACT_GAIN: f64 = 2e-6;
 /// The bits a sample the fit may be estimated to lose to the fixed predictor
 /// and still be tried: the estimates' difference was measured to be within
 /// this of the truth, no block's bytes changing between this and no margin.
@@ -34,20 +52,35 @@ pub struct Predictor {
 }
 
 /// The window the samples are seen through before the fit: Tukey, a quarter
-/// of the block tapered by a half cosine at each end, as libFLAC's default.
-pub struct Window(Vec<f64>);
+/// of the block tapered by a half cosine at each end, as libFLAC's default;
+/// the tapers' weights in 15 bits for the scaled sums, the flat middle being
+/// the samples as they are, and the whole window in double precision for
+/// the exact ones.
+pub struct Window {
+    taper: Vec<i16>,
+    exact: Vec<f64>,
+}
 
 impl Window {
     pub fn new(n: usize) -> Self {
         let taper = n / 4;
-        let mut w = vec![1.0f64; n];
+        let mut exact = vec![1.0f64; n];
         for i in 0..taper {
             let v = 0.5 - 0.5 * (std::f64::consts::PI * i as f64 / taper as f64).cos();
-            w[i] = v;
-            w[n - 1 - i] = v;
+            exact[i] = v;
+            exact[n - 1 - i] = v;
         }
-        Self(w)
+        Self { taper: exact[..taper].iter().map(|&v| (v * 32768.0).round().min(32767.0) as i16).collect(), exact }
     }
+}
+
+/// Room for a channel's samples scaled and windowed, kept across blocks,
+/// and whether its last block was a tone, summed exactly.
+#[derive(Default)]
+pub struct Windowed {
+    scaled: Vec<i16>,
+    exact: Vec<f64>,
+    tone: bool,
 }
 
 /// The coefficient precision for a stream of `bits` a sample in blocks of
@@ -112,13 +145,91 @@ impl Candidate {
 /// highest order.
 pub type Autocorrelation = [f64; MAX_ORDER + 1];
 
-/// The autocorrelation of `signal` seen through `window`, `windowed` being
-/// room for the product.
-pub fn autocorrelation(signal: &[i32], window: &Window, windowed: &mut [f64]) -> Autocorrelation {
-    for ((x, &s), &w) in windowed.iter_mut().zip(signal).zip(&window.0) {
-        *x = f64::from(s) * w;
+/// The autocorrelation of `signal`, whose samples are `width` bits wide,
+/// seen through `window`, `windowed` being room for the product: the
+/// samples scaled to [`SCALED`] bits and summed as integers ([`scaled`]),
+/// which loses bits only on a block wider than that, in the samples' own
+/// proportion, and is exact in the sums; a block whose fit at order 2
+/// leaves less than [`EXACT_GAIN`] of its power, the pure tone, is summed
+/// again in double precision ([`exact`]), and the channel's next block
+/// exactly first, the scaled sums taken up again on the block after one
+/// that is no tone. Measured apart on the EPYC, 960 samples: the scaled
+/// sums 0.49 µs against the exact 1.14, 0.12 of it the scaling and window;
+/// the normalised autocorrelation within 2e-5 of the exact one on noise
+/// and music and within 1e-7 on a resonant block. In the encoder every
+/// stereo recording took 12% to 18% fewer instructions, white noise 3%,
+/// and the made sounds ran 0.85 to 0.91 of their time; the bytes rose
+/// 0.11% on the indie record, 0.012% on the Fantasy, 0.008% on the train
+/// station and 0.004% on the Aria, and nowhere else.
+pub fn autocorrelation(signal: &[i32], width: u32, window: &Window, windowed: &mut Windowed) -> Autocorrelation {
+    /// Whether a fit at order 2 leaves less than `EXACT_GAIN` of the power,
+    /// from the two reflection coefficients.
+    fn tone(r: &Autocorrelation) -> bool {
+        let e1 = r[0] - r[1] * r[1] / r[0];
+        let e2 = if e1 > 0.0 {
+            let k2 = (r[2] - r[1] * r[1] / r[0]) / e1;
+            e1 * (1.0 - k2 * k2)
+        } else {
+            0.0
+        };
+        e2 < EXACT_GAIN * r[0]
     }
-    lags(windowed)
+    if windowed.tone {
+        let r = exact(signal, window, &mut windowed.exact);
+        windowed.tone = tone(&r);
+        return r;
+    }
+    let r = scaled(signal, width, window, &mut windowed.scaled);
+    if tone(&r) {
+        windowed.tone = true;
+        exact(signal, window, &mut windowed.exact)
+    } else {
+        r
+    }
+}
+
+/// The autocorrelation from the samples scaled to `SCALED` bits, the right
+/// shift rounded, clamped to `LIMIT` and the tapers' products' high halves
+/// taken in 16-bit lanes, then the lags summed as integers ([`lags`]) and
+/// scaled back. The clamp to i16 holds nothing, the scaled sample fitting,
+/// and lets the compiler pack the lanes in one instruction; the clamp to
+/// `LIMIT` keeps a chunk's products within 32 bits, which the one sample
+/// of `-LIMIT - 1` would not.
+fn scaled(signal: &[i32], width: u32, window: &Window, windowed: &mut Vec<i16>) -> Autocorrelation {
+    let n = signal.len();
+    let padded = n.div_ceil(CHUNK) * CHUNK + MAX_ORDER;
+    if windowed.len() != padded {
+        windowed.clear();
+        windowed.resize(padded, 0);
+    }
+    let shift = SCALED as i32 - width as i32;
+    let (up, down) = (shift.max(0) as u32, (-shift).max(0) as u32);
+    let half = (1i32 << down) >> 1;
+    for (x, &s) in windowed[..n].iter_mut().zip(signal) {
+        *x = ((((s << up) + half) >> down).clamp(-32768, 32767) as i16).clamp(-LIMIT, LIMIT);
+    }
+    let taper = window.taper.len();
+    let (head, rest) = windowed[..n].split_at_mut(taper);
+    let tail = &mut rest[n - 2 * taper..];
+    for (x, &w) in head.iter_mut().zip(&window.taper) {
+        *x = ((i32::from(*x << 1) * i32::from(w)) >> 16) as i16;
+    }
+    for (x, &w) in tail.iter_mut().zip(window.taper.iter().rev()) {
+        *x = ((i32::from(*x << 1) * i32::from(w)) >> 16) as i16;
+    }
+    let back = 2f64.powi(-2 * shift);
+    lags(windowed, n).map(|s| s as f64 * back)
+}
+
+/// The autocorrelation in double precision through the window, as every
+/// block had it before the scaled sums: the predictor of a quiet, resonant
+/// block is as sensitive to the sum's rounding as to its own quantization,
+/// and single precision was measured to cost 0.5% to 1% of the bytes on
+/// piano and voice.
+fn exact(signal: &[i32], window: &Window, windowed: &mut Vec<f64>) -> Autocorrelation {
+    windowed.clear();
+    windowed.extend(signal.iter().zip(&window.exact).map(|(&s, &w)| f64::from(s) * w));
+    lags_exact(windowed)
 }
 
 /// Fit a predictor of up to `max_order` to a channel of `n` samples of `bps`
@@ -241,6 +352,36 @@ fn fixed_error(autoc: &[f64; MAX_ORDER + 1], order: usize) -> f64 {
     taps[0] * autoc[0] + 2.0 * taps[1..].iter().zip(&autoc[1..]).map(|(&t, &r)| t * r).sum::<f64>()
 }
 
+/// The sum of `x[i] * x[i + lag]` over the `n` samples of `x` for every lag
+/// to the highest order, `x` padded with zeros to whole chunks and
+/// `MAX_ORDER` more so that every lag's pair is in bounds and nothing is
+/// checked in the loop. Each chunk's products are summed in 32 bits, two
+/// products to a `pmaddwd`, and carried to 64 bits once a chunk: 0.37 µs
+/// at 960 samples where the exact sums take 1.0, 18 floating-point
+/// operations on two samples on the x86-64 baseline's two ports. A chunk
+/// of 64 or 128 the compiler unrolls into widening multiplies, twice the
+/// time; a chunk of 16 carries twice as often, 0.05 µs more; the chunk's
+/// length as a value rather than a constant, or the four lanes written out
+/// and each carried on its own, come out scalar. Not inlined, so that the
+/// sums have the registers to themselves.
+#[inline(never)]
+fn lags(x: &[i16], n: usize) -> [i64; MAX_ORDER + 1] {
+    let mut acc = [0i64; MAX_ORDER + 1];
+    for c in 0..n.div_ceil(CHUNK) {
+        let w = &x[c * CHUNK..c * CHUNK + CHUNK + MAX_ORDER];
+        let a = &w[..CHUNK];
+        for (lag, acc) in acc.iter_mut().enumerate() {
+            let b = &w[lag..lag + CHUNK];
+            let mut s = 0i32;
+            for i in 0..CHUNK {
+                s += i32::from(a[i]) * i32::from(b[i]);
+            }
+            *acc += i64::from(s);
+        }
+    }
+    acc
+}
+
 /// `a * b + c`, fused where the machine has the instruction: on aarch64,
 /// where every core has it, and on x86-64 built with `fma`. At the x86-64
 /// baseline a fused multiply-add is a library call, and the product and the
@@ -251,29 +392,14 @@ fn mul_add(a: f64, b: f64, c: f64) -> f64 {
     if cfg!(any(target_arch = "aarch64", target_feature = "fma")) { a.mul_add(b, c) } else { a * b + c }
 }
 
-/// The sum of `x[i] * x[i + lag]` over the block for every lag to the
-/// highest order, in double precision: the predictor of a quiet, resonant
-/// block is as sensitive to the sum's rounding as to its own quantization,
-/// and single precision was measured to cost 0.5% to 1% of the bytes on
-/// piano and voice.
-///
-/// One pass over the samples two at a time, each seen through a window of
-/// the two and the eight after them, so every lag's pair is in bounds by
-/// the window's length and nothing is checked in the loop. The compiler
-/// lays the nine lags' sums out two to a register, a sample broadcast
-/// against the pairs of samples after it, 18 floating-point operations on
-/// two samples, which is the floor the x86-64 baseline's two ports set:
-/// 1.4 µs at 960 samples, and nine where the multiply and add are one
-/// instruction ([`mul_add`]), as on aarch64, where the Ampere Altra came
-/// from 2.3 µs to about 1.5 and every sounded block to 0.90 to 0.94 of
-/// its time; where the two passes of five and four lags this
-/// replaced, each pair indexed and checked, took 2.4 measured apart and
-/// 2.8 in the encoder. Four lanes a lag were measured no faster, the
-/// floating-point work being the same. Not inlined, so that the nine sums
-/// and their operands have the registers to themselves whatever the caller
-/// holds, which is where the one pass lost before.
+/// The lags in double precision, one pass over the samples two at a time,
+/// each seen through a window of the two and the eight after them, so
+/// every lag's pair is in bounds by the window's length and nothing is
+/// checked in the loop; the nine lags' sums two to a register, a sample
+/// broadcast against the pairs of samples after it. Not inlined, so that
+/// the nine sums and their operands have the registers to themselves.
 #[inline(never)]
-fn lags(x: &[f64]) -> Autocorrelation {
+fn lags_exact(x: &[f64]) -> Autocorrelation {
     const W: usize = 2;
     let n = x.len();
     let mut lanes = [[0f64; W]; MAX_ORDER + 1];
@@ -637,9 +763,10 @@ mod tests {
             })
             .collect();
         let window = Window::new(n);
-        let mut windowed = vec![0f64; n];
+        let mut windowed = Windowed::default();
+        let width = 33 - s.iter().fold(0i32, |m, &s| m | (s ^ (s >> 31))).leading_zeros();
         for bps in [16, 17, 24] {
-            let estimate = estimate(&autocorrelation(&s, &window, &mut windowed), n, MAX_ORDER, bps, precision(bps, n), Some(2));
+            let estimate = estimate(&autocorrelation(&s, width, &window, &mut windowed), n, MAX_ORDER, bps, precision(bps, n), Some(2));
             let fit = estimate.fit.expect("a tone is worth fitting");
             assert!(fit.bits() < estimate.fixed);
             let p = fit.predictor();
@@ -656,11 +783,52 @@ mod tests {
     #[test]
     fn the_window_tapers_a_quarter_each_end() {
         let w = Window::new(400);
-        assert_eq!(w.0[0], 0.0);
-        assert!(w.0[50] > 0.49 && w.0[50] < 0.51);
-        assert_eq!(w.0[100], 1.0);
-        assert_eq!(w.0[299], 1.0);
-        assert_eq!(w.0[399], 0.0);
+        assert_eq!(w.taper.len(), 100);
+        assert_eq!(w.taper[0], 0);
+        assert!(w.taper[50] > 16300 && w.taper[50] < 16500);
+        assert!(w.taper[99] > 32700);
+        assert_eq!(w.exact[0], 0.0);
+        assert!(w.exact[50] > 0.49 && w.exact[50] < 0.51);
+        assert_eq!(w.exact[100], 1.0);
+        assert_eq!(w.exact[299], 1.0);
+        assert_eq!(w.exact[399], 0.0);
+    }
+
+    /// The scaled autocorrelation is within 3e-5 of the double-precision
+    /// one at every lag, normalised, on a quiet tone of 10 bits, on a loud
+    /// 16-bit mix, on 24-bit noise and on a block of 882; and a loud pure
+    /// tone, whose fit leaves next to nothing, is summed exactly, the
+    /// double-precision one to the last bits.
+    #[test]
+    fn the_scaled_autocorrelation_is_the_exact_one_within_the_scaling() {
+        let mut state = 0x2545_F491u32;
+        let mut next = move || {
+            state ^= state << 13;
+            state ^= state >> 17;
+            state ^= state << 5;
+            state
+        };
+        let signals: Vec<Vec<i32>> = vec![
+            (0..960).map(|i| ((i as f64 * 0.0471).sin() * 300.0).round() as i32).collect(),
+            (0..960).map(|i| ((i as f64 * 0.031).sin() * 9000.0 + (i as f64 * 0.173).sin() * 6000.0 + (i as f64 * 0.0071).sin() * 4000.0).round() as i32 + (next() % 211) as i32 - 105).collect(),
+            (0..960).map(|_| (next() >> 8) as i32 - (1 << 23)).collect(),
+            (0..882).map(|i| ((i as f64 * 0.0171).sin() * 20000.0 + (i as f64 * 0.0173).sin() * 20000.0).round() as i32).collect(),
+            (0..960).map(|i| ((i as f64 * 0.0471).sin() * 30000.0).round() as i32).collect(),
+        ];
+        for (which, s) in signals.iter().enumerate() {
+            let n = s.len();
+            let taper = n / 4;
+            let w = |i: usize| if i < taper { 0.5 - 0.5 * (std::f64::consts::PI * i as f64 / taper as f64).cos() } else if i >= n - taper { 0.5 - 0.5 * (std::f64::consts::PI * (n - 1 - i) as f64 / taper as f64).cos() } else { 1.0 };
+            let x: Vec<f64> = s.iter().enumerate().map(|(i, &v)| f64::from(v) * w(i)).collect();
+            let exact: Vec<f64> = (0..=MAX_ORDER).map(|lag| (0..n - lag).map(|i| x[i] * x[i + lag]).sum()).collect();
+            let width = 33 - s.iter().fold(0i32, |m, &s| m | (s ^ (s >> 31))).leading_zeros();
+            let got = autocorrelation(s, width, &Window::new(n), &mut Windowed::default());
+            let bound = if which == 4 { 1e-12 } else { 3e-5 };
+            for lag in 0..=MAX_ORDER {
+                let err = (got[lag] / got[0] - exact[lag] / exact[0]).abs();
+                assert!(err < bound, "signal {which}, width {width}, {n} samples, lag {lag}: {} against {}", got[lag], exact[lag]);
+            }
+        }
     }
 
     /// A wide sample's residual of exactly `i32::MIN`, which FLAC forbids, is

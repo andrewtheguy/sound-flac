@@ -69,11 +69,11 @@
 //! 8-bit content in a 16-bit stream does, are shifted out as FLAC's wasted
 //! bits. A channel that is one value is a constant, and one nothing shortens
 //! goes as it is. Every pass over the samples is a plain loop the compiler
-//! vectorises at a target's baseline, the autocorrelation in double precision
-//! in one pass of lanes that stay in registers, its multiply and add fused
-//! into one instruction where the machine has it, the residual of a sample wider
-//! than 16 bits in two 16-bit passes, and the Rice codes go out four, three or
-//! two to a word as the parameter lets them.
+//! vectorises at a target's baseline, the autocorrelation summed as integers
+//! from the samples scaled to 14 bits, two products to an instruction, and in
+//! double precision on a pure tone, whose fit feels the scaling, the residual
+//! of a sample wider than 16 bits in two 16-bit passes, and the Rice codes go
+//! out four, three or two to a word as the parameter lets them.
 //!
 //! Measured on 20 ms blocks of 16-bit stereo at 48 kHz, one core of an AMD
 //! EPYC Rome at the x86-64 baseline: a block of music takes about 10 µs and

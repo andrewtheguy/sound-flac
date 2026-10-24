@@ -160,8 +160,8 @@ pub struct Channel {
     /// The residual of each fixed predictor order from 1 to 4, which choosing
     /// the order leaves behind, so the one chosen is not computed again.
     scratch: [Vec<i32>; MAX_FIXED_ORDER],
-    /// The samples windowed for the linear predictor's fit.
-    windowed: Vec<f64>,
+    /// The samples scaled and windowed for the linear predictor's fit.
+    windowed: lpc::Windowed,
     /// The samples as 16 bits for a linear predictor's residual, or where
     /// they are wider their upper 16 bits and their lower bits.
     halves: [Vec<i16>; 2],
@@ -308,7 +308,7 @@ impl Channel {
             best: Coding::new(block),
             trial: Coding::new(block),
             scratch: std::array::from_fn(|_| vec![0; block]),
-            windowed: vec![0.0; block],
+            windowed: lpc::Windowed::default(),
             halves: [vec![0; block], vec![0; block]],
             sums: vec![0; 2 << MAX_PARTITION_ORDER],
             params: vec![0; 1 << MAX_PARTITION_ORDER],
@@ -429,7 +429,7 @@ impl Channel {
     /// The autocorrelation of the channel analysed, through `window`, for
     /// its fit; none where there is nothing to fit.
     pub fn autocorrelation(&mut self, window: &Window) -> Option<Autocorrelation> {
-        self.predictable.then(|| lpc::autocorrelation(&self.signal, window, &mut self.windowed))
+        self.predictable.then(|| lpc::autocorrelation(&self.signal, self.width, window, &mut self.windowed))
     }
 
     /// Weigh the channel prepared for the choice of a pair, from `autoc`,
