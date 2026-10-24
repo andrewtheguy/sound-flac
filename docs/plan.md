@@ -37,12 +37,15 @@ a fit was measured apart, the pair layout not taken and the loops run at the
 orders the compiler lays out well; and to the hour after that, when the
 frame's CRC was taken inside the writer's pass, measured apart and in the
 encoder, and not taken; and to the hour after that, when the stereo split came
-to fold the four channels for their preparing in its pass. The days before
-that are the count the sessions kept, which ran ahead of the machine's clock:
-by the commits, which that clock stamps in Pacific time, all of it ran from
-the evening of 2026-10-22 to the afternoon of 2026-10-23, the night of
-2026-10-23 here being noon of that day and 2026-10-24 its afternoon; the
-evening of 2026-10-23 is the clock's, and follows them.
+to fold the four channels for their preparing in its pass; and to the hours
+after that, when the autocorrelation, the last item, came to be summed as
+integers from the samples scaled to 14 bits, in double precision on a pure
+tone, and the round's list was worked through. The days before that are the
+count the sessions kept, which ran ahead of the machine's clock: by the
+commits, which that clock stamps in Pacific time, all of it ran from the
+evening of 2026-10-22 to the afternoon of 2026-10-23, the night of 2026-10-23
+here being noon of that day and 2026-10-24 its afternoon; the evening of
+2026-10-23 is the clock's, and follows them.
 
 ## What it is for
 
@@ -122,57 +125,59 @@ the tables' arm64 section is of the run before the round.
 
 ## Where it stands
 
-The tables are of the night of 2026-10-24 on the EPYC, its fifth run, the Rice
+The tables are of the night of 2026-10-24 on the EPYC, its sixth run, the Rice
 parameter's estimate corrected, the residual's fold and finest sums made one
 pass, the fixed path left out where the fit keeps winning, the corrections
 refreshed every other cycle, the partitions' search stopped three orders past
 the best, the block whose side is one value carried, the residual's loops run
-at the orders the compiler lays out well and the stereo split folding the four
-channels for their preparing (all eight under *Measured and taken*), the
-recordings 0.21 to 0.43 of libFLAC's time, the 1962 speech the 0.22 where the
-night's second had it at 0.27 and pink noise 0.38 where the third had it at
-0.43, the 48 kHz tone 0.30 where the morning had it at 0.35 and 0.61 of level
-0's time where it had 0.74, the same bytes as the morning's within 0.03% on
-every line but the 8-bit noise's and the 96 kHz tone's; the arm64 section is
-the morning's, held while the round is measured on x86. From the tables of
-that morning, the encoder of v0.0.8 unchanged, the x86 run moved from the
-desktop i5 under WSL2, which was never quiet, to an idle KVM machine on an AMD
-EPYC Rome, and a fifteenth recording added, one voice talking over soft music:
-0.24 to 0.47 of libFLAC's time a block on the recordings for its bytes within
-0.2%, the late blocks 0.20 to 0.58 of its; the made sounds 0.05 to 0.44 for
-the same bytes within two bytes, the pure tone under libFLAC's bytes, 0.90 to
-1.00. A block of a recording is 0.02% to 0.15% of one core. The move is the
-machine's, not the encoder's: on the EPYC this encoder's block is 0.64 to 0.68
-of its i5 block on every recording and libFLAC's default level 0.74 to 0.84 of
-its on the stereo recordings, its fastest level 0.80 to 0.96, so every ratio
-reads a fifth or a quarter better than v0.0.8's run on the i5 for the same
-work, and the bytes are that run's on every line of every coder. The machine
-repeats a time within a twentieth, two runs with different compilers agreeing
-within 6% on every line, where the i5 moved by a tenth. On arm64, where
-nothing moved and the run is the evening before's within 2% on every line, the
-recordings are 0.25 to 0.42 of libFLAC's time; this encoder's block is 1.24 to
-1.46 of its EPYC block there, libFLAC's default level 1.30 to 1.61 on the
-stereo recordings and its level 0 0.84 to 1.20. Where the time goes at 16-bit
-stereo, on the orchestra, by the parts measured apart on the i5, whose carried
-block was 16.9 µs where the EPYC's is 10.9: a carried block, three in four, is
-the two autocorrelations with their windowing 3.6 µs, their fits 0.7, the
-pair's residuals 2.3 and partitions 1.9, the folds and bounds 1.2, the stereo
-split 0.7, the bits out 4.4 and the CRC 0.7, about 16 in all where the fit is
-clear on both channels, and a fixed coding of 1.7 for each channel whose fit
-is not, which on the orchestra is two carried channels in three, as on two of
-the three one channel has its fixed coding made whatever the fit is estimated
-at, to bring its correction up to date: about 18 on the mean carried block,
-17.1 timed whole; the fourth block, 21.9 µs, has three autocorrelations, four
-fits and, where the estimates do not settle the pair, the two other channels'
-residuals and folds in their place, and is the late block, by a fifth to a
-third of a carried one. At 24 bits the fit's residual runs as two 16-bit
-passes at twice the cost, 10 µs of the Aria's 39 on the i5, and the writer
-takes 6 µs of pink noise's 24. On arm64 the recordings are 0.25 to 0.42 of
-libFLAC's time for the same bytes to a tenth of a byte, and against level 0
-0.90 to 1.12 on the 16-bit stereo recordings where the EPYC is 0.58 to 0.87
-and under 1.00 on every recording. The Windows run, which was made on demand
-on the desktop as a quieter reading of the same machine, is retired with the
-move: the desktop is no longer where the x86 run is made.
+at the orders the compiler lays out well, the stereo split folding the four
+channels for their preparing and the autocorrelation summed as integers from
+the samples scaled to 14 bits (all nine under *Measured and taken*), the
+recordings 0.20 to 0.39 of libFLAC's time where the fifth had them at 0.21 to
+0.43, the 1962 speech the 0.20 where the night's second had it at 0.27, pink
+noise 0.35 where the third had it at 0.43 and the Aria 0.35 where the fifth
+had it at 0.39, the 48 kHz tone 0.30 where the morning had it at 0.35 and 0.61
+of level 0's time where it had 0.74, the same bytes as the morning's within
+0.03% on every line but the 8-bit noise's and the 96 kHz tone's; the arm64
+section is the morning's, held while the round is measured on x86. From the
+tables of that morning, the encoder of v0.0.8 unchanged, the x86 run moved
+from the desktop i5 under WSL2, which was never quiet, to an idle KVM machine
+on an AMD EPYC Rome, and a fifteenth recording added, one voice talking over
+soft music: 0.24 to 0.47 of libFLAC's time a block on the recordings for its
+bytes within 0.2%, the late blocks 0.20 to 0.58 of its; the made sounds 0.05
+to 0.44 for the same bytes within two bytes, the pure tone under libFLAC's
+bytes, 0.90 to 1.00. A block of a recording is 0.02% to 0.15% of one core. The
+move is the machine's, not the encoder's: on the EPYC this encoder's block is
+0.64 to 0.68 of its i5 block on every recording and libFLAC's default level
+0.74 to 0.84 of its on the stereo recordings, its fastest level 0.80 to 0.96,
+so every ratio reads a fifth or a quarter better than v0.0.8's run on the i5
+for the same work, and the bytes are that run's on every line of every coder.
+The machine repeats a time within a twentieth, two runs with different
+compilers agreeing within 6% on every line, where the i5 moved by a tenth. On
+arm64, where nothing moved and the run is the evening before's within 2% on
+every line, the recordings are 0.25 to 0.42 of libFLAC's time; this encoder's
+block is 1.24 to 1.46 of its EPYC block there, libFLAC's default level 1.30 to
+1.61 on the stereo recordings and its level 0 0.84 to 1.20. Where the time
+goes at 16-bit stereo, on the orchestra, by the parts measured apart on the
+i5, whose carried block was 16.9 µs where the EPYC's is 10.9: a carried block,
+three in four, is the two autocorrelations with their windowing 3.6 µs, their
+fits 0.7, the pair's residuals 2.3 and partitions 1.9, the folds and bounds
+1.2, the stereo split 0.7, the bits out 4.4 and the CRC 0.7, about 16 in all
+where the fit is clear on both channels, and a fixed coding of 1.7 for each
+channel whose fit is not, which on the orchestra is two carried channels in
+three, as on two of the three one channel has its fixed coding made whatever
+the fit is estimated at, to bring its correction up to date: about 18 on the
+mean carried block, 17.1 timed whole; the fourth block, 21.9 µs, has three
+autocorrelations, four fits and, where the estimates do not settle the pair,
+the two other channels' residuals and folds in their place, and is the late
+block, by a fifth to a third of a carried one. At 24 bits the fit's residual
+runs as two 16-bit passes at twice the cost, 10 µs of the Aria's 39 on the i5,
+and the writer takes 6 µs of pink noise's 24. On arm64 the recordings are 0.25
+to 0.42 of libFLAC's time for the same bytes to a tenth of a byte, and against
+level 0 0.90 to 1.12 on the 16-bit stereo recordings where the EPYC is 0.58 to
+0.87 and under 1.00 on every recording. The Windows run, which was made on
+demand on the desktop as a quieter reading of the same machine, is retired
+with the move: the desktop is no longer where the x86 run is made.
 
 Profiled on the EPYC the afternoon after the run, with perf's cpu-clock at
 10 kHz over this encoder alone, the bench built with line tables and the
@@ -291,21 +296,75 @@ under *Measured and taken*; and the CRC inside the writer's pass, the item
 after that, was measured the hour after, apart and in the encoder, and not
 taken, under *Measured and not taken*; and the stereo split with the four
 channels' preparing in one pass, the item after that, was taken the hour
-after, under *Measured and taken*. Each is measured on the EPYC alone, bytes
-on every made sound and recording and time a block against the run before, and
-taken with the full x86 run and the tables; the arm64 run is made once, when
-the round is called ready.
-
-1. **The autocorrelation**, the largest part at 16 bits, 19% to 23%, is at
-   the floor the x86-64 baseline sets: 18 floating-point operations on
-   every two samples on two ports, with no fused multiply-add at the
-   baseline, where the EPYC has one and the Altra uses it. Nothing to take
-   short of the users building with `target-cpu`, which is theirs; the
-   third autocorrelation on the fresh block stays, and nothing else in
-   the block asks for one.
+after, under *Measured and taken*; and the autocorrelation, the last, which
+the profile had put at the baseline's floor, was taken in the hours after
+that, summed as integers, under *Measured and taken*, which leaves the list
+empty: what is next is the arm64 run, when the round is called ready, and a
+plan again from a profile of this encoder. Each was measured on the EPYC
+alone, bytes on every made sound and recording and time a block against the
+run before, and taken with the full x86 run and the tables; the arm64 run is
+made once, when the round is called ready.
 
 ## Measured and taken
 
+- **The autocorrelation summed as integers from the samples scaled to 14
+  bits, exactly on a pure tone** (the hours after the split's change,
+  2026-10-24, the last item of the plan as it stood, the autocorrelation
+  at 19% to 23% of a 16-bit block): the plan had it at the floor the
+  x86-64 baseline sets for double precision, 18 floating-point
+  operations on two samples on two ports, and so it is, 1.14 µs at 960
+  samples apart; the way under it is out of floating point. The samples
+  are scaled to 14 bits, up by the width the channel's preparing found
+  or down with the shift rounded, clamped to 8191 and packed to 16-bit
+  lanes in one instruction, the window's two tapers weighted in 15 bits
+  with the product's high half taken, the flat middle the samples as
+  they are, and the nine lags summed over chunks of 32 samples in 32
+  bits, two products to a `pmaddwd`, each chunk's sum carried to 64
+  bits: 0.49 µs, 0.12 of it the scaling and window, 0.43 of the exact
+  sums, the normalised autocorrelation within 2e-5 of them on noise and
+  music and 1e-7 on a resonant block. Measured apart on the way: at 13
+  bits in chunks of 32, 0.41, and at 14 in chunks of 16, 0.45; chunks of
+  64 or 128 the compiler unrolls into widening multiplies, twice the
+  time, the chunk's length as a value or the four lanes written out and
+  each carried on its own come out scalar, and 15 bits, which the lanes'
+  32-bit sums allow only in chunks of 8, three times the time. In the
+  encoder on the EPYC against the run before, 13 bits cost the indie
+  record 0.19% of its bytes, the Raven 0.095%, the Fantasy 0.073% and
+  the Aria 0.038%, and the pure tones 1% to 10% either way; 14 bits the
+  indie record 0.11%, the Fantasy 0.012%, the train station 0.008%, the
+  Aria 0.004% and nothing else, the tones still 1% to 7%. Every block's
+  bytes were dumped with its channels' widths and Levinson errors: the
+  indie record's loss is one loud, resonant passage of 24-bit blocks,
+  400 of 11 194, each a twentieth more, where the fit's error at order 8
+  is a hundred to three hundred times the rounding's noise, which the
+  Aria's blocks are too without losing a byte, so a rule on that ratio,
+  which took the indie record to 0.09%, sent a sixth of the Aria's
+  blocks to the exact sums and halved its gain, and is not applied; the
+  tones' loss is not the dropped bits but the window's 15-bit weights,
+  which only a pure tone feels, its fit at order 2 leaving 1.1 to 1.2
+  millionths of its power where the recordings' blocks leave that on a
+  fifth of a per cent of the Aria's, a tenth of the Raven's and none of
+  the rest's. So a block whose fit at order 2 leaves under two
+  millionths of its power is summed again in double precision, and the
+  channel's next block exactly first, the scaled sums taken up again
+  after a block that is no tone: every stereo recording 12% to 18% fewer
+  instructions, the 1962 speech the 12%, the Raven, the Fantasy, the
+  train station, the prison song, the private wide mix and the private
+  talk the 18%, the private loud master 17%, the orchestra and the mono
+  reading 16%, the Aria 15%, the 1924 record, the indie record and pink
+  noise 14%, white noise 3%, the made sounds 0.85 to 0.91 of their time
+  and the tones 1.00 to 1.01, the bytes as at 14 bits and the tones' the
+  same. In the full run, the night's sixth: the recordings 0.82 to 0.97
+  of the run before's block, the private talk the 0.82, the Aria, the
+  private loud master, the private wide mix, the prison song and the
+  mono reading 0.85, the Fantasy and the orchestra 0.87, the 1924
+  record, the 1962 speech and the Raven 0.90, the indie record 0.93 and
+  white noise 0.97, 0.20 to 0.39 of libFLAC's time where they were 0.21
+  to 0.43, the Aria 0.35 where it was 0.39 and the 1924 record 0.39
+  where it was 0.43; the made music and speech 0.86 to 0.90, the tones
+  1.00 to 1.06, the 24-bit tone the 1.06; the bytes the run before's but
+  for the four recordings above and six made sounds within a fifth of a
+  byte a block.
 - **The stereo split folding the four channels for their preparing**
   (the hour after the CRC's measurement, 2026-10-24, item 1 of the plan
   as it stood, the split with the header 4% of a stereo block and the
