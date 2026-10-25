@@ -37,5 +37,5 @@ is in [docs/benchmarks.md](docs/benchmarks.md), and what is taken up next in
 Use it by release tag:
 
 ```toml
-sound-flac = { git = "https://github.com/andrewtheguy/sound-flac", tag = "v0.0.8" }
+sound-flac = { git = "https://github.com/andrewtheguy/sound-flac", tag = "v0.0.9" }
 ```
