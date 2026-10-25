@@ -141,52 +141,54 @@ noise 0.35 where the third had it at 0.43 and the Aria 0.35 where the fifth
 had it at 0.39, the 48 kHz tone 0.30 where the morning had it at 0.35 and 0.61
 of level 0's time where it had 0.74, the same bytes as the morning's within
 0.03% on every line but the 8-bit noise's and the 96 kHz tone's; the arm64
-section is the night's run, made when the round was called ready: this encoder
-0.78 to 0.97 of its morning block there on the recordings, 0.22 to 0.39 of
-libFLAC's time, 0.50 to 1.03 of its level 0's. From the tables of that
-morning, the encoder of v0.0.8 unchanged, the x86 run moved from the desktop
-i5 under WSL2, which was never quiet, to an idle KVM machine on an AMD EPYC
-Rome, and a fifteenth recording added, one voice talking over soft music: 0.24
-to 0.47 of libFLAC's time a block on the recordings for its bytes within 0.2%,
-the late blocks 0.20 to 0.58 of its; the made sounds 0.05 to 0.44 for the same
-bytes within two bytes, the pure tone under libFLAC's bytes, 0.90 to 1.00. A
-block of a recording is 0.02% to 0.15% of one core. The move is the machine's,
-not the encoder's: on the EPYC this encoder's block is 0.64 to 0.68 of its i5
-block on every recording and libFLAC's default level 0.74 to 0.84 of its on
-the stereo recordings, its fastest level 0.80 to 0.96, so every ratio reads a
-fifth or a quarter better than v0.0.8's run on the i5 for the same work, and
-the bytes are that run's on every line of every coder. The machine repeats a
-time within a twentieth, two runs with different compilers agreeing within 6%
-on every line, where the i5 moved by a tenth. On arm64, the night's run, the
-recordings are 0.22 to 0.39 of libFLAC's time; this encoder's block is 1.45 to
-1.65 of its EPYC block there, where before the round it was 1.24 to 1.46, the
-integer sums buying the EPYC more than the Altra's fused multiply-add bought
-it, libFLAC's default level 1.29 to 1.58 on the stereo recordings and its
-level 0 0.84 to 1.21. Where the time goes at 16-bit stereo, on the orchestra,
-by the parts measured apart on the i5, whose carried block was 16.9 µs where
-the EPYC's is 10.9: a carried block, three in four, is the two
-autocorrelations with their windowing 3.6 µs, their fits 0.7, the pair's
-residuals 2.3 and partitions 1.9, the folds and bounds 1.2, the stereo split
-0.7, the bits out 4.4 and the CRC 0.7, about 16 in all where the fit is clear
-on both channels, and a fixed coding of 1.7 for each channel whose fit is not,
-which on the orchestra is two carried channels in three, as on two of the
-three one channel has its fixed coding made whatever the fit is estimated at,
-to bring its correction up to date: about 18 on the mean carried block, 17.1
-timed whole; the fourth block, 21.9 µs, has three autocorrelations, four fits
-and, where the estimates do not settle the pair, the two other channels'
-residuals and folds in their place, and is the late block, by a fifth to a
-third of a carried one. At 24 bits the fit's residual runs as two 16-bit
-passes at twice the cost, 10 µs of the Aria's 39 on the i5, and the writer
-takes 6 µs of pink noise's 24. On arm64 the recordings are 0.22 to 0.39 of
-libFLAC's time for the same bytes, and against level 0 0.85 to 1.03 on the
-16-bit stereo recordings where the EPYC is 0.45 to 0.67 and under 1.00 on
-every recording. The Windows run on the desktop, retired with the move as a
-second reading of the machine the x86 run was made on, is back since the night
-of 2026-10-24 as a third machine, the i5 being a different chip from the EPYC,
-made on demand: in the night's third run there, of the tree with a channel
-coded alone coded once a block, the recordings are 0.22 to 0.42 of libFLAC's
-time and 0.40 to 0.88 of its level 0's, this encoder's block 1.38 to 1.59 of
-its EPYC block where libFLAC's default level is 1.12 to 1.32.
+section is the night's second run there, at the user's call after the channel
+coded once a block and within 1.5% of the first, which was made when the round
+was called ready: this encoder 0.78 to 0.97 of its morning block there on the
+recordings, 0.22 to 0.39 of libFLAC's time, 0.50 to 1.02 of its level 0's.
+From the tables of that morning, the encoder of v0.0.8 unchanged, the x86 run
+moved from the desktop i5 under WSL2, which was never quiet, to an idle KVM
+machine on an AMD EPYC Rome, and a fifteenth recording added, one voice
+talking over soft music: 0.24 to 0.47 of libFLAC's time a block on the
+recordings for its bytes within 0.2%, the late blocks 0.20 to 0.58 of its; the
+made sounds 0.05 to 0.44 for the same bytes within two bytes, the pure tone
+under libFLAC's bytes, 0.90 to 1.00. A block of a recording is 0.02% to 0.15%
+of one core. The move is the machine's, not the encoder's: on the EPYC this
+encoder's block is 0.64 to 0.68 of its i5 block on every recording and
+libFLAC's default level 0.74 to 0.84 of its on the stereo recordings, its
+fastest level 0.80 to 0.96, so every ratio reads a fifth or a quarter better
+than v0.0.8's run on the i5 for the same work, and the bytes are that run's on
+every line of every coder. The machine repeats a time within a twentieth, two
+runs with different compilers agreeing within 6% on every line, where the i5
+moved by a tenth. On arm64, the night's second run there, the recordings are
+0.22 to 0.39 of libFLAC's time; this encoder's block is 1.45 to 1.65 of its
+EPYC block there, where before the round it was 1.24 to 1.46, the integer sums
+buying the EPYC more than the Altra's fused multiply-add bought it, libFLAC's
+default level 1.30 to 1.59 on the stereo recordings and its level 0 0.84 to
+1.20. Where the time goes at 16-bit stereo, on the orchestra, by the parts
+measured apart on the i5, whose carried block was 16.9 µs where the EPYC's is
+10.9: a carried block, three in four, is the two autocorrelations with their
+windowing 3.6 µs, their fits 0.7, the pair's residuals 2.3 and partitions 1.9,
+the folds and bounds 1.2, the stereo split 0.7, the bits out 4.4 and the CRC
+0.7, about 16 in all where the fit is clear on both channels, and a fixed
+coding of 1.7 for each channel whose fit is not, which on the orchestra is two
+carried channels in three, as on two of the three one channel has its fixed
+coding made whatever the fit is estimated at, to bring its correction up to
+date: about 18 on the mean carried block, 17.1 timed whole; the fourth block,
+21.9 µs, has three autocorrelations, four fits and, where the estimates do not
+settle the pair, the two other channels' residuals and folds in their place,
+and is the late block, by a fifth to a third of a carried one. At 24 bits the
+fit's residual runs as two 16-bit passes at twice the cost, 10 µs of the
+Aria's 39 on the i5, and the writer takes 6 µs of pink noise's 24. On arm64
+the recordings are 0.22 to 0.39 of libFLAC's time for the same bytes, and
+against level 0 0.85 to 1.02 on the 16-bit stereo recordings where the EPYC is
+0.45 to 0.67 and under 1.00 on every recording. The Windows run on the
+desktop, retired with the move as a second reading of the machine the x86 run
+was made on, is back since the night of 2026-10-24 as a third machine, the i5
+being a different chip from the EPYC, made on demand: in the night's third run
+there, of the tree with a channel coded alone coded once a block, the
+recordings are 0.22 to 0.42 of libFLAC's time and 0.40 to 0.88 of its level
+0's, this encoder's block 1.38 to 1.59 of its EPYC block where libFLAC's
+default level is 1.12 to 1.32.
 
 Profiled on the EPYC the afternoon after the run, with perf's cpu-clock at
 10 kHz over this encoder alone, the bench built with line tables and the
@@ -311,8 +313,9 @@ channels' preparing in one pass, the item after that, was taken the hour
 after, under *Measured and taken*; and the autocorrelation, the last, which
 the profile had put at the baseline's floor, was taken in the hours after
 that, summed as integers, under *Measured and taken*, which leaves the list
-empty; the arm64 run was made that night, when the round was called ready, and
-what is next is a plan again from a profile of this encoder. Each was measured
+empty; the arm64 run was made that night, when the round was called ready,
+and again at the user's call after the channel coded once a block, and what
+is next is a plan again from a profile of this encoder. Each was measured
 on the EPYC alone, bytes on every made sound and recording and time a block
 against the run before, and taken with the full x86 run and the tables; the
 arm64 run is made once, when the round is called ready.
