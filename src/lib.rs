@@ -370,6 +370,8 @@ impl Encoder {
                 let mut bits = channels[PAIRS[best].0].bits() + channels[PAIRS[best].1].bits();
                 for (p, &(a, b)) in PAIRS.iter().enumerate() {
                     if p != best && channels[a].at_most() + channels[b].at_most() < bits {
+                        // A channel the pair shares with the one coded
+                        // first is left as coded.
                         for i in [a, b] {
                             channels[i].code_alone(window, false);
                         }

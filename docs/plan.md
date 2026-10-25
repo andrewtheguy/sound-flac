@@ -318,6 +318,24 @@ arm64 run is made once, when the round is called ready.
 
 ## Measured and taken
 
+- **A channel coded alone is coded once a block** (the night of
+  2026-10-24, after the Windows run, from a review of the carried
+  block): a carried block that moved to a pair sharing a channel with
+  the pair coded first, left and right to left and side, say, or either
+  to mid and side, coded the shared channel a second time, `code_alone`
+  having no check for a channel coded, and the second coding counted the
+  block twice in the channel's runs of losses and wins, its blocks coded
+  alone and its correction, a win reset to none and the correction
+  moved, so that the channel's next blocks were coded on a state a block
+  astray. `code_alone` now returns on a channel coded, and a test codes
+  a channel three times and finds its bits and its state those of the
+  first coding. Measured on the EPYC against the run before, the move
+  being rare: every recording within 0.05% of its instructions, the
+  private wide mix the 0.05% fewer, the 1962 speech 0.03% and the
+  private talk 0.01%, the prison song 0.01% more, and the bytes the same
+  on every line; the made sounds within 2% of their time, the same bytes
+  but the 8-bit speech a tenth of a byte over. No full run was made: no
+  table would move.
 - **The autocorrelation summed as integers from the samples scaled to 14
   bits, exactly on a pure tone** (the hours after the split's change,
   2026-10-24, the last item of the plan as it stood, the autocorrelation

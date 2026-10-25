@@ -26,43 +26,43 @@ before*:
 
 ```sh
 tools/samples.sh copy      # the recordings into tmp/samples, from the store
+cp docs/bench/x86.jsonl before.jsonl                   # the run before, kept before this run's log replaces it; a commit from before the JSON lines holds x86.log, whose key=value lines are made JSON objects by hand first
 cargo run --release --manifest-path tools/bench/Cargo.toml > docs/bench/x86.jsonl
 python3 -I tools/tables.py docs/bench/x86.jsonl
 python3 -I tools/tables.py docs/bench/x86.jsonl arm64=docs/bench/arm64.jsonl windows=docs/bench/windows.jsonl   # with the arm64 and Windows runs' logs, a section each
-git show HEAD^:docs/bench/x86.jsonl > before.jsonl      # the run before: the log of the commit before this run's; a commit from before the JSON lines holds x86.log, whose key=value lines are made JSON objects by hand first
 python3 -I tools/tables.py docs/bench/x86.jsonl arm64=docs/bench/arm64.jsonl windows=docs/bench/windows.jsonl --before before.jsonl
 ```
 
 In the recordings tables below, *the run before* is the fifth of the night's
 runs of 2026-10-24 on this machine, the stereo split folding the four channels
-for their preparing, whose log the commit before this one carries as
-`docs/bench/x86.jsonl`; this run, the night's sixth, is the same machine with
-one change in the encoder, the autocorrelation summed as integers from the
-samples scaled to 14 bits, and in double precision on a pure tone
-([plan.md](plan.md), measured apart first and then in the tree), so the *run
-before* columns compare the two encoders like for like, on one machine.
-The x86 run moved to this machine with the morning's run: every run before
-that one was made on the desktop, a six-core Intel i5-8500T under WSL2, which
-was never quiet, the session that started the run and the system under it
-taking a tenth of a time from one run to the next, and libFLAC's own times
-with it, so that a ratio's last hundredths were the machine's; from the
-morning's run on it is made on a host that does nothing else, over ssh, and
-the morning's *run before* columns, kept two commits before, set the two
-machines side by side. The fifteenth recording, the third of the user's own,
-one voice talking over soft music, was added with the morning's run. The days
-named in this document and in [plan.md](plan.md) before the evening of
-2026-10-23 are the count the sessions that made the earlier runs kept, which
-ran ahead of the machine's clock: by the commits, which that clock stamps in
-Pacific time, the run of v0.0.5 was made at noon on 2026-10-23, the run of
-v0.0.6 that afternoon, the run of v0.0.7 later that evening and the run of
-v0.0.8 later still, the morning's run on 2026-10-24, which is the clock's own
-day and is named by it from there on, the afternoon's run with the Rice
-parameter, the one after it with the fold, the third with the fixed path left
-out, the night's first with the refresh halved, the second with the
-partitions' search stopped past the best, the third with the block whose side
-is one value carried, the fourth with the residual's loops run at the orders
-the compiler lays out well, the fifth with the stereo split folding the four
-channels for their preparing, and this run after that.
+for their preparing, whose log `docs/bench/x86.jsonl` was until this run's
+replaced it; this run, the night's sixth, is the same machine with one change
+in the encoder, the autocorrelation summed as integers from the samples scaled
+to 14 bits, and in double precision on a pure tone ([plan.md](plan.md),
+measured apart first and then in the tree), so the *run before* columns
+compare the two encoders like for like, on one machine. The x86 run moved to
+this machine with the morning's run: every run before that one was made on the
+desktop, a six-core Intel i5-8500T under WSL2, which was never quiet, the
+session that started the run and the system under it taking a tenth of a time
+from one run to the next, and libFLAC's own times with it, so that a ratio's
+last hundredths were the machine's; from the morning's run on it is made on a
+host that does nothing else, over ssh, and the morning's *run before* columns,
+kept two commits before, set the two machines side by side. The fifteenth
+recording, the third of the user's own, one voice talking over soft music, was
+added with the morning's run. The days named in this document and in
+[plan.md](plan.md) before the evening of 2026-10-23 are the count the sessions
+that made the earlier runs kept, which ran ahead of the machine's clock: by
+the commits, which that clock stamps in Pacific time, the run of v0.0.5 was
+made at noon on 2026-10-23, the run of v0.0.6 that afternoon, the run of
+v0.0.7 later that evening and the run of v0.0.8 later still, the morning's run
+on 2026-10-24, which is the clock's own day and is named by it from there on,
+the afternoon's run with the Rice parameter, the one after it with the fold,
+the third with the fixed path left out, the night's first with the refresh
+halved, the second with the partitions' search stopped past the best, the
+third with the block whose side is one value carried, the fourth with the
+residual's loops run at the orders the compiler lays out well, the fifth with
+the stereo split folding the four channels for their preparing, and this run
+after that.
 
 They were run on 2026-10-24 by the machine's clock, at night, on a KVM virtual
 machine with four virtual processors of QEMU's EPYC-Rome model at 2.8 GHz, two

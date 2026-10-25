@@ -579,8 +579,15 @@ impl Channel {
     /// and the channel's bits need only be its own: the fit first where
     /// one is wanted, and otherwise the fixed path. With `both`, the fixed
     /// coding is made beside the fit whatever the fit is estimated at, which
-    /// brings the channel's correction up to date.
+    /// brings the channel's correction up to date. A channel coded already
+    /// is left as it is: a carried block that moves to a pair sharing a
+    /// channel with the pair coded first would otherwise code that channel
+    /// again, and its runs of losses and wins, its correction and its
+    /// blocks coded alone would count the one block twice.
     pub fn code_alone(&mut self, window: &Window, both: bool) {
+        if self.coded {
+            return;
+        }
         if self.fit_wanted()
             && let Some(autoc) = self.autocorrelation(window)
         {
@@ -1415,5 +1422,27 @@ mod tests {
         assert!(matches!(ch.best.kind, Kind::Fixed { order: 0 }), "{:?}", ch.best.kind);
         let measured = ch.measure(0);
         assert!(measured >= ch.best.bits && measured * 10 <= ch.best.bits * 11, "measured {measured} against fixed {}", ch.best.bits);
+    }
+
+    /// A channel coded on its own is coded once a block: a second
+    /// `code_alone`, as a carried block moving to a pair that shares a
+    /// channel with the pair coded first would make, leaves its coding
+    /// and its runs of losses and wins as they are.
+    #[test]
+    fn a_channel_coded_alone_is_not_coded_again() {
+        let n = 960;
+        let window = Window::new(n);
+        let mut ch = Channel::new(n, 10);
+        for (i, s) in ch.signal.iter_mut().enumerate() {
+            *s = (12000.0 * (i as f64 * 0.35).sin() + 6000.0 * (i as f64 * 0.9).sin()).round() as i32;
+        }
+        ch.prepare(16, Fold::of(&ch.signal));
+        ch.code_alone(&window, true);
+        assert!(ch.coded);
+        let (bits, lost, won, alone, correction) = (ch.bits(), ch.lost, ch.won, ch.fit_alone, ch.correction);
+        assert_eq!(won, 1, "two tones are the fit's win, both codings compared");
+        ch.code_alone(&window, true);
+        ch.code_alone(&window, false);
+        assert_eq!((ch.bits(), ch.lost, ch.won, ch.fit_alone, ch.correction), (bits, lost, won, alone, correction));
     }
 }
