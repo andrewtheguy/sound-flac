@@ -29,7 +29,7 @@ tools/samples.sh copy      # the recordings into tmp/samples, from the store
 cargo run --release --manifest-path tools/bench/Cargo.toml > docs/bench/x86.jsonl
 python3 -I tools/tables.py docs/bench/x86.jsonl
 python3 -I tools/tables.py docs/bench/x86.jsonl arm64=docs/bench/arm64.jsonl windows=docs/bench/windows.jsonl   # with the arm64 and Windows runs' logs, a section each
-git show HEAD:docs/bench/x86.jsonl > before.jsonl       # the run before, from the commit before; a commit from before the JSON lines holds x86.log, whose key=value lines are made JSON objects by hand first
+git show HEAD^:docs/bench/x86.jsonl > before.jsonl      # the run before: the log of the commit before this run's; a commit from before the JSON lines holds x86.log, whose key=value lines are made JSON objects by hand first
 python3 -I tools/tables.py docs/bench/x86.jsonl arm64=docs/bench/arm64.jsonl windows=docs/bench/windows.jsonl --before before.jsonl
 ```
 
@@ -299,60 +299,72 @@ repository nothing else of them.
   too, 0.22 to 0.43 and 0.04 to 0.47.
 - **The bytes are libFLAC's at its default level, within 0.2%, and on a
   pure tone under them.** Every recording is 1.000 but the Fantasy, the
-  prison song, the orchestra, the two mixes and the talk at 1.001, a
-  byte to five a block, which is what fitting only the carried pair
-  between full choices and coding it the fit first cost them (the
+  prison song, the orchestra, the indie record, the two mixes and the
+  talk at 1.001, a byte to seven a block, which is what fitting only the
+  carried pair between full choices and coding it the fit first cost
+  them, and the indie record the autocorrelation's scaling besides (the
   measurements are in [plan.md](plan.md)); before the pair was chosen on
   the fit the train station was 1.006 and the Fantasy 1.004, and before
   it was chosen on the four channels' counts the Fantasy was 1.002 and
   the Aria 1.001. Against the run before every line of the three libFLAC
   coders comes to the same bytes, and this encoder's the same on every
-  line but two: the 1924 record 2.7 bytes a block over of 8657, 0.03%,
-  and the made 8-bit speech a tenth of a byte of 251, the partitions'
-  search now stopped three orders past the best, which on those two now
-  and then leaves a finer partitioning that would have won by a sliver
-  after a longer plateau. The run before's encoder, against the one
-  before it, had six lines a tenth of a byte over and the orchestra two
-  tenths, each channel's correction brought up to date once in eight
-  blocks rather than four; the one before that had seven lines a tenth
-  either way, the fixed path left out while the fit keeps winning; the
-  one before that had brought every line to the same bytes, the change
-  being to how the residual is folded and summed and not to what is
-  chosen, and the encoder before that, against the one before it, every
-  line to the same bytes within half a byte a block but two: the 8-bit
-  noise, 4.5 bytes a block fewer, 1.0001 of libFLAC's where it was
-  1.0046, and the 96 kHz tone, 35 fewer, 0.876 where it was 0.90, the
-  Rice parameter and the partitioning now chosen on the estimate less
-  the fractions it drops, which on a quiet residual had favoured the
-  smaller parameter and the finer partitioning by a bias and not by
-  bits, the 8-bit noise's mid channel at a parameter under libFLAC's and
-  its side in two to eight partitions where libFLAC had one; 8-bit
-  speech 0.2 of a byte a block over and the recordings within 0.02%, the
-  wide mix the 0.02%. The encoder before those, against the one before
-  it, had brought the Raven, the train station and the orchestra a tenth
-  of a byte a block over, 0.01%, and the made 8-bit speech 0.3 of a
-  byte, 0.12%: blocks where the fit, skipped after two losses by an
-  eighth of a bit, would have won. The encoder before that, against the
-  afternoon of 2026-10-23's, had brought every recording to the same
-  bytes or fewer, the Fantasy 0.9983, the Aria 0.9989, the train station
-  0.9996, the Raven and the prison song 0.9999, which is the pair chosen
-  on the counts where the estimates could not tell left and right from
-  mid and side, and every made sound to the same bytes but the pure tone
-  at 96 kHz, 0.990 of the afternoon's. The tone is 0.99 of libFLAC's at
-  48 kHz, 1.00 at 44.1 kHz where it was 1.02, 0.88 at 96 kHz where it
-  was 0.95 and then 0.90, 0.98 at 24 bits where it was 1.05 and 0.99 at
-  8 bits: a tone is predicted away by order 2 and what its frame then
-  costs is the rounding of the coefficients, which the order choice now
-  weighs exactly, from the autocorrelation, where before it was blind to
-  it and the orders tied. The made speech, whose two channels are one
-  signal, is 0.05% over libFLAC and 0.12% at 8 bits, the skip's: its
-  side channel is a constant, and a block with a constant channel is
-  coded the fit first like any other where it had every channel coded
-  both ways. Against libFLAC's smallest level, 8, which tries every
-  order to 12 and every stereo pairing in six to fourteen times this
-  encoder's time on this machine, the made sounds are 0.98 to 1.01, the
-  tone at 96 kHz and 24 bits 0.98 and 0.99 where they were 1.07 and
-  1.06, and the recordings 1.000 to 1.009, the orchestra the 1.009.
+  line but ten: the indie record 4.7 bytes a block over of 4557, 0.10%,
+  one loud, resonant passage at 24 bits, 400 blocks of 11 194, whose fit
+  feels the autocorrelation's 14-bit scaling, the Fantasy three tenths
+  of a byte, the Aria two and the train station one, and five made
+  musics and the 44.1 kHz speech a tenth or two either way, the mono
+  music the two under. The run before's encoder, against the one before
+  it, had brought every line to the same bytes, the stereo split folding
+  the four channels being to how they are prepared and not to what is
+  chosen, as had the one before it, the residual's loops run at other
+  orders; the one before that had the three made stereo speeches a tenth
+  of a byte over, the block whose side is one value carried; the one
+  before that the 1924 record 2.7 bytes a block over of 8657, 0.03%, and
+  the made 8-bit speech a tenth of a byte of 251, the partitions' search
+  stopped three orders past the best, which on those two now and then
+  leaves a finer partitioning that would have won by a sliver after a
+  longer plateau; the one before that had six lines a tenth of a byte
+  over and the orchestra two tenths, each channel's correction brought
+  up to date once in eight blocks rather than four; the one before that
+  had seven lines a tenth either way, the fixed path left out while the
+  fit keeps winning; the one before that had brought every line to the
+  same bytes, the change being to how the residual is folded and summed
+  and not to what is chosen, and the encoder before that, against the
+  one before it, every line to the same bytes within half a byte a block
+  but two: the 8-bit noise, 4.5 bytes a block fewer, 1.0001 of libFLAC's
+  where it was 1.0046, and the 96 kHz tone, 35 fewer, 0.876 where it was
+  0.90, the Rice parameter and the partitioning now chosen on the
+  estimate less the fractions it drops, which on a quiet residual had
+  favoured the smaller parameter and the finer partitioning by a bias
+  and not by bits, the 8-bit noise's mid channel at a parameter under
+  libFLAC's and its side in two to eight partitions where libFLAC had
+  one; 8-bit speech 0.2 of a byte a block over and the recordings within
+  0.02%, the wide mix the 0.02%. The encoder before those, against the
+  one before it, had brought the Raven, the train station and the
+  orchestra a tenth of a byte a block over, 0.01%, and the made 8-bit
+  speech 0.3 of a byte, 0.12%: blocks where the fit, skipped after two
+  losses by an eighth of a bit, would have won. The encoder before that,
+  against the afternoon of 2026-10-23's, had brought every recording to
+  the same bytes or fewer, the Fantasy 0.9983, the Aria 0.9989, the
+  train station 0.9996, the Raven and the prison song 0.9999, which is
+  the pair chosen on the counts where the estimates could not tell left
+  and right from mid and side, and every made sound to the same bytes
+  but the pure tone at 96 kHz, 0.990 of the afternoon's. The tone is
+  0.99 of libFLAC's at 48 kHz, 1.00 at 44.1 kHz where it was 1.02, 0.88
+  at 96 kHz where it was 0.95 and then 0.90, 0.98 at 24 bits where it
+  was 1.05 and 0.99 at 8 bits: a tone is predicted away by order 2 and
+  what its frame then costs is the rounding of the coefficients, which
+  the order choice now weighs exactly, from the autocorrelation, where
+  before it was blind to it and the orders tied. The made speech, whose
+  two channels are one signal, is 0.05% over libFLAC and 0.12% at 8
+  bits, the skip's: its side channel is a constant, and a block with a
+  constant channel is coded the fit first like any other where it had
+  every channel coded both ways. Against libFLAC's smallest level, 8,
+  which tries every order to 12 and every stereo pairing in six to
+  fourteen times this encoder's time on this machine, the made sounds
+  are 0.98 to 1.01, the tone at 96 kHz and 24 bits 0.98 and 0.99 where
+  they were 1.07 and 1.06, and the recordings 1.000 to 1.009, the
+  orchestra the 1.009.
 - **The late block is still the fourth block, where the pair is chosen
   afresh, by a quarter to a third of a carried block.** Each block's
   least time over the passes, each pass from an encoder that has seen no

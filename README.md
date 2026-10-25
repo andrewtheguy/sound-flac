@@ -16,23 +16,22 @@ Encode only: the listeners decode with a browser's own FLAC decoder, and this
 crate is the sender's.
 
 The encoder is the crate's own, in plain Rust with no `unsafe`, so the build
-compiles no C and nothing of FLAC is installed or loaded where the binary runs.
-It is tuned for sound heard as it is made: the fixed predictor of the best
-order on every channel, a linear predictor of up to order 8 fitted to each
-and weighed, the cheapest stereo pairing chosen on the four channels' bits
-counted in one partition where the estimates are close, the fit skipped on
-noise and where it keeps losing and the fixed path where the fit keeps
-winning, Rice partitions that cost least and wasted bits shifted out. On 20 ms blocks of 16-bit stereo at 48 kHz a block
-of music takes about 11 µs of one core and is 48% of its PCM, speech 7 µs
-and 30%, silence a microsecond and sixteen bytes: the bytes libFLAC's
-default level makes, in a third of its time on music and less than a
-quarter on speech, and on recordings 0.23 to 0.46 of its time for its
-bytes within 0.2%, all from the x86 run kept as `docs/bench/x86.jsonl`,
-the one the crate's own documentation cites, made on an idle AMD EPYC
-Rome virtual machine; on an Ampere Altra the recordings are 0.25 to 0.42.
-Every shape, made sound and
-recording measured against libFLAC is in
-[docs/benchmarks.md](docs/benchmarks.md), and what is taken up next in
+compiles no C and nothing of FLAC is installed or loaded where the binary
+runs. It is tuned for sound heard as it is made: the fixed predictor of the
+best order on every channel, a linear predictor of up to order 8 fitted to
+each and weighed, the cheapest stereo pairing chosen on the four channels'
+bits counted in one partition where the estimates are close, the fit skipped
+on noise and where it keeps losing and the fixed path where the fit keeps
+winning, Rice partitions that cost least and wasted bits shifted out. On 20 ms
+blocks of 16-bit stereo at 48 kHz a block of music takes about 9 µs of one
+core and is 48% of its PCM, speech 5 µs and 30%, silence a microsecond and
+sixteen bytes: the bytes libFLAC's default level makes, in about a quarter of
+its time on music and a sixth on speech, and on recordings 0.20 to 0.39 of its
+time for its bytes within 0.2%, all from the x86 run kept as
+`docs/bench/x86.jsonl`, the one the crate's own documentation cites, made on
+an idle AMD EPYC Rome virtual machine; on an Ampere Altra the recordings are
+0.22 to 0.39. Every shape, made sound and recording measured against libFLAC
+is in [docs/benchmarks.md](docs/benchmarks.md), and what is taken up next in
 [docs/plan.md](docs/plan.md).
 
 Use it by release tag:
