@@ -25,7 +25,10 @@
   Linux amd64 host over ssh, never on the desktop the session runs on,
   and the arm64 run on the arm64 build box, both named in the gitignored
   `CLAUDE.local.md`; both are made again, and the doc's prose and
-  `docs/plan.md` brought to the run, when the tuning changes. The
+  `docs/plan.md` brought to the run, when the tuning changes. A third run,
+  on the desktop's i5 under Windows natively (`windows=`), is made on
+  demand, from WSL through the interop, and its section says which
+  encoder it is of. The
   recordings live in the artifact store (`tools/samples.sh fetch`, once)
   and are copied to the gitignored `tmp/samples` for a run
   (`tools/samples.sh copy`); nothing in the repository holds one, and the

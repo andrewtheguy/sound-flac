@@ -115,13 +115,15 @@ bytes a block, on both sets of [benchmarks.md](benchmarks.md): the made
 sounds, for what a single thing costs, and the recordings, for what a stream
 costs. For the recordings the 99th-percentile and worst blocks are read
 beside the mean, since they are the latency. A change is taken where it
-buys bytes for little time or time for no bytes, and the tables and this
-plan are brought to the run. From the afternoon of 2026-10-24 a round of
-changes is measured on the EPYC alone: each change taken gets the full
-x86 run and the tables brought to it, and the arm64 run is made once at
-the round's end, when the user calls it ready, so that the arm64 box,
-which builds other things, is not slowed by a run a change; the round of
-2026-10-24 was called ready that night and its arm64 run made then.
+buys bytes for little time or time for no bytes, and the tables and this plan
+are brought to the run. From the afternoon of 2026-10-24 a round of changes is
+measured on the EPYC alone: each change taken gets the full x86 run and the
+tables brought to it, and the arm64 run is made once at the round's end, when
+the user calls it ready, so that the arm64 box, which builds other things, is
+not slowed by a run a change; the round of 2026-10-24 was called ready that
+night and its arm64 run made then. The Windows run on the desktop's i5, a
+third machine, is made on demand, from WSL through the interop, and its
+section may be of an earlier encoder than the tables.
 
 ## Where it stands
 
@@ -178,9 +180,12 @@ passes at twice the cost, 10 µs of the Aria's 39 on the i5, and the writer
 takes 6 µs of pink noise's 24. On arm64 the recordings are 0.22 to 0.39 of
 libFLAC's time for the same bytes, and against level 0 0.85 to 1.03 on the
 16-bit stereo recordings where the EPYC is 0.45 to 0.67 and under 1.00 on
-every recording. The Windows run, which was made on demand on the desktop as a
-quieter reading of the same machine, is retired with the move: the desktop is
-no longer where the x86 run is made.
+every recording. The Windows run on the desktop, retired with the move as a
+second reading of the machine the x86 run was made on, is back since the night
+of 2026-10-24 as a third machine, the i5 being a different chip from the EPYC,
+made on demand: there the recordings are 0.22 to 0.43 of libFLAC's time and
+0.39 to 0.87 of its level 0's, this encoder's block 1.40 to 1.63 of its EPYC
+block where libFLAC's default level is 1.14 to 1.34.
 
 Profiled on the EPYC the afternoon after the run, with perf's cpu-clock at
 10 kHz over this encoder alone, the bench built with line tables and the
@@ -305,11 +310,11 @@ channels' preparing in one pass, the item after that, was taken the hour
 after, under *Measured and taken*; and the autocorrelation, the last, which
 the profile had put at the baseline's floor, was taken in the hours after
 that, summed as integers, under *Measured and taken*, which leaves the list
-empty; the arm64 run was made that night, when the round was called ready,
-and what is next is a plan again from a profile of this encoder. Each was measured on the EPYC
-alone, bytes on every made sound and recording and time a block against the
-run before, and taken with the full x86 run and the tables; the arm64 run is
-made once, when the round is called ready.
+empty; the arm64 run was made that night, when the round was called ready, and
+what is next is a plan again from a profile of this encoder. Each was measured
+on the EPYC alone, bytes on every made sound and recording and time a block
+against the run before, and taken with the full x86 run and the tables; the
+arm64 run is made once, when the round is called ready.
 
 ## Measured and taken
 

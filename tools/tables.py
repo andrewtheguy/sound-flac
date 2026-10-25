@@ -2,7 +2,7 @@
 object a line (JSONL):
 
     cargo run --release --manifest-path tools/bench/Cargo.toml > bench.jsonl
-    python3 -I tools/tables.py bench.jsonl [arm64=bench-arm64.jsonl] [--before before.jsonl]
+    python3 -I tools/tables.py bench.jsonl [arm64=bench-arm64.jsonl] [windows=bench-windows.jsonl] [--before before.jsonl]
 
 First, over every shape and made sound, this encoder's time a block and bytes
 a block over libFLAC's at level 5 as v0.0.4 ran it, a table each; then the
@@ -13,9 +13,9 @@ the recordings of tools/samples.txt: every ratio against the three levels in
 one table, the block times apart with the 99th-percentile and worst blocks,
 and the bytes apart, and, given the log of the run before as `--before`,
 this encoder's mean block and bytes in that run beside this one's and this
-one over it. Then, for a further log, named by where it was run
-(`arm64=`), the same run there beside the first, a section of its own:
-this encoder's time over libFLAC's on each, the made sounds in grids
+one over it. Then, for each further log, named by where it was run
+(`arm64=`, `windows=`), the same run there beside the first, a section
+each: this encoder's time over libFLAC's on each, the made sounds in grids
 and the desktop's shape and the recordings run by run, and whether the
 bytes are the same in both. A ratio is this encoder over libFLAC; green is
 this encoder's side of the line, and a ratio of 1.00 is left plain.
@@ -34,6 +34,7 @@ SEPARATOR = re.compile(r"[\\/]")
 # says it is.
 MACHINES = {
     "arm64": ("arm64", "x86", "The same run on an arm64 machine, beside the x86 run above: this encoder's\ntime a block over libFLAC's on each. A ratio under 1.00 is less of a core\nthan libFLAC on that machine, and a block's µs are that machine's."),
+    "windows": ("Windows", "x86", "The same run on the desktop, an Intel i5-8500T under Windows 11, natively,\nbeside the x86 run above, which is on an AMD EPYC Rome machine: this\nencoder's time a block over libFLAC's on each. A ratio under 1.00 is less of\na core than libFLAC on that machine, and a block's µs are that machine's.\nThis run is made on demand, not with every change to the tuning as the two\nabove are, so it can be of an earlier encoder than theirs; the prose above\nsays which."),
 }
 
 
