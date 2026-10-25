@@ -34,7 +34,9 @@
 //! to order 8 fitted to it by autocorrelation through a Tukey window and
 //! Levinson-Durbin as libFLAC's default level does, its order chosen with the
 //! error its coefficients' rounding adds weighed exactly, whichever writes
-//! fewer bits. A stereo pair is chosen every fourth block: each of left, right,
+//! fewer bits. A stereo pair is chosen every fourth block, unless the side is
+//! one value, the two channels being one signal, when there is no pair to
+//! choose and the block is carried: each of left, right,
 //! mid and side is estimated from its autocorrelation, the mid's following
 //! from the other three's, and where one pair is estimated under every other
 //! by a quarter of a bit a sample it is taken; otherwise all four channels are
@@ -49,8 +51,8 @@
 //! best fixed predictor by an eighth of a bit a sample, after a correction the
 //! channel learned the last time both were coded, the fit alone is coded, and
 //! otherwise both are and compared; each channel of the pair has both coded
-//! once a cycle whatever the estimate, on the two blocks after the choice, so
-//! that its correction is of this second; the two other channels are not looked
+//! once in two cycles whatever the estimate, on the two blocks after every
+//! other choice, so that its correction is of this second; the two other channels are not looked
 //! at past a constant check and a bound, and another pair is taken only where
 //! it is certainly cheaper. A channel on its own, mono or more than two, is
 //! coded the fit first on every block. The fit is skipped where the block is
@@ -58,25 +60,29 @@
 //! on noise and a quiet desktop, and where the fit, coded beside the fixed
 //! coding, has lost to it by an eighth of a bit a sample two blocks running,
 //! as on 8-bit music, where the fixed coding wins every block; either skip is
-//! for seven blocks and the fit is tried again. A residual is Rice-coded in
+//! for seven blocks and the fit is tried again. The fixed path is left out
+//! the same way where the fit, coded beside it, has won by a sixteenth of a
+//! bit a sample two blocks running, as on the side channel of a pure tone,
+//! where the fit wins every block by just under the margin, but for the two
+//! blocks in eight the schedule has both coded on. A residual is Rice-coded in
 //! the partitions that cost least. Bits every sample of a channel has zero at the bottom, as
 //! 8-bit content in a 16-bit stream does, are shifted out as FLAC's wasted
 //! bits. A channel that is one value is a constant, and one nothing shortens
 //! goes as it is. Every pass over the samples is a plain loop the compiler
-//! vectorises at a target's baseline, the autocorrelation in double precision
-//! in one pass of lanes that stay in registers, its multiply and add fused
-//! into one instruction where the machine has it, the residual of a sample wider
-//! than 16 bits in two 16-bit passes, and the Rice codes go out four, three or
-//! two to a word as the parameter lets them.
+//! vectorises at a target's baseline, the autocorrelation summed as integers
+//! from the samples scaled to 14 bits, two products to an instruction, and in
+//! double precision on a pure tone, whose fit feels the scaling, the residual
+//! of a sample wider than 16 bits in two 16-bit passes, and the Rice codes go
+//! out four, three or two to a word as the parameter lets them.
 //!
 //! Measured on 20 ms blocks of 16-bit stereo at 48 kHz, one core of an AMD
-//! EPYC Rome at the x86-64 baseline: a block of music takes about 11 µs and
-//! is 48% of its PCM, speech 7 µs and 30%, a pure tone 12 µs and 26%, noise
+//! EPYC Rome at the x86-64 baseline: a block of music takes about 10 µs and
+//! is 48% of its PCM, speech 6 µs and 30%, a pure tone 10 µs and 26%, noise
 //! 7 µs and 76%, silence a microsecond and sixteen bytes. libFLAC at its
-//! default level, which this replaced, took 34, 31, 32, 33 and 21 µs for the
+//! default level, which this replaced, took 34, 29, 33, 33 and 20 µs for the
 //! same bytes within a tenth of a per cent, and 1% more on the tone. Mono at
-//! 48 kHz is 5 µs against libFLAC's 20, and 44.1 kHz stereo 9 against 30. On
-//! recordings, 0.24 to 0.47 of its time a block for its bytes within 0.2%,
+//! 48 kHz is 5 µs against libFLAC's 20, and 44.1 kHz stereo 9 against 31. On
+//! recordings, 0.20 to 0.39 of its time a block for its bytes within 0.2%,
 //! the block that chooses the pair afresh, every fourth, a quarter to a
 //! third as long again as a carried one. On the i5-8500T of the runs before
 //! every block of this encoder's was half as long again, libFLAC's a quarter.
@@ -91,7 +97,7 @@ mod subframe;
 
 use bits::{BitWriter, crc8, crc16};
 use lpc::Window;
-use subframe::{Channel, PAIR};
+use subframe::{Channel, Fold, PAIR};
 use thiserror::Error;
 
 /// The bytes of a `STREAMINFO` block.
@@ -228,15 +234,25 @@ pub struct Encoder {
     /// The pairing the last block was coded with, the one fitted on a block
     /// that is not every channel's.
     pairing: usize,
-    /// The blocks since every channel was fitted and the pair chosen afresh,
-    /// that block not counted.
-    since_choice: u8,
+    /// The block's place in the schedules, counted from the stream's first
+    /// block and wrapping where [`RECHOOSE`] and [`REFRESH`] both do.
+    tick: u8,
 }
 
-/// Every so many blocks all four channels of a pair are fitted and the pair
-/// chosen afresh; between, only the pair being carried is coded. Zero or one
-/// chooses afresh on every block.
+/// Every so many blocks all four channels of a pair are counted and the
+/// pair chosen afresh; between, only the pair being carried is coded.
 const RECHOOSE: u8 = 4;
+/// Every so many blocks each channel of the pair has both codings made and
+/// compared whatever the fit is estimated at, the first channel on the
+/// block after the boundary and the second on the next, which brings its
+/// correction up to date; a multiple or a divisor of [`RECHOOSE`], so that
+/// those blocks are carried ones. Measured on the EPYC against once a
+/// cycle: once in two, 1.3% to 2.8% fewer instructions on every stereo
+/// recording for at most 0.013% more bytes, the orchestra's 0.2 of a byte
+/// a block; the pair chosen every eighth block as well took 4.8% to 6.5%
+/// off and the late block came half as often, but for 0.07% to 0.11% of
+/// the bytes on the pianos, the mixes and the talk, and was not taken.
+const REFRESH: u8 = 8;
 
 /// The frame header's channel assignments for a stereo pair, in the order
 /// they are weighed.
@@ -257,7 +273,7 @@ impl Encoder {
         let block = usize::from(stream.block);
         let precision = lpc::precision(u32::from(stream.bits), block);
         let channels = (0..candidates).map(|_| Channel::new(block, precision)).collect();
-        Ok(Self { stream, head, channels, window: Window::new(block), pairing: 0, since_choice: RECHOOSE })
+        Ok(Self { stream, head, channels, window: Window::new(block), pairing: 0, tick: 0 })
     }
 
     /// The stream this encoder was made for.
@@ -282,21 +298,47 @@ impl Encoder {
             let [left, right, mid, side] = &mut self.channels[..] else { unreachable!("a stereo encoder has four candidates") };
             let pairs = block.as_chunks::<2>().0;
             // Wrapping, since a sample outside the width has not been
-            // refused yet; the mid and side of a block with one are not used.
+            // refused yet; the mid and side of a block with one are not
+            // used. The four channels are folded for their preparing as
+            // they are written, one pass in place of this and four: the
+            // compiler keeps the twelve folds in registers beside the
+            // four stores, and measured on the EPYC every stereo
+            // recording took 0.6% to 1.1% fewer instructions for the same
+            // bytes, the 1962 speech the 1.1%, the Aria, the 1924 record
+            // and the three private tracks 0.6% to 0.7%.
+            let [l0, r0] = pairs[0];
+            let (m0, s0) = (l0.wrapping_add(r0) >> 1, l0.wrapping_sub(r0));
+            let mut folds = [Fold::default(); 4];
             for ((((&[l, r], le), ri), mi), si) in pairs.iter().zip(&mut left.signal).zip(&mut right.signal).zip(&mut mid.signal).zip(&mut side.signal) {
+                let (m, s) = (l.wrapping_add(r) >> 1, l.wrapping_sub(r));
                 *le = l;
                 *ri = r;
-                *mi = l.wrapping_add(r) >> 1;
-                *si = l.wrapping_sub(r);
+                *mi = m;
+                *si = s;
+                folds[0].take(l, l0);
+                folds[1].take(r, r0);
+                folds[2].take(m, m0);
+                folds[3].take(s, s0);
             }
             let window = &self.window;
-            if !left.prepare(bps) || !right.prepare(bps) {
+            if !left.prepare(bps, folds[0]) || !right.prepare(bps, folds[1]) {
                 return Err(outside(block, stream.bits));
             }
-            mid.prepare(bps);
-            side.prepare(bps + 1);
-            // The fresh block counts as one of the `RECHOOSE`.
-            let fresh = self.since_choice + 1 >= RECHOOSE;
+            mid.prepare(bps, folds[2]);
+            side.prepare(bps + 1, folds[3]);
+            let tick = self.tick;
+            // Where the side is one value, the two channels being one
+            // signal, as a mono recording stored as stereo is, left, right
+            // and mid are that signal to a constant and cost the same with
+            // it, so there is no pair to choose: the block is carried, the
+            // side coded by the check and the pair moved to it by the bound,
+            // where the fresh block had counted the three in turn. Measured
+            // on the EPYC: the 1962 speech, one signal on every block, took
+            // 16% fewer instructions for the same bytes, its choosing block
+            // from 12.5 µs to 6.8 against a carried block's 6.8, and the
+            // made speech 0.82 to 0.92 of its time; no other recording
+            // moved.
+            let fresh = tick.is_multiple_of(RECHOOSE) && !side.constant();
             let mut channels = [left, right, mid, side];
             // Every fourth block all four channels are weighed from their
             // autocorrelations and the pair chosen on that; on the blocks
@@ -311,13 +353,14 @@ impl Encoder {
             // and the pair moves to it where the bound says it is cheaper.
             let mut best = if !fresh {
                 let mut best = self.pairing;
-                // Each channel's correction is brought up to date once a
-                // cycle, both codings made and compared whatever the fit is
-                // estimated at, the first channel on the first carried block
-                // and the second on the next, so that the cost falls on
-                // blocks that are not the fresh one.
+                // Each channel's correction is brought up to date every
+                // `REFRESH` blocks, both codings made and compared whatever
+                // the fit is estimated at, the first channel on the first
+                // carried block after the boundary and the second on the
+                // next, so that the cost falls on blocks that are not the
+                // fresh one.
                 for (k, i) in [PAIRS[best].0, PAIRS[best].1].into_iter().enumerate() {
-                    channels[i].code_alone(window, self.since_choice == k as u8);
+                    channels[i].code_alone(window, tick % REFRESH == k as u8 + 1);
                 }
                 // Another pair is taken where it is certainly cheaper: where
                 // the most its channels can cost, from one pass over each
@@ -327,6 +370,8 @@ impl Encoder {
                 let mut bits = channels[PAIRS[best].0].bits() + channels[PAIRS[best].1].bits();
                 for (p, &(a, b)) in PAIRS.iter().enumerate() {
                     if p != best && channels[a].at_most() + channels[b].at_most() < bits {
+                        // A channel the pair shares with the one coded
+                        // first is left as coded.
                         for i in [a, b] {
                             channels[i].code_alone(window, false);
                         }
@@ -400,15 +445,16 @@ impl Encoder {
             };
             // A frame is never more than its PCM and a header: where the
             // pair chosen has a side that noise fills past the width, left
-            // and right go instead.
+            // and right go instead, weighed by the most the pair can take,
+            // its bits as estimated and half a bit a sample over them.
             let (a, b) = PAIRS[best];
-            if best != 0 && channels[a].bits() + channels[b].bits() > channels[0].verbatim() + channels[1].verbatim() {
+            if best != 0 && channels[a].at_most() + channels[b].at_most() > channels[0].verbatim() + channels[1].verbatim() {
                 for i in [0, 1] {
                     channels[i].finish();
                 }
                 best = 0;
             }
-            self.since_choice = if fresh { 0 } else { self.since_choice + 1 };
+            self.tick = (tick + 1) % RECHOOSE.max(REFRESH);
             self.pairing = best;
             best
         } else {
@@ -419,7 +465,9 @@ impl Encoder {
                 for (s, &sample) in channel.signal.iter_mut().zip(block[c..].iter().step_by(channels)) {
                     *s = sample;
                 }
-                if !channel.prepare(bps) {
+                // Folded in a pass of its own: folded in the strided copy
+                // the loop stays scalar, the mono block 4% to 50% longer.
+                if !channel.prepare(bps, Fold::of(&channel.signal)) {
                     return Err(outside(block, stream.bits));
                 }
                 channel.code_alone(&self.window, false);
