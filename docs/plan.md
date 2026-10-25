@@ -183,9 +183,10 @@ libFLAC's time for the same bytes, and against level 0 0.85 to 1.03 on the
 every recording. The Windows run on the desktop, retired with the move as a
 second reading of the machine the x86 run was made on, is back since the night
 of 2026-10-24 as a third machine, the i5 being a different chip from the EPYC,
-made on demand: there the recordings are 0.22 to 0.43 of libFLAC's time and
-0.39 to 0.87 of its level 0's, this encoder's block 1.40 to 1.63 of its EPYC
-block where libFLAC's default level is 1.14 to 1.34.
+made on demand: in the night's third run there, of the tree with a channel
+coded alone coded once a block, the recordings are 0.22 to 0.42 of libFLAC's
+time and 0.40 to 0.88 of its level 0's, this encoder's block 1.38 to 1.59 of
+its EPYC block where libFLAC's default level is 1.12 to 1.32.
 
 Profiled on the EPYC the afternoon after the run, with perf's cpu-clock at
 10 kHz over this encoder alone, the bench built with line tables and the
