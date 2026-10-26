@@ -7,7 +7,7 @@
 # needed.
 set -eu
 cd "$(dirname "$0")/.."
-store=${SOUND_FLAC_ARTIFACTS:-/mnt/dasdata/backup/sound-flac-artifacts/samples}
+store=${SOUND_FLAC_ARTIFACTS:-/mnt/dasdata/backup/sound-artifacts/samples}
 case "${1:-}" in
 fetch)
     grep -v '^#' tools/samples.txt | while IFS="$(printf '\t')" read -r item file _; do

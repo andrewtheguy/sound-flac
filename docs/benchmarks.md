@@ -218,7 +218,7 @@ the public domain by their makers under CC0, lossless as uploaded, listed in
 fetch` downloads them into the artifact store, one folder an item, decodes a
 FLAC to a WAV beside it and writes `SHA256SUMS`; `tools/samples.sh copy`
 brings the WAVs to `tmp/samples`, which is gitignored, for a run. The store
-is `/mnt/dasdata/backup/sound-flac-artifacts/samples/` on this machine
+is `/mnt/dasdata/backup/sound-artifacts/samples/` on this machine
 (`SOUND_FLAC_ARTIFACTS` names another), 2.0 GB with the FLACs; nothing in
 the repository holds a recording. Three more are the user's own, not
 licensed for publication: two dense mixes and one voice talking over soft
